@@ -22,7 +22,7 @@ Considere la función de regresión poblacional
 1. Estime los parámetros del modelo de regresión. ¿Cuál es la
    interpretación del parámetro $\beta_1$?
 2. En la elección correspondiente a la primera observación de la
-   muestra, el candidato A gastó \num{328.3} miles de dólares en su
+   muestra, el candidato A gastó \num{328} miles de dólares en su
    campaña electoral y obtuvo el \num{68}% de los votos. De acuerdo con
    las estimaciones del apartado anterior, ¿cuál es el porcentaje de
    votos predicho para este candidato? ¿Cuál es el residuo?
