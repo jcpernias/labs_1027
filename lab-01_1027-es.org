@@ -1,0 +1,56 @@
+# -*- ispell-dictionary: "castellano" -*-
+
+#+SETUPFILE: ./course-es.org
+
+#+TITLE: Resultados electorales y gastos de campaña
+
+*(Wooldridge: Ejemplo 2.5).* El archivo \data{vote1} contiene datos
+sobre resultados electorales y costes de campaña de 173 contiendas
+electorales entre dos partidos para las elecciones de 1988 a la Cámara
+de Representantes de Estados Unidos. En cada contienda, hay dos
+candidatos, A y B. La variable \voteA es el porcentaje de votos
+recibidos por el candidato A, y la variable \expendA es el coste de
+la campaña electoral del candidato A en miles de dólares.
+
+Considere la función de regresión poblacional
+#+begin_export latex
+\begin{equation*}
+  \voteA = \beta_0 + \beta_1 \expendA + u.
+\end{equation*}
+#+end_export
+
+1. Estime los parámetros del modelo de regresión. ¿Cuál es la
+   interpretación del parámetro $\beta_1$?
+2. En la elección correspondiente a la primera observación de la
+   muestra, el candidato A gastó \num{328.3} miles de dólares en su
+   campaña electoral y obtuvo el \num{68}% de los votos. De acuerdo con
+   las estimaciones del apartado anterior, ¿cuál es el porcentaje de
+   votos predicho para este candidato? ¿Cuál es el residuo?
+
+3. La interpretación del parámetro $\beta_1$ depende del cumplimiento
+   del supuesto de esperanza condicional nula, $E(u|\expendA) = 0$. En
+   el fichero de datos también se recogen los gastos de campaña del
+   candidato B, \expendB. Calcule el coeficiente de correlación entre
+   \expendA y \expendB. ¿Es razonable el supuesto de media
+   condicional nula?
+
+4. Amplíe el modelo incluyendo \expendB:
+   #+begin_export latex
+   \begin{equation*}
+    \voteA = \beta_0 + \beta_1 \expendA + \beta_2 \expendB + v.
+   \end{equation*}
+   #+end_export
+   Interprete las estimaciones y compare los resultados con los
+   obtenidos en el primer apartado. ¿Mejora el ajuste con la inclusión
+   de \expendB?
+
+5. La variable ficticia \democA toma el valor 1 si el candidato A
+   está afiliado al Partido Demócrata y el valor 0 en caso
+   contrario. Estime los parámetros de:
+   #+begin_export latex
+   \begin{equation*}
+     \voteA = \beta_0 + \beta_1 \expendA + \beta_2 \expendB + \beta_3
+     \democA + w.
+   \end{equation*}
+   #+end_export
+   ¿Cuál es la interpretación del parámetro $\beta_3$?

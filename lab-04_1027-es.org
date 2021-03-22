@@ -1,0 +1,59 @@
+# -*- ispell-dictionary: "castellano" -*-
+
+#+SETUPFILE: ./course-es.org
+
+#+TITLE: Precio de venta de las casas
+
+*(Wooldridge: C8.2, C8.3 y C8.4).* Utilice los datos de \data{hprice1}
+para estimar el modelo:
+#+begin_export latex
+\begin{equation*}
+  \price =
+  \beta_0
+  + \beta_1 \lotsize
+  + \beta_2 \sqrft
+  + \beta_3 \bdrms
+  + u,
+\end{equation*}
+#+end_export
+donde \price es el precio de la vivienda en miles de dólares, \lotsize
+es el tamaño del solar en pies cuadrados (un pie cuadrado equivale
+aproximadamente a $0.09$ metros cuadrados), \sqrft es la superficie de
+la vivienda en pies cuadrados, y \bdrms: es el número de dormitorios.
+
+1. Estime los parámetros por MCO y obtenga los errores típicos
+   robustos a heteroscedasticidad.  ¿Existen diferencias importantes
+   con respecto a los errores típicos habituales?
+
+2. Obtenga los residuos MCO, $\hat{u}_i$, y regréselos sobre todas
+   las variables independientes. Explique por qué se obtiene un $R^2$
+   nulo.
+
+3. Contraste la presencia de heteroscedasticidad mediante el contraste
+   de Breusch-Pagan. Use la versión $F$ del estadístico.
+
+4. Aplique el contraste completo de heteroscedasticidad de White.
+   Calcule la versión $\chi^2$ del estadístico.
+
+5. Use ahora el caso especial del contraste de heteroscedasticidad de
+   White (Wooldrige, páginas 275--276) y calcule la forma $F$ del
+   estadístico.  ¿Hay fuerte evidencia de heteroscedasticidad?
+
+6. Considere ahora el modelo:
+   #+begin_export latex
+   \begin{equation*}
+     \log (\price) =
+     \alpha_0
+     + \alpha_1 \log(\lotsize)
+     + \alpha_2 \log(\sqrft)
+     + \alpha_3 \bdrms
+     + v.
+   \end{equation*}
+   #+end_export
+   Estime los parámetros por MCO y calcule los errores típicos
+   robustos a heteroscedasticidad. Aplique a esta regresión los
+   contrastes de heteroscedasticidad que utilizó en los anteriores
+   apartados.
+
+7. ¿Qué sugiere este ejemplo sobre la heteroscedasticidad y la
+   transformación usada para la variable dependiente?
