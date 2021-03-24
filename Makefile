@@ -2,8 +2,7 @@ SHELL := /bin/sh
 
 subject_code := 1027
 probl_units := \
-	01 \
-	04
+	01 01b 04
 
 probl_figs :=
 

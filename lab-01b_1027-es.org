@@ -1,0 +1,53 @@
+# -*- ispell-dictionary: "castellano" -*-
+
+#+SETUPFILE: ./course-es.org
+
+#+TITLE: Participación de las mujeres en la fuerza de trabajo
+
+
+*(Ramanathan)* El archivo \data{data4-5.csv} contiene datos sobre la
+participación de las mujeres en la fuerza de trabajo en 1990 para los
+50 estados de EE.UU.:
+
+- \wlfp: porcentaje de personas en la pobación activa que son mujeres.
+
+- \yf: ingresos medianos de las mujeres (en miles de dólares).
+
+- \ym: ingresos medianos de los hombres (en miles de dólares).
+
+- \educ: porcentaje de mujeres que han completado estudios de bachiller
+  o superiores.
+
+- \ue: tasa de desempleo.
+
+- \mr: porcentaje de mujeres casadas.
+
+- \dr: porcentaje de mujeres divorciadas.
+
+- \urb: porcentaje de la población total que vive en áreas urbanas.
+
+- \wh: porcentaje de mujeres que son blancas.
+
+
+Para explicar \wlfp se ha propuesto el siguiente modelo econométrico:
+#+begin_export latex
+\[
+  \wlfp = \beta_{0} + \beta_{1} \yf + \beta_{2} \ym + \beta_{3} \educ +
+  \beta_{4} \ue + \beta_{5} \mr + \beta_{6} \dr + u
+\]
+#+end_export
+
+a) Estime el modelo por MCO y presente los resultados de la forma
+   habitual. ¿Muestran los coeficientes estimados los signos
+   esperados?
+
+b) Contraste la significación conjunta de la regresión.
+
+c) Contraste si las variables \mr y \dr son conjuntamente
+   significativas a través del estadístico $F$ y el contraste de
+   multiplicadores de Lagrange?
+
+d) Con la información proporcionada en la base de datos, ¿se le ocurre
+   una especificación más adecuada para explicar la participación de
+   las mujeres como fuerza de trabajo? Compruebe empíricamente si
+   verdaderamente explica mejor \wlfp.
