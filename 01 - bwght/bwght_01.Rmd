@@ -1,0 +1,51 @@
+---
+title: "El efecto del tabaco sobre el peso de los recién nacidos (I)"
+author: "EC1027 --- Econometría I"
+date: "Curso 2021-2022"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Datos
+
+Utilizaremos la base de datos `bwght`, que está contenida en el paquete `wooldridge`. Esta base de datos contiene información sobre diversas características de  recién nacidos y sus familias durante el año 1988 en Estados Unidos. La usaremos para evaluar el efecto que tiene el consumo de tabaco durante el embarazo sobre la salud de los recién nacidos.
+
+- Cargue el paquete `wooldridge` en una sesión de RStudio.
+
+- Examine el contenido de la base de datos `bwght`. ¿Cuántas observaciones recoge? ¿Cuántas variables? 
+
+- Consulte la ayuda de `bwght`. ¿Qué información recoge cada una de las variables? ¿En qué unidades se mide cada una de las variables?
+
+
+# Estadísticos descriptivos
+
+R proporciona muchas funciones para calcular estadísticos descriptivos. Por ejemplo, la media de una variable se calcula con la función `mean` y la desviación típica con `sd`.  En el caso de variables que sólo toman unos pocos valores es útil la función `table` que muestra cuántas observaciones corresponden a cada valor. Otro estadístico frecuentemente usado es el coeficiente de correlación que se calcula con `cor`.
+
+- Calcule la media y la desviación típica del peso de los recién nacidos. 
+- ¿Cuántas madres no fumaron durante el embarazo? 
+- ¿Cuál es la correlación entre el peso de los recién nacidos y el número de cigarrillos diario que las madres fumaron durante el embarazo? De acuerdo con este estadístico, ¿cómo se relaciona la salud de los recién nacidos y el consumo de tabaco? ¿Podemos concluir algo sobre la existencia de una relación causal entre estas variables?
+
+# Transformación de variables
+
+En la base de datos que estamos utilizando, el peso de los recién nacidos se mide en onzas. A veces es útil crear nuevas variables para expresar la información en unidades de medida más convenientes. En R podemos utilizar los operadores aritméticos habituales (`+`, `-`, `*` y `/`) para realizar cálculos con variables. Para calcular potencias se usa el operador `^` (por ejemplo, el cuadrado de `x` se expresa `x ^ 2`). Otra transformación común es el logaritmo natural que en R se obtiene con la función `log`.  
+
+- Cree una nueva variable con el peso de los recién nacidos expresado en kilogramos (una onza son aproximadamente 29 gramos). Utilice esta variable para calcular la media y la desviación típica del peso en kg.
+
+- Cree una nueva variable y almacene en ella el logaritmo del peso de los recién nacidos. Calcule la media y la desviación típica de esa variable. ¿Tienen interpretaciones útiles estas variables?
+
+# Variables ficticias
+
+Es muy frecuente el uso de variables ficticias para expresar información cualitativa. Para crear este tipo de variables se usan los operadores lógicos de igualdad (`==`), no igualdad (`!=`), comparación (`<`, `>`, `<=` y `>=`) y negación (`!`). Se pueden crear expresiones lógicas complejas conectado expresiones simples con el operador Y (`&`) y el operador O (`|`). Cuando usamos esos operadores obtenemos variables lógicas que toman los valores `TRUE` y `FALSE` dependiendo si la condición se cumple o no en cada observación. Si queremos transformar estos valores lógicos en enteros podemos usar la función `as.integer`.
+
+- Cree una variable ficticia que tome valor 1 para las madres que fumaron durante su embarazo y 0 para las que no lo hicieron. Use la función `table` para determinar cuantas observaciones hay en cada categoría.
+
+# Regresión simple
+
+Utilizaremos la función `lm` para estimar una regresión simple entre el logaritmo del peso de los recién nacidos y la ficticia que indica si las madres fumaron durante el embarazo. Guardamos los resultados de la estimación en una variable para poder más tarde acceder a una tabla con los principales resultados de la regresión (con la función `summary`),  las estimaciones de los parámetros (`coef`), los residuos (`resid`), las predicciones (`fitted`), intervalos de confianza (`confint`), etc.
+
+- Estime por MCO la regresión simple entre el logaritmo del peso de los recién nacidos y la ficticia que indica si las madres fumaron durante el embarazo. Interprete los resultados de la regresión.
+
+- Calcule intervalos de confianza para los parámetros del modelo de regresión simple. ¿Cuál  es el nivel de confianza usado por defecto? Calcule los intervalos para un nivel de confianza del 99% (consulte la ayuda de la función `confint`). 
+
