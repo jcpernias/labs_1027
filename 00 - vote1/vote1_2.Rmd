@@ -1,0 +1,258 @@
+---
+title: "Introducción a R (y II)"
+author: "José Pernías"
+date: "`r format(Sys.Date(), '%d de %B de %Y')`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+library(wooldridge)
+library(ggplot2)
+
+data(vote1)
+```
+
+
+# Regresión múltiple
+
+Anteriormente estimamos un modelo de regresión simple de los resultados electorales del candidato A, `voteA`, y los gastos de campaña de este candidato:
+```{r simple-reg}
+mod1 <- lm(voteA ~ expendA, data = vote1)
+summary(mod1)
+```
+
+
+Un análisis gráfico informal apuntaba a la posible existencia de problemas de especificación. En esta sección ampliaremos el modelo de regresión para incluir otros factores que explicativos.
+
+## Gastos del rival
+
+Una de las principales limitaciones del modelo de regresión simple es que no tiene en cuenta los gastos de campaña del otro candidato, recogidos en la variable `expendB`. Esperamos que `expendB` tenga un efecto negativo sobre `voteA`. Esto, por sí solo, no basta para afectar adversamente a las propiedades del estimador de MCO en el modelo de regresión simple. Para que exista sesgo, la variable omitida relevante, `expendB`, debe estar correlacionada con la explicativa, `expendA`. Podemos comprobar que esto es así en nuestro caso calculando el coeficiente de correlación entre estas dos variables con la función `cor`:
+
+```{r}
+cor(vote1$expendA, vote1$expendB)
+```
+
+El valor del coeficiente de correlación muestra una fuerte relación positiva entre los gastos de los dos candidatos. Este resultado, junto con nuestra expectativa de un efecto parcial negativo de `expendB`, sugeriría que la estimación del efecto de `expendA` en el modelo de regresión simple estaría sesgada hacia abajo. La estimación del modelo de regresión con los gastos de campaña de los dos candidatos confirma este análisis:
+
+```{r}
+mod2 <- lm(voteA ~ expendA + expendB, data = vote1)
+summary(mod2)
+```
+
+Las dos variables explicativas tienen efectos significativos al 5% y con los signos esperados. El ajuste mejora considerablemente al incluir `expendB` en la regresión, aumentando el $R^2$ ajustado de $0{,}15$ a $0{,}52$.
+
+## Otros regresores
+
+Incluiremos también otras dos variables explicativas, con lo que el modelo de regresión múltiple sería:
+$$
+  \mathit{voteA} = \beta_0 
+  + \beta_1 \, \mathit{expendA}
+  + \beta_2 \, \mathit{expendB}
+  + \beta_3 \, \mathit{democA}
+  + \beta_4 \, \mathit{prtystrA}
+  + u
+$$
+donde:
+
+- $\mathit{democA}$ es una variable ficticia que toma el valor 1 para los candidatos demócratas y 0 para los candidatos republicanos. El signo de $\beta_4$ podría ser positivo o negativo, dependiendo de si los candidatos demócratas tenían o no una ventaja en estas elecciones.
+
+- $\mathit{prtystrA}$ es el porcentaje de votos que obtuvo el partido de A en las elecciones presidenciales más recientes. Con esta variable se trata de medir la fuerza del partido del candidato A en el distrito electoral. Esperamos que $\beta_5$ sea positivo, y los candidatos reciban más votos en aquellos distritos en que sus partidos sean más fuertes.
+
+```{r}
+mod3 <- update(mod2, . ~ . + democA + prtystrA)
+summary(mod3)
+```
+
+Las estimaciones MCO permitirían rechazar que los parámetros de cada una de las variables explicativas sean iguales a $0$ a un nivel de significación del $5\%$. 
+Las estimaciones de los efectos de los gastos de campaña tienen magnitudes similares aunque de signo contrario: los resultados electorales 
+del candidato A mejoran una tasa de $0{,}03$ puntos porcentuales por cada $1.000$ dólares adicionales de gastos en su campaña. 
+La estimación del parámetro de `democA` indica que en estas elecciones los candidatos demócratas partieron con una ventaja a su favor de algo más de $9$ puntos porcentuales. El parámetro de `partystrA`  tiene el signo positivo como se esperaba, confirmando que los candidatos suelen obtener mejores resultados en aquellos distritos en que su partido es más fuerte. El ajuste es razonablemente bueno, y el modelo de regresión es capaz de explicar el $62{,6}\%$ de la variación de la variable dependiente. Finalmente, el contraste $F$ de la regresión toma el valor $F = 70{,}4$, llevando al rechazo al $5\%$ de significación de la hipótesis nula de que todas las pendientes son iguales a $0$ (valor-*p*  $< 0{,}001$).
+
+Podemos comprobar informalmente la correcta especificación del modelo de regresión examinando un gráfico de los residuos frente a las predicciones:
+
+```{r}
+uhat3 <- resid(mod3)
+yhat3 <- fitted(mod3)
+qplot(yhat3, uhat3, data = vote1)
+```
+
+A diferencia de lo que ocurría con el modelo de regresión simple, este gráfico no muestra signos evidentes de mala especificación.
+
+# Contraste de hipótesis
+
+En esta sección contrastaremos la hipótesis de que el efecto de los gastos de campaña de los dos candidatos es de igual magnitud pero de signo contrario. Podemos expresar esta hipótesis como:
+$$
+  H_0\!: \beta_2 = -\beta_1
+$$
+
+La hipótesis alternativa simplemente establece el incumplimiento de la nula:
+$$
+  H_1\!: \beta_2 \neq -\beta_1
+$$
+A continuación discutiremos tres enfoques para llevar a cabo el contraste. Aunque los tres son completamente equivalentes en este caso, a lo largo del curso encontraremos situaciones en las prefiramos uno de ellos sobre los otros dos. 
+
+## Contraste F
+
+El primer enfoque se basa en la comparación del ajuste de dos modelos:
+
+- El **modelo no restringido** que *es válido independientemente de que se cumpla o no la hipótesis nula*. En nuestro caso es el modelo que estimamos anteriormente:
+    $$
+      \mathit{voteA} = \beta_0 
+        + \beta_1 \, \mathit{expendA}
+        + \beta_2 \, \mathit{expendB}
+        + \beta_3 \, \mathit{democA}
+        + \beta_4 \, \mathit{prtystrA}
+        + u
+    $$
+    
+- El **modelo restringido** que se obtiene sustituyendo la hipótesis nula en el modelo no restringido. Por tanto, el modelo no restringido *sólo es válido si la hipótesis nula es cierta*. Sustituyendo $H_0$ en el modelo no restringido obtenemos:
+    $$
+      \mathit{voteA} = \beta_0 
+        + \beta_1 \, \mathit{expendA}
+        - \beta_1 \, \mathit{expendB}
+        + \beta_3 \, \mathit{democA}
+        + \beta_4 \, \mathit{prtystrA}
+        + u
+    $$
+    Operando en la ecuación anterior:
+    $$
+      \mathit{voteA} = \beta_0 
+        + \beta_1 \, (\mathit{expendA} - \mathit{expendB})
+        + \beta_3 \, \mathit{democA}
+        + \beta_4 \, \mathit{prtystrA}
+        + u
+    $$
+    Definimos una nueva variable que recoja la diferencia entre los gastos de campaña de los dos candidatos:
+    $$ \mathit{diffAB} = \mathit{expendA} - \mathit{expendB} $$
+    Con esta variable expresamos el modelo restringido como: 
+    $$
+      \mathit{voteA} = \beta_0 
+        + \beta_1 \, \mathit{diffAB}
+        + \beta_3 \, \mathit{democA}
+        + \beta_4 \, \mathit{prtystrA}
+        + u
+    $$
+    
+
+Para llevar a cabo el contraste necesitamos, en primer lugar, estimar el modelo restringido. Creamos una nueva variable con la diferencia de los gasos de campaña:   
+```{r}
+diffAB <- vote1$expendA - vote1$expendB
+```
+Estimamos el modelo restringido  y guardamos los resultados en la variable `mod3r`:
+```{r}
+mod3r <- lm(voteA ~ diffAB + democA + prtystrA, data = vote1)
+summary(mod3r)
+```
+
+Si la hipótesis nula es correcta, no debería haber grandes diferencias en la bondad del ajuste del modelo no restringido (`mod3` en nuestro caso) y la del modelo restringido (`mod3r`). Formalmente, utilizamos el contraste $F$ para determinar si las diferencias en el ajuste de los dos modelos son significativas:
+$$
+  F = \frac{(\mathit{SCR}_\text{R} - \mathit{SCR}_\text{NR}) / q}{
+  \mathit{SCR}_\text{NR} / (n - k - 1)}
+$$
+La función `anova` compara el ajuste de dos modelos con el contraste $F$:
+```{r}
+anova(mod3r, mod3)
+```
+La información que imprime esta función incluye todos los elementos que aparecen en la fórmula del contraste $F$. Así pues, la distribución bajo la hipótesis nula es $F_{1, 168}$ y el valor del estadístico de contraste es $F = 0{,}26$. Concluimos que no podemos rechazar la hipótesis nula a un nivel de significación del $5\%$, ya que el valor-*p*, $0{,}61$, es superior al nivel de significación.
+
+## Contraste de Wald
+
+Podemos pensar en el contraste de Wald como una generalización del contraste $t$ que puede utilizarse con todo tipo de restricciones lineales sobre los parámetros del modelo. La deducción del contraste requiere el uso de álgebra matricial y no se abordará en este curso. Una de las ventajas del contraste de Wald es que *sólo requiere la estimación del modelo no restringido*. 
+
+Para contrastar hipótesis lineales generales podemos usar la función `lht` del paquete `car` (este paquete no se instala por defecto; puede instalarse, si es necesario, a través del menú `Tools | Install packages...`).  
+```{r}
+library(car)
+```
+
+Siempre necesitamos especificar al menos dos argumentos con la función `lht`. El primer argumento indica el modelo de regresión sobre el que queremos contrastar la hipótesis nula (`mod3` en nuestro caso). El segundo argumento describe la hipótesis que queremos contrastar. Es conveniente reescribir la hipótesis nula como combinaciones lineales de parámetros que son iguales a 0. En nuestro caso, reescribimos la hipótesis:
+$$
+  H_0\!: \beta_2 = -\beta_1
+$$
+como
+$$
+  H_0\!: \beta_1 + \beta_2 = 0
+$$
+Creamos una variable `h0` donde especificamos el lado izquierdo de la hipótesis nula: 
+```{r}
+h0 <- "expendA + expendB"
+```
+La función `lht` interpretará la variable `h0` como una hipótesis donde la suma de los parámetros de las variables `expendA` y `expendB` son iguales a 0. En la expresión anterior son muy importantes las dobles comillas `"`: sin ellas, R trataría de sumar dos variables, lo que, generalmente, causaría un error.  
+
+La siguiente instrucción calcula el contraste de Wald:
+```{r}
+lht(mod3, h0)
+```
+Al ejecutar esta instrucción se presenta prácticamente la misma información que obtuvimos con el contraste $F$. En concreto, el estadístico $F$ y su valor-*p* son idénticos a los que discutimos antes. Por tanto, igual que antes, no se rechazaría la hipótesis nula al $5\%$ de significación.
+
+## Reparametrización del modelo
+
+La tercera alternativa consiste en reparametrizar el modelo no restringido. Lo que pretendemos con esta estrategia es estimar directamente parámetros que expresen las restricciones de la hipótesis nula. En nuestro ejemplo queremos verificar que los efectos de los gastos de campaña de los candidatos son iguales pero con signos opuestos. Antes hemos visto que una forma de expresar esta hipótesis es:
+$$
+  H_0\!: \beta_1 + \beta_2 = 0
+$$
+Podríamos reescribir la hipótesis nula de  una forma más simple si definimos un nuevo parámetro $\theta$ como:
+$$
+  \theta = \beta_1 + \beta_2
+$$
+Entonces, la hipótesis nula se podría expresar como:
+$$
+  H_0\!: \theta = 0
+$$
+Si pudiéramos estimar directamente el parámetro $\theta$ y su error típico podríamos usar un simple cociente $t$ para contrastar esta hipótesis nula. Reescribiremos el modelo de regresión de forma que uno de sus parámetros sea $\theta$.
+
+En primer lugar, operamos en la definición de $\theta$ para obtener:
+$$
+  \beta_2 = \theta - \beta_1 
+$$
+Ahora, sustituimos esta expresión en nuestro modelo de regresión:
+$$
+\mathit{voteA} = \beta_0 
+  + \beta_1 \, \mathit{expendA}
+  + (\theta - \beta_1) \, \mathit{expendB}
+  + \beta_3 \, \mathit{democA}
+  + \beta_4 \, \mathit{prtystrA}
+  + u
+$$
+Finalmente, operando en la expresión anterior obtenemos un modelo de regresión completamente equivalente al modelo original:
+$$
+\mathit{voteA} = \beta_0 
+  + \beta_1 \, \mathit{diffAB}
+  + \theta \, \mathit{expendB}
+  + \beta_3 \, \mathit{democA}
+  + \beta_4 \, \mathit{prtystrA}
+  + u
+$$
+
+La estimación por MCO de este modelo produce los siguientes resultados:
+```{r}
+mod3_alt <- lm(voteA ~ diffAB + expendB + democA + prtystrA, data = vote1)
+summary(mod3_alt)
+```
+Los resultados que se obtienen son idénticos a los obtenidos antes en la estimación de `mod3`, salvo los estadísticos del parámetro de `expendB`. Ahora la pendiente de esta variable es el parámetro $\theta$, la suma de los efectos de los gastos de campaña de los dos candidatos. La estimación de este parámetro es muy cercana a 0 y el contraste $t$ de significación individual de `expendB` toma un valor muy bajo. No podemos rechazar la hipótesis de que $\theta = 0$ (o lo que es lo mismo, $\beta_1 + \beta_2 = 0$) a un nivel de significación del 5% ya que el valor-$p$ es igual a $0{,}61$, valor muy superior a $0{,}05$.
+
+## Modelo final
+
+Dado que los tres enfoques presentados son completamente equivalentes, se llega en todos los casos a la misma conclusión: no se encuentra evidencia en contra de la hipótesis de que los efectos de los gastos de campaña de los candidatos tengan la misma magnitud y signo opuestos. Al imponer esta hipótesis, obtenemos el modelo restringido:
+$$
+\mathit{voteA} = \beta_0 
+  + \beta_1 \, \mathit{diffAB}
+  + \beta_3 \, \mathit{democA}
+  + \beta_4 \, \mathit{prtystrA}
+  + u
+$$
+La estimación por MCO los parámetros de este modelo produce los siguientes resultados: 
+```{r}
+summary(mod3r)
+```
+Como consecuencia de imponer la hipótesis nula, las estimaciones de los parámetros son más precisas que las obtenidas con el modelo no restringido. 
+
+Finalmente, no apreciamos signos evidentes de mala especificación al representar gráficamente las predicciones y los residuos de este modelo. 
+```{r}
+uhat3r <- resid(mod3r)
+yhat3r <- fitted(mod3r)
+qplot(yhat3r, uhat3r)
+```
+
