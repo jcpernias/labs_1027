@@ -1,0 +1,64 @@
+---
+title: "Rendimiento académico de los universitarios"
+author: "EC1027 --- Econometría I"
+date: "Curso 2021-2022"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Preliminares
+
+Utilizaremos la base de datos `gpa1` que se encuentra en el paquete `wooldridge`. Los datos se recogieron en 1994 y proporcionan información sobre el rendimiento académico y las condiciones personales y familiares de 141 estudiantes de la Universidad Estatal de Michigan. En esta sesión sólo usaremos las variables:
+
+- `colGPA`: la nota media obtenida en la Universidad.
+
+- `skipped`: número medio de clases a la semana a las que el alumno no asiste.
+
+- `hsGPA`: nota media en el Instituto.
+
+- `ACT`: puntuación obtenida en la prueba de acceso a la Universidad.
+
+- `PC`: variable ficticia que toma el valor 1 si el estudiante disponía de un ordenador propio.
+
+Nuestro objetivo principal será cuantificar el efecto que la no asistencia a las clases tiene sobre las notas medias de los estudiantes universitarios.
+
+1. Cargue el paquete `wooldridge` y la base de datos `gpa1` en una sesión de RStudio.
+
+2. Cargue los paquetes `sandwich` y `lmtest` (si es necesario, instálelos previamente mediante el menú `Tools | Install packages...`).
+
+
+# Estimación por MCO
+
+
+1. Estime por MCO los parámetros del modelo:
+   $$
+     \mathit{colGPA} = \beta_0 
+     + \beta_1 \mathit{skipped} 
+     + \beta_2  \mathit{ACT} 
+     + \beta_3 \mathit{hsGPA} 
+     + \beta_3 \mathit{PC} 
+    + u 
+   $$
+   Utilizando errores típicos robustos a heteroscedasticidad, determine la significación de las variables explicativas para $\alpha = 5\%$. ¿Tienen las estimaciones de los parámetros los signos esperados?
+   
+2. Contraste la presencia de heteroscedasticidad en el modelo anterior mediante el contraste de Breusch-Pagan.
+
+# Estimación por MCPF
+
+1. Estime el modelo por MCPF bajo el supuesto de que la varianza del término de error depende de todas las explicativas. Es decir:
+   $$
+    \operatorname{var}(u_i | \boldsymbol{x}_i) = \sigma^2 h(\boldsymbol{x}_i)
+   $$
+   donde 
+   $$
+    h(\boldsymbol{x}_i) = \exp(\delta_0 
+    + \delta_1 \mathit{skipped}_i
+    + \delta_2 \mathit{ACT}_i
+    + \delta_3 \mathit{hsGPA}_i
+    + \delta_4 \mathit{PC}_i)
+   $$
+2. Utilice errores típicos robustos para comprobar qué parámetros son significativamente distintos de $0$ al $5\%$ de significación. ¿Hay diferencias importantes con respecto a los resultados obtenidos con MCO? ¿Son los estimadores de MCPF más eficientes que los de MCO?
+
+3. Utilice los resultados anteriores para discutir cuál es el efecto que la no asistencia a las clases tiene sobre las notas medias de los estudiantes universitarios.
