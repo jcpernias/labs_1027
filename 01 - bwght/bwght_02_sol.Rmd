@@ -43,8 +43,10 @@ Utilizaremos la base de datos `bwght` que proporciona el paquete `wooldridge`. E
     ```
 
     ```
-    De acuerdo con estas esimaciones, los hijos de las madres que fumaron durante el embarazo fue un 7,7% inferior al de los hijos cuyas madres no fumaron. Este efecto es 
-    significativo a un nivel de significación del 5%.
+    De acuerdo con estas esimaciones, los hijos de las madres que 
+    fumaron durante el embarazo fue un 7,7% inferior al de los hijos 
+    cuyas madres no fumaron. Este efecto es significativo a un nivel de 
+    significación del 5%.
     ```
     
 # Transformaciones de variables
@@ -98,15 +100,17 @@ Utilizaremos la base de datos `bwght` que proporciona el paquete `wooldridge`. E
     summary(mod2)
     ```
     ```
-    La estimaciones parecen indicar que el efecto del tabaco sobre el peso de los recién 
-    nacidos es mayor, en valor absoluto, cuanto más fumaron las madres. Excepto la variable 
-    cigs_1_5, todas las variables que miden el consumo de tabaco son significativas al 5%. 
-    Por otro lado, la estimación del parámetro de la variable first muestra que las madres 
-    primerizas tienen hijos que pesan un 4% menos, la pendiente de white indicaría que los 
-    recién nacidos blancos pesarían casi un 6% más que los bebés de otras etnias, y la 
-    estimación del parámetro de male indicaría que los niños pesan en al nacer un 2,5% 
-    más que las niñas. Finalmente, las variables second y lfaminc no tendrían efectos 
-    significativos al 5%.
+    La estimaciones parecen indicar que el efecto del tabaco sobre 
+    el peso de los recién nacidos es mayor, en valor absoluto, cuanto
+    más fumaron las madres. Excepto la variable cigs_1_5, todas las 
+    variables que miden el consumo de tabaco son significativas al 5%. 
+    Por otro lado, la estimación del parámetro de la variable first 
+    muestra que las madres primerizas tienen hijos que pesan un 4% 
+    menos, la pendiente de white indicaría que los recién nacidos 
+    blancos pesarían casi un 6% más que los bebés de otras etnias, y la 
+    estimación del parámetro de male indicaría que los niños pesan al 
+    nacer un 2,5% más que las niñas. Finalmente, las variables second y 
+    lfaminc no tendrían efectos significativos al 5%.
     ```
   
 # Contrastes de hipótesis generales
@@ -127,8 +131,8 @@ Utilizaremos la base de datos `bwght` que proporciona el paquete `wooldridge`. E
     lht(mod2, h0_names)
     ```
     ```
-    El valor del restadistico F es 1,16, por lo que no se rechaza la hipótesis nula al 5%
-    (valor-p = 0,31).
+    El valor del restadistico F es 1,16, por lo que no se rechaza 
+    la hipótesis nula al 5% (valor-p = 0,31).
     ```
  
 4. Si queremos contrastar la hipótesis de que las pendientes de `first` y de `second` son iguales ($H_0\!: \alpha_6 = \alpha_{7}$), reescribimos la hipótesis de forma que el lado derecho de las igualdades sea igual a 0: $H_0\!: \alpha_6 - \alpha_{7} = 0$. Las siguientes instrucciones realizan el contraste:
@@ -142,8 +146,8 @@ Utilizaremos la base de datos `bwght` que proporciona el paquete `wooldridge`. E
     lht(mod2, h0_names)
     ```
     ```
-    El valor del restadistico F es 6,37, por lo que  se rechaza la hipótesis nula al 5%
-    (valor-p = 0,01).
+    El valor del restadistico F es 6,37, por lo que se rechaza 
+    la hipótesis nula al 5% (valor-p = 0,01).
     ```
   
 3. Contraste la hipótesis nula de que el efecto del tabaco sobre el peso de los recién nacidos es independiente de cuantos cigarrillos se fumaron durante el embarazo (los parámetros $\alpha_1$ a $\alpha_5$ son iguales: $H_0\!: \alpha_1 = \alpha_{2} = \alpha_{3} = \alpha_{4} = \alpha_{5}$).
@@ -155,8 +159,8 @@ Utilizaremos la base de datos `bwght` que proporciona el paquete `wooldridge`. E
     lht(mod2, h0_names)
     ```
     ```
-    El valor del restadistico F es 0,87, por lo que no se rechaza la hipótesis nula al 5%
-    (valor-p = 0,48).
+    El valor del restadistico F es 0,87, por lo que no se rechaza 
+    la hipótesis nula al 5% (valor-p = 0,48).
     ```
 
 4. Contraste la hipótesis del apartado anterior conjuntamente con las hipótesis de no significación de `second` y `lfaminc`.
@@ -170,17 +174,18 @@ Utilizaremos la base de datos `bwght` que proporciona el paquete `wooldridge`. E
     lht(mod2, h0_names)
     ```
     ```
-    El valor del restadistico F es 0,97, por lo que no se rechaza la hipótesis nula al 5%
-    (valor-p = 0,44).
+    El valor del restadistico F es 0,97, por lo que no se rechaza 
+    la hipótesis nula al 5% (valor-p = 0,44).
     ```
   
 5. Estime el modelo restringido que se obtiene al imponer todas las restricciones del apartado anterior. Compare las estimaciones obtenidas del efecto del tabaco sobre el peso de los recién nacidos en este modelo y en el modelo de regresión simple estimado en la sección 2.
 
     ```
-    Si son iguales los parámetros que acompañan a las ficticias que miden la intensidad del 
-    consumo de tabaco, sólo importaría el hecho de si se fuma y no sería relevante cuánto 
-    se fuma. Por tanto, en el modelo restringido smoker reemplazaría a las variables 
-    cigs_X_Y. Por otro lado, las variables second y lfaminc no entrarían en el modelo 
+    Si son iguales los parámetros que acompañan a las ficticias que 
+    miden la intensidad del consumo de tabaco, sólo importaría el hecho 
+    de si se fuma y no sería relevante cuánto se fuma. Por tanto, en el
+    modelo restringido smoker reemplazaría a las variables cigs_X_Y. Por
+    otro lado, las variables second y lfaminc no entrarían en el modelo
     restringido.
     ```
 
@@ -191,5 +196,10 @@ Utilizaremos la base de datos `bwght` que proporciona el paquete `wooldridge`. E
     ```
 
      ```
-    La esimación del efecto del tabaco sobre el peso de los recién nacidos obtenida con este modelo es similar a la que se obtuvo con el modelo de regresión simple: el peso los hijos de las madres que fumaron durante el embarazo fue un 7,7% inferior al de los hijos cuyas madres no fumaron. Este efecto es significativo a un nivel de significación del 5%.
+    La esimación del efecto del tabaco sobre el peso de los recién 
+    nacidos obtenida con este modelo es similar a la que se obtuvo 
+    con el modelo de regresión simple: el peso de los hijos de las 
+    madres que fumaron durante el embarazo fue un 7,7% inferior al 
+    de los hijos cuyas madres no fumaron. Este efecto es significativo 
+    a un nivel de significación del 5%.
     ```
