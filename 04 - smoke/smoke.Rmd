@@ -1,0 +1,185 @@
+---
+title: "Efectividad leyes anti-tabaco"
+author: "EC1027 --- Econometría I"
+date: "Curso 2021-2022"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+# Preliminares
+
+Además necesitaremos los siguientes paquetes de R:
+
+- `sandwich`: matrices de covarianzas robustas a heteroscedasticidad.
+- `lmtest`: contrastes de hipótesis.
+- `car`: contrastes de Wald.
+
+```{r load-packages, warning=FALSE, message=FALSE}
+library(sandwich)
+library(lmtest)
+library(car)
+```
+
+# Datos
+
+Leemos la base de datos `smoke`:
+```{r}
+library(wooldridge)
+data("smoke")
+```
+
+
+Variables:
+```{r}
+str(smoke)
+```
+
+
+
+¿Cuántos fumadores?
+```{r}
+sum(smoke$smoker)
+```
+
+Proporción de fumadores:
+```{r}
+mean(smoke$smoker)
+```
+
+```{r}
+tab <- table(smokers = smoke$smoker, law = smoke$restaurn)
+tab
+```
+
+
+```{r}
+prop.table(tab, margin = "law")
+```
+
+
+Transformamos algunas variables para su uso posterior:
+```{r}
+smoke <- within(smoke, {
+  smoker <- as.integer(cigs > 0)
+  lincome <- log(income)
+  lcigpric <- log(cigpric)
+  age_sq <- age^2
+})
+```
+
+```{r}
+str(smoke)
+```
+
+# Un modelo lineal de probabilidad
+```{r}
+mlp <- lm(smoker ~ age, data = smoke)
+summary(mlp)
+```
+
+
+
+# El efecto de las leyes anti-tabaco
+
+En primer lugar, estimamos un modelo lineal de probabilidad para `smoker`, una variable ficticia que indica si el individuo es fumador o no. Ahora sólo usaremos una variable explicativa: `restaurn`, una variable ficticia que indica si el individuo reside en un estado donde está prohibido fumar en lugares públicos.
+```{r}
+mlp <- lm(smoker ~ restaurn, data = smoke)
+summary(mlp)
+```
+
+
+En un modelo lineal de probabilidad la varianza condicional del término de error cambia con las variables explicativas.
+```{r}
+uhat <- resid(mlp)
+uhat_sq <- uhat^2
+bp_aux <- update(mlp, uhat_sq ~ .)
+```
+
+Calculamos los errores típicos y los contrastes de hipótesis usando
+una matriz de covarianzas robusta a la heteroscedasticidad:
+```{r}
+coeftest(mlp, vcovHC)
+```
+
+Otra alternativa es utilizar mínimos cuadrados ponderados. En un
+modelo lineal de probabilidad:
+
+$$
+  E(u^2_i|x_i) = p_i (1 - p_i)  
+$$
+donde 
+$$
+  p_i = \beta_0 + \beta_1 x_{1i} + \dots + \beta_k x_{ki} 
+$$
+ 
+Podemos estimar $p_i$ con las predicciones del modelo lineal de probabilidad, reemplazando los parámetros por sus estimaciones en la expresión anterior, y utilizar como ponderaciones del método de MCP la inversa de 
+$$
+h_i = \hat{p}_i (1 - \hat{p}_i) 
+$$
+El procedimiento no funciona si la predicción para alguna observación
+es superior a 1 o inferior a 0.
+
+```{r}
+phat <- fitted(mlp)
+hhat <- phat * (1 - phat)
+mlp.mcp <- lm(smoker ~ restaurn, data = smoke, weights = 1 / hhat)
+summary(mlp.mcp)
+```
+
+
+# Más variables explicativas
+
+Las estimaciones anteriores indican un importante efecto de las leyes que restringen el uso del tabaco en espacios públicos. Ahora ampliamos el modelo para recoger otros factores que potencialmente influyen en el uso del tabaco:
+
+- `lincome`: logaritmo de la renta anual en dólares.
+- `lcigpric`: logaritmo del precio de un paquete de tabaco.
+- `educ`: años de educación.
+- `white`: variable ficticia que toma el valor 1 si el individuo no pertenece a una minoría racial.
+- `age`, `age2`: edad en años, edad al cuadrado.
+
+```{r}
+mlp2 <- lm(smoker ~ restaurn + lincome + lcigpric + educ + white
+           + age + age_sq, data = smoke)
+coeftest(mlp2, vcovHC)
+```
+
+
+```{r}
+bhat <- coef(mlp2)
+names_bhat <- names(bhat)
+slopes <- names_bhat[-1]
+lht(mlp2, slopes, vcov = vcovHC)
+```
+
+En este caso no es posible utilizar MCP, dado que algunas predicciones caen fuera del intervalo (0, 1).
+
+```{r}
+phat <- fitted(mlp2)
+yhat <- as.integer(phat > 0.5)
+tab <- table(pred = yhat, actual = smoke$smoker)
+tab
+```
+
+```{r}
+sum(diag(tab)) / sum(tab)
+```
+
+
+```{r}
+phat <- fitted(mlp2)
+outside <- phat < 0 | phat > 1
+sum(outside)
+```
+
+
+```{r}
+phat[outside]
+```
+
+# Discusión
+
+Se encuentra una asociación negativa entre la probabilidad de fumar y la existencia de leyes anti-tabaco.
+
+Existe la posibilidad de una causalidad inversa: se aprueban leyes anti-tabaco en aquellos lugares donde hay menos fumadores.
