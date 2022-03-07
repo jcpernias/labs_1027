@@ -1,5 +1,5 @@
 ---
-title: "Efectividad leyes anti-tabaco"
+title: "Efectividad de las leyes anti-tabaco"
 author: "EC1027 --- Econometría I"
 date: "Curso 2021-2022"
 ---
@@ -8,13 +8,16 @@ date: "Curso 2021-2022"
 knitr::opts_chunk$set(echo = TRUE, comment = "")
 ```
 
+# Objetivo
+
+Se estimará qué efecto tienen las leyes que prohíben el consumo de tabaco en restaurantes sobre la probabilidad de fumar. Para ello se utilizará el modelo lineal de probabilidad. Los datos provienen de una encuesta llevada a cabo en Estados Unidos en los años 1979 y 1980. 
+
 # Preliminares
 
-Además necesitaremos los siguientes paquetes de R:
+Utilizaremos los siguientes paquetes de R:
 
 - `sandwich`: matrices de covarianzas robustas a heteroscedasticidad.
-- `lmtest`: contrastes de hipótesis.
-- `car`: contrastes de Wald.
+- `lmtest`, `car`: contrastes de hipótesis.
 
 ```{r load-packages, warning=FALSE, message=FALSE}
 library(sandwich)
@@ -24,87 +27,115 @@ library(car)
 
 # Datos
 
-Leemos la base de datos `smoke`:
+Leemos la base de datos `smoke` que se encuentra en el paquete `wooldridge`:
 ```{r}
 library(wooldridge)
 data("smoke")
 ```
 
 
-Variables:
+Los datos provienen de una encuesta llevada a cabo en los años 1979 y 1980, a la que respondieron `r nrow(smoke)` hombres elegidos al azar. La base de datos contiene `r ncol(smoke)` variables:
 ```{r}
 str(smoke)
 ```
 
-
-
-¿Cuántos fumadores?
+La variable `cigs` recoge el número de cigarrillos que fumaba diariamente cada uno de los encuestados. A partir de ella, creamos la variable ficticia `smoker` que tomará el valor 1 para las observaciones correspondientes a fumadores y 0 en caso contrario:
 ```{r}
-sum(smoke$smoker)
+smoker <- as.integer(smoke$cigs > 0)
 ```
-
-Proporción de fumadores:
-```{r}
-mean(smoke$smoker)
-```
-
-```{r}
-tab <- table(smokers = smoke$smoker, law = smoke$restaurn)
-tab
-```
-
-
-```{r}
-prop.table(tab, margin = "law")
-```
-
-
-Transformamos algunas variables para su uso posterior:
-```{r}
-smoke <- within(smoke, {
-  smoker <- as.integer(cigs > 0)
-  lincome <- log(income)
-  lcigpric <- log(cigpric)
-  age_sq <- age^2
-})
-```
-
-```{r}
-str(smoke)
-```
-
-# Un modelo lineal de probabilidad
-```{r}
-mlp <- lm(smoker ~ age, data = smoke)
-summary(mlp)
-```
-
-
 
 # El efecto de las leyes anti-tabaco
 
-En primer lugar, estimamos un modelo lineal de probabilidad para `smoker`, una variable ficticia que indica si el individuo es fumador o no. Ahora sólo usaremos una variable explicativa: `restaurn`, una variable ficticia que indica si el individuo reside en un estado donde está prohibido fumar en lugares públicos.
+## Regresión simple
+
+En primer lugar, estimamos un modelo lineal de probabilidad para `smoker`, usando sólo una variable explicativa: `restaurn`, una variable ficticia que indica si el individuo reside en un estado donde está prohibido fumar en lugares públicos.
 ```{r}
-mlp <- lm(smoker ~ restaurn, data = smoke)
-summary(mlp)
+mlp_simple <- lm(smoker ~ restaurn, data = smoke)
+summary(mlp_simple)
 ```
+Los parámetros de este modelo están relacionados con la probabilidad de que un hombre elegido al azar fume dependiendo de si en su estado de residencia se permite fumar en restaurantes o no:
+$$
+\begin{gather*}
+  \Pr(\mathit{smoker} = 1 | \mathit{restaurn} = 0) = \beta_0 \\
+  \Pr(\mathit{smoker} = 1 | \mathit{restaurn} = 1) = \beta_0  + \beta_1
+\end{gather*}
+$$
+Las estimaciones MCO indican que la probabilidad de que un hombre fume es igual $0{,}41$ en los estados que no limitan el consumo de tabaco. En los estados que han aprobado leyes que prohíben fumar, esta probabilidad es menor: $0{,}41 - 0,10 = 0{,}31$. 
 
 
-En un modelo lineal de probabilidad la varianza condicional del término de error cambia con las variables explicativas.
+En un modelo lineal de probabilidad la varianza condicional del término de error no es constante y los errores típicos de MCO no son correctos.  Calculamos los errores típicos usando una matriz de covarianzas robusta a la heteroscedasticidad:
 ```{r}
-uhat <- resid(mlp)
-uhat_sq <- uhat^2
-bp_aux <- update(mlp, uhat_sq ~ .)
+coeftest(mlp_simple, vcovHC)
 ```
+El parámetro de `restaurn` es significativo al $5\%$ de significación. Concluimos que la probabilidad de fumar es significativamente menor en aquellos estados que han aprobado leyes anti-tabaco. 
 
-Calculamos los errores típicos y los contrastes de hipótesis usando
-una matriz de covarianzas robusta a la heteroscedasticidad:
+
+## Más variables explicativas
+
+Ahora ampliamos el modelo para recoger otros factores que potencialmente influyen en el consumo de tabaco:
+
+- `lincome`: logaritmo de la renta anual en dólares.
+- `lcigpric`: logaritmo del precio de un paquete de tabaco.
+- `educ`: años de educación.
+- `age`: edad en años.
+
+Estimamos por MCO y utilizamos errores típicos robustos a heteroscedasticidad: 
 ```{r}
+mlp <- lm(smoker ~ restaurn + lincome + lcigpric + educ + age, 
+           data = smoke)
 coeftest(mlp, vcovHC)
 ```
+La estimación del parámetro de `restaurn` es prácticamente idéntica a la que se obtuvo con el modelo de regresión simple. El contraste $t$ indica que esta variable tiene un efecto significativo sobre la probabilidad de fumar al $5\%$. 
 
-Otra alternativa es utilizar mínimos cuadrados ponderados. En un
-modelo lineal de probabilidad:
+## Contraste de hipótesis
+
+Utilizaremos un contraste de Wald robusto a heteroscedasticidad para contrastar la significación de la regresión. La hipótesis nula establecería que todas las pendientes del modelo lineal de probabilidad son iguales a $0$.
+
+Para llevar a cabo el contraste con la función `lht` necesitamos un vector con los nombres de las variables cuyos parámetros son $0$ bajo la hipótesis nula. En vez de escribir directamente los nombres de las variables, construiremos ese vector con algunas funciones de R. En primer lugar, recuperamos las estimaciones de los parámetros con la función `coef`:
+```{r}
+bhat <- coef(mlp)
+```
+Obtenemos los nombres de los parámetros con la función `names`:
+```{r}
+names_bhat <- names(bhat)
+```
+Finalmente, eliminamos el primer elemento del vector (que corresponde a la constante) con la siguiente instrucción:
+```{r}
+names_slopes <- names_bhat[-1]
+```
+
+Ahora, utilizamos `lht` para obtener el contraste de significación de la regresión robusto a heteroscedasticidad:
+```{r}
+lht(mlp, names_slopes, vcov. = vcovHC)
+```
+El estadístico F es aproximadamente $8{,}2$, que es un valor muy elevado para provenir de la distribución bajo la hipótesis nula (valor-$p < 0{,}001$). 
+
+## Bondad del ajuste
+
+En un modelo lineal de probabilidad, las predicciones de MCO se pueden interpretar como estimaciones de la probabilidad condicional de que $y = 1$. Las calculamos con `fitted`:
+```{r}
+phat <- fitted(mlp)
+```
+
+Para predecir la variable dependiente se suele asignar el valor 1 a aquellas observaciones con probabilidad superior a 0.5:
+```{r}
+yhat <- as.integer(phat >= 0.5)
+```
+
+En la evaluación del ajuste se puede utilizar una tabla donde comparamos las predicciones con los valores reales de la variable dependiente. Cada celda de la tabla es el número de observaciones que corresponde a una determinada combinación de $y$ e $\hat{y}$:
+```{r}
+tab <- table(pred = yhat, real = smoker)
+tab
+```
+Con modelos donde la variable dependiente es binaria, se suele usar como medida de la bondad del ajuste el porcentaje de observaciones correctamente predichas. Se obtiene dividiendo la suma de las celdas en la diagonal por la suma de todas las celdas y multiplicando por 100:
+```{r}
+100 * sum(diag(tab)) / sum(tab)
+```
+Este número indica que el $`r format(100 * sum(diag(tab)) / sum(tab), digits=3, decimal.mark = "{,}")`\%$ de las predicciones obtenidas con nuestro modelo son correctas.
+
+## Mínimos Cuadrados Ponderados Factibles
+
+Mínimos cuadrados ponderados factibles (MCPF) puede ser un estimador alternativo del modelo lineal de  probabilidad. La varianza del término de error del MLP es:
 
 $$
   E(u^2_i|x_i) = p_i (1 - p_i)  
@@ -114,72 +145,19 @@ $$
   p_i = \beta_0 + \beta_1 x_{1i} + \dots + \beta_k x_{ki} 
 $$
  
-Podemos estimar $p_i$ con las predicciones del modelo lineal de probabilidad, reemplazando los parámetros por sus estimaciones en la expresión anterior, y utilizar como ponderaciones del método de MCP la inversa de 
+Podemos estimar $p_i$ con las predicciones del modelo lineal de probabilidad y utilizar como ponderaciones del método de MCPF la inversa de 
 $$
 h_i = \hat{p}_i (1 - \hat{p}_i) 
 $$
-El procedimiento no funciona si la predicción para alguna observación
-es superior a 1 o inferior a 0.
 
+Este procedimiento no funcionaría si la probabilidad predicha para alguna observación es superior a 1 o inferior a 0. Antes calculamos `phat`, las estimaciones de las probabilidades,  con la función `fitted` y ahora obtenemos su rango de variación (valores mínimo y máximo) con la función `range`: 
 ```{r}
-phat <- fitted(mlp)
+range(phat)
+```
+Ya que ninguna de las probabilidades está fuera del intervalo $(0, 1)$ podemos estimar por MCPF:
+```{r}
 hhat <- phat * (1 - phat)
-mlp.mcp <- lm(smoker ~ restaurn, data = smoke, weights = 1 / hhat)
-summary(mlp.mcp)
+mlp_mcp <- update(mlp, weights = 1 / hhat)
+summary(mlp_mcp)
 ```
-
-
-# Más variables explicativas
-
-Las estimaciones anteriores indican un importante efecto de las leyes que restringen el uso del tabaco en espacios públicos. Ahora ampliamos el modelo para recoger otros factores que potencialmente influyen en el uso del tabaco:
-
-- `lincome`: logaritmo de la renta anual en dólares.
-- `lcigpric`: logaritmo del precio de un paquete de tabaco.
-- `educ`: años de educación.
-- `white`: variable ficticia que toma el valor 1 si el individuo no pertenece a una minoría racial.
-- `age`, `age2`: edad en años, edad al cuadrado.
-
-```{r}
-mlp2 <- lm(smoker ~ restaurn + lincome + lcigpric + educ + white
-           + age + age_sq, data = smoke)
-coeftest(mlp2, vcovHC)
-```
-
-
-```{r}
-bhat <- coef(mlp2)
-names_bhat <- names(bhat)
-slopes <- names_bhat[-1]
-lht(mlp2, slopes, vcov = vcovHC)
-```
-
-En este caso no es posible utilizar MCP, dado que algunas predicciones caen fuera del intervalo (0, 1).
-
-```{r}
-phat <- fitted(mlp2)
-yhat <- as.integer(phat > 0.5)
-tab <- table(pred = yhat, actual = smoke$smoker)
-tab
-```
-
-```{r}
-sum(diag(tab)) / sum(tab)
-```
-
-
-```{r}
-phat <- fitted(mlp2)
-outside <- phat < 0 | phat > 1
-sum(outside)
-```
-
-
-```{r}
-phat[outside]
-```
-
-# Discusión
-
-Se encuentra una asociación negativa entre la probabilidad de fumar y la existencia de leyes anti-tabaco.
-
-Existe la posibilidad de una causalidad inversa: se aprueban leyes anti-tabaco en aquellos lugares donde hay menos fumadores.
+En este caso, las estimaciones y los errores típicos de MCPF son muy similares a los obtenidos antes con MCO.
