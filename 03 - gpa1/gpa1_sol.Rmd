@@ -1,0 +1,151 @@
+---
+title: "Rendimiento académico de los universitarios"
+author: "EC1027 --- Econometría I"
+date: "Curso 2021-2022"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+```{css, echo=FALSE}
+.solution {
+  font-size: smaller;
+  background: #eaeff1;
+  border: 2px solid #c3d1d1;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px 0px;
+}
+```
+
+# Preliminares
+
+Utilizaremos la base de datos `gpa1` que se encuentra en el paquete `wooldridge`. Los datos se recogieron en 1994 y proporcionan información sobre el rendimiento académico y las condiciones personales y familiares de 141 estudiantes de la Universidad Estatal de Michigan. En esta sesión sólo usaremos las variables:
+
+- `colGPA`: la nota media obtenida en la Universidad.
+
+- `skipped`: número medio de clases a la semana a las que el alumno no asiste.
+
+- `hsGPA`: nota media en el Instituto.
+
+- `ACT`: puntuación obtenida en la prueba de acceso a la Universidad.
+
+- `PC`: variable ficticia que toma el valor 1 si el estudiante disponía de un ordenador propio.
+
+Nuestro objetivo principal será cuantificar el efecto que la no asistencia a las clases tiene sobre las notas medias de los estudiantes universitarios.
+
+1. Cargue el paquete `wooldridge` y la base de datos `gpa1` en una sesión de RStudio.
+
+   :::: {.solution} 
+    ```{r}
+    library(wooldridge)
+    data(gpa1)
+    ```
+   ::::
+
+2. Cargue los paquetes `sandwich` y `lmtest` (si es necesario, instálelos previamente mediante el menú `Tools | Install packages...`).
+
+   :::: {.solution} 
+    ```{r, warning=FALSE, message=FALSE}
+library(sandwich)
+library(lmtest)
+    ```
+   ::::
+
+# Estimación por MCO
+
+
+1. Estime por MCO los parámetros del modelo:
+   $$
+     \mathit{colGPA} = \beta_0 
+     + \beta_1 \mathit{skipped} 
+     + \beta_2  \mathit{ACT} 
+     + \beta_3 \mathit{hsGPA} 
+     + \beta_4 \mathit{PC} 
+    + u 
+   $$
+   Utilizando errores típicos robustos a heteroscedasticidad, determine la significación de las variables explicativas para $\alpha = 5\%$. ¿Tienen las estimaciones de los parámetros los signos esperados?
+
+   :::: {.solution} 
+    ```{r}
+mod1 <- lm(colGPA ~ skipped + ACT + hsGPA + PC, data = gpa1)
+coeftest(mod1, vcov. = vcovHC)
+    ```
+
+   Excepto $\mathit{ACT}$, todas las variables explicativas tienen un efecto significativo al $5\%$ sobre la nota media de los universitarios. Una vez se tienen en cuenta el resto de factores, la nota que se obtuvo en la prueba de acceso a la universidad no ayuda a explicar la variable dependiente.
+   
+   El parámetro $\beta_1$ debería ser negativo si las faltas a clase afectan negativamente el rendimiento académico de los estudiantes universitarios. Los signos de $\beta_2$ y $\beta_3$ deberían ser positivos si los alumnos con un buen expediente académico previo siguen obteniendo buenos resultados en la universidad. Por último, $\beta_4$ debería ser positivo si disponer de un ordenador propio es una ventaja a la hora de preparar las asignaturas de los estudiantes universitarios. Los signos de las estimaciones de las pendientes coinciden con lo esperado.
+   ::::
+
+2. Contraste la presencia de heteroscedasticidad en el modelo anterior mediante el contraste de Breusch-Pagan.
+
+   :::: {.solution} 
+   Estimamos por MCO una regresión auxiliar de los residuos al cuadrado con respecto de todas las variables explicativas:
+    ```{r}
+uhat1_sq <- resid(mod1)^2
+aux_bp <- update(mod1, uhat1_sq ~ .)
+summary(aux_bp)
+    ```
+   
+   El estadístico $F$ de significación de la regresión toma el valor $3{,}1$ y el valor-*p* es $0{,}017$, por lo que se rechaza la hipótesis nula de homoscedasticidad para $\alpha = 5\%$.
+   ::::
+
+# Estimación por MCPF
+
+1. Estime el modelo por MCPF bajo el supuesto de que la varianza del término de error depende de todas las explicativas. Es decir:
+   $$
+    \operatorname{var}(u_i | \boldsymbol{x}_i) = \sigma^2 h(\boldsymbol{x}_i)
+   $$
+   donde 
+   $$
+    h(\boldsymbol{x}_i) = \exp(\delta_0 
+    + \delta_1 \mathit{skipped}_i
+    + \delta_2 \mathit{ACT}_i
+    + \delta_3 \mathit{hsGPA}_i
+    + \delta_4 \mathit{PC}_i)
+   $$
+
+   :::: {.solution} 
+   En primer lugar, obtenemos estimaciones de $h_i$ a partir de una regresión del logaritmo de los residuos al cuadrado con respecto de las variables explicativas: 
+    ```{r}
+lusq <- log(uhat1_sq)
+lusq_reg <- update(mod1, lusq ~ .)
+hhat <- exp(fitted(lusq_reg))
+    ```
+
+    En segundo lugar, estimamos por MCPF usando la inversa de $\hat{h}_i$:
+    ```{r}
+mod2 <- update(mod1, weights = 1 / hhat)
+summary(mod2)
+    ```
+   ::::
+
+2. Utilice errores típicos robustos para comprobar qué parámetros son significativamente distintos de $0$ al $5\%$ de significación. ¿Hay diferencias importantes con respecto a los resultados obtenidos con MCO? ¿Son los estimadores de MCPF más eficientes que los de MCO?
+
+
+   :::: {.solution} 
+   Obtenemos los errores típicos robustos a heteroscedasticidad con la instrucción:
+    ```{r}
+coeftest(mod2, vcov. = vcovHC)
+    ```
+   Ahora sólo son significativos al $5\%$ los efectos de las variables $\mathit{skipped}$ y $\mathit{hsGPA}$. 
+   
+   La siguiente tabla muestra las estimaciones de MCO y de MCPF (entre paréntesis se presentan los errores típicos robustos a heteroscedasticidad). 
+    ```{r, echo=FALSE}
+    options(huxtable.long_minus = TRUE)
+    modelsummary::msummary(list(MCO = mod1, MCPF = mod2), 
+         stars = c('*' = 0.1, '**' = 0.05, '***' = 0.01), 
+         estimate = "{estimate} ({std.error}){stars}",
+         statistic = NULL,
+         vcov = "robust", output = "huxtable",
+         gof_omit = "[AB]IC|Log.Lik.|R2 Adj.")
+    ```
+    En general, no hay grande diferencias entre las estimaciones de los parámetros de los dos métodos. Con respecto a la eficiencia ninguno de los dos estimadores domina al otro en este caso. Aunque casi todos los errores típicos de MCPF son menores, en el caso de $\mathit{PC}$ se obtiene un error típico menor con MCO.    
+   ::::
+
+3. Utilice los resultados anteriores para discutir cuál es el efecto que la no asistencia a las clases tiene sobre las notas medias de los estudiantes universitarios.
+
+   :::: {.solution} 
+   Los resultados de las estimaciones muestran un efecto significativo y negativo de las faltas de asistencia a las clases. Por cada clase a la que no se asiste a la semana, la nota media (medida en una escala de 0 a 4) disminuye en $0{,}09$ puntos.
+   ::::
+
