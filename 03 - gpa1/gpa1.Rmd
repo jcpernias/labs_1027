@@ -38,7 +38,7 @@ Nuestro objetivo principal será cuantificar el efecto que la no asistencia a la
      + \beta_1 \mathit{skipped} 
      + \beta_2  \mathit{ACT} 
      + \beta_3 \mathit{hsGPA} 
-     + \beta_3 \mathit{PC} 
+     + \beta_4 \mathit{PC} 
     + u 
    $$
    Utilizando errores típicos robustos a heteroscedasticidad, determine la significación de las variables explicativas para $\alpha = 5\%$. ¿Tienen las estimaciones de los parámetros los signos esperados?
