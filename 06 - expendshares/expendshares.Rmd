@@ -1,0 +1,241 @@
+---
+title: "Estimación de curvas de Engel"
+author: "EC1027 --- Econometría I"
+date: "Curso 2021-2022"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+# Preliminares
+
+Cargamos los paquetes que utilizaremos en esta sesión: `lmtest`, `sandwich` y `car`.
+```{r, message=FALSE, warning=FALSE}
+library(lmtest)
+library(sandwich)
+library(car)
+```
+
+# Datos
+
+Usamos la base de datos `expendshares` que proporciona el paquete `wooldridge`.
+```{r}
+library(wooldridge)
+data("expendshares")
+
+str(expendshares)
+```
+
+Los datos fueron recopilados para el artículo de Blundell, Duncan, and Pendakur (1998): “Semiparametric Estimation and Consumer Demand,” *Journal of Applied Econometrics*, 13, 435-461. 
+
+La fuente original de los datos es la Encuesta de Gastos Familiares británica (*Family Expenditure Survey*) para los años 1980-1982. Los autores seleccionaron una muestra relativamente homogénea de familias: parejas con uno o dos hijos que viven en el sureste de Inglaterra y donde el sustentador principal tiene un trabajo por cuenta ajena. Los autores presentan métodos para estimar curvas de Engel de diferentes categorías de bienes (alimentación, energía, etc.). La selección de la muestra se hace con respecto a las variables explicativas (características demográficas) por lo que no afectaría a las propiedades de insesgadez y consistencia de los estimadores. Por un lado, la utilización de una muestra relativamente homogénea simplifica la especificación de las curvas de Engel, pero, por otro, limita la generalidad de los resultados.   
+
+En esta sesión nos centraremos en la demanda de alimentos. Creamos una nueva base de datos que contenga sólo las variables que utilizaremos:
+
+- `totexpend`: gasto total en consumo (£ por semana).
+
+- `sfood`: fracción del gasto total destinado a alimentación. 
+
+- `kids`: número de hijos (1 o 2).
+
+- `age`: edad del sustentador principal.
+
+```{r}
+db <- subset(expendshares, select = c(sfood, kids, age, totexpend))
+```
+
+Transformamos algunas variables para facilitar la interpretación de los modelos que estimaremos:
+
+- `pct_food`: porcentaje del gasto total en consumo destinado a alimentación. 
+
+- `two_kids`: variable ficticia que toma el valor 1 para las familias con dos hijos y el valor 0 para las familias con un hijo único.
+
+- `ltotexpend`: logaritmo del gasto total en consumo.
+
+```{r}
+db <- within(db, {
+  pct_food <- sfood * 100
+  two_kids <- as.integer(kids == 2)
+  ltotexpend <- log(totexpend)
+})
+```
+
+Calculamos algunos estadísticos descriptivos:
+```{r}
+summary(db)
+```
+
+
+# Estimación de los modelos
+
+A lo largo de esta sesión trabajaremos con dos especificaciones alternativas de la curva de Engel para la alimentación:
+
+- **Modelo A**
+  $$
+    \mathit{pct\_food} = \beta_0 + \beta_1 \mathit{totexpend} + \beta_2 \mathit{two\_kids} + \beta_3 \mathit{age} + u
+  $$
+
+- **Modelo B**
+  $$
+    \mathit{pct\_food} = \alpha_0 + \alpha_1 \log(\mathit{totexpend}) + \alpha_2 \mathit{two\_kids} + \alpha_3 \mathit{age} + v
+  $$
+
+Estimamos los parámetros de los dos modelos por MCO usando errores típicos robustos a heteroscedasticidad.
+
+- Modelo A:
+    ```{r}
+mod_A <- lm(pct_food ~ totexpend + two_kids + age, data = db)
+coeftest(mod_A, vcov. = vcovHC)
+    ```
+
+- Modelo B:
+    ```{r}
+mod_B <- lm(pct_food ~ ltotexpend + two_kids + age, data = db)
+coeftest(mod_B)
+    ```
+
+# Bondad del ajuste
+
+Las medidas de bondad del ajuste pueden usarse para comparar modelos cuando la variable dependiente es la misma. Calcularemos el $R^2$ ajustado para nuestros dos modelos utilizando la fórmula:
+$$
+\bar{R}^2 = 1 - \frac{\hat{\sigma}^2}{\operatorname{Var}(y)}
+$$
+
+- Modelo A:
+    ```{r}
+1 - sigma(mod_A)^2 / var(db$pct_food) 
+    ```
+
+- Modelo B:
+    ```{r}
+1 - sigma(mod_B)^2 / var(db$pct_food)
+    ```
+
+De acuerdo a este criterio el Modelo B sería preferible.
+
+# Contraste RESET
+Ampliamos los modelos originales con potencias de las predicciones de la variable dependiente. En nuestro caso, usaremos cuadrados y cubos de las predicciones. El contraste RESET se lleva a cabo examinando la significación conjunta de las potencias de las predicciones. Utilizamos un contraste F robusto a heteroscedasticidad:
+
+- Modelo A:
+    ```{r}
+yhat_A <- fitted(mod_A)
+sq_yhat_A <- yhat_A^2
+cb_yhat_A <- yhat_A^3
+
+reset <- update(mod_A, ~ . + sq_yhat_A + cb_yhat_A )
+lht(reset, matchCoefs(reset, "yhat"), vcov. = vcovHC)
+    ```
+  En este caso rechazaríamos la hipótesis nula de correcta especificación.
+
+- Modelo B:
+    ```{r}
+yhat_B <- fitted(mod_B)
+sq_yhat_B <- yhat_B^2
+cb_yhat_B <- yhat_B^3
+reset <- update(mod_B, ~ . + sq_yhat_B + cb_yhat_B )
+lht(reset, matchCoefs(reset, "yhat"), vcov. = vcovHC)
+    ```
+  Los términos adicionales no son conjuntamente significativos, por lo que con el contraste RESET no se rechazaría la correcta especificación del Modelo B.
+  
+
+El Modelo B sería preferible de acuerdo con los resultados del contraste RESET.
+
+
+# Contrastes de hipótesis no anidadas
+
+## Contrastes de abarcamiento
+
+Para llevar a cabo este tipo de contraste, primero fusionamos los dos modelos rivales:
+$$
+  \mathit{pct\_food} = \gamma_0 
+  + \gamma_1 \mathit{totexpend} 
+  + \gamma_2 \mathit{two\_kids} 
+  + \gamma_3 \mathit{age} 
+  + \gamma_4 \log(\mathit{totexpend}) 
+  + \text{error}
+$$
+Ahora podemos expresar los dos modelo rivales como restricciones sobre los parámetros $\gamma_0, \gamma_1, \dots, \gamma_4$:
+
+- Modelo A: $H_0\!: \gamma_4 = 0$.
+
+- Modelo B: $H_0\!: \gamma_1 = 0$.
+
+Aplicamos esta estrategia a nuestros modelos (usando contrastes de significación robustos a heteroscedasticidad):
+
+- Estimamos un modelo que incluye las variables explicativas del Modelo A y del Modelo B:
+    ```{r}
+enc <- update(mod_A, . ~ . + ltotexpend)
+coeftest(enc, vcov. = vcovHC)
+    ```
+
+- Contrastamos la validez del Modelo A frente al B:
+    ```{r}
+lht(enc, "ltotexpend", vcov. = vcovHC)
+    ```
+  El resultado del contraste llevaría al rechazo del Modelo A.
+
+- Contrastamos la validez del Modelo B frente al A:
+    ```{r}
+lht(enc, "totexpend", vcov. = vcovHC)
+    ```
+  Ahora no podemos rechazar el Modelo B.
+
+Los contrastes de abarcamiento seleccionarían el Modelo B.
+
+
+## Contrastes de Davidson-MacKinnon
+
+Los contrastes propuestos por Davidson y MacKinnon consisten en ampliar cada uno de los modelos con las predicciones del modelo rival. Si un modelo está correctamente especificado, las predicciones obtenidas con un modelo rival no deberían tener poder explicativo.
+
+- Modelo A:
+    ```{r}
+dm_A <- update(mod_A, . ~ . + yhat_B)
+coeftest(dm_A, vcov. = vcovHC)
+    ```
+  El contraste $t$ robusto a heteroscedasticidad muestra que las predicciones del modelo B tienen capacidad explicativa. Por tanto, rechazamos el modelo A.
+  
+- Modelo B:
+    ```{r}
+dm_B <- update(mod_B, . ~ . + yhat_A)
+coeftest(dm_B, vcov. = vcovHC)
+    ```
+  En este caso las predicciones de Modelo A no son significativas, por lo que no rechazaríamos la hipótesis de correcta especificación del Modelo B.
+
+
+Los contrastes de Davidson-MacKinnon también seleccionarían el Modelo B.
+
+# Conclusión
+
+El Modelo B no mostraría signos de mala especificación y sería preferible al Modelo A. Especificaciones como las del Modelo B, donde se explica la fracción del presupuesto familiar dedicado al consumo de un bien, $w$, usando el logaritmo del gasto total, $m$ y variables demográficas, $Z$, se conocen como el modelo Working-Leser:
+$$
+  w = \alpha
+  + \beta \log(m) 
+  + \phi Z 
+  + u
+$$
+El parámetro $\beta$ permite clasificar al bien de acuerdo a cómo varía el consumo cuando cambia la renta: 
+
+- $\beta > 0$: bien de lujo.
+
+- $\beta = 0$: elasticidad renta unitaria.
+
+- $\beta < 0$: bien de primera necesidad (cuando $w > -\beta$) o bien inferior (cuando $w < -\beta$).
+
+Nuestras estimaciones muestran que el consumo de alimentos es un bien de primera necesidad mientras la fracción de la renta que se dedica a alimentos sea superior al $15\%$. A partir de la estimación del modelo podemos predecir el gasto de alimentos para diferentes niveles de renta. Los resultados de ese ejercicio de predicción se muestran en el siguiente gráfico. El consumo de alimentos sería un bien inferior cuando el gasto total es superior a 420 £ por semana.
+
+```{r, echo=FALSE}
+db_pred <- data.frame(totexpend = seq(20, 500, 10), two_kids = 1, age = 35)
+db_pred$ltotexpend <- log(db_pred$totexpend)
+pct_food <- predict(mod_B, newdata = db_pred)
+db_pred <- within(db_pred, {
+  food <- pct_food * totexpend / 100
+})
+
+library(ggplot2)
+qplot(totexpend, food, data = db_pred, geom = "line") + 
+  xlab("Gasto total") +
+  ylab("Gasto en alimentación") +
+  ylim(0, 65)
+```
+
