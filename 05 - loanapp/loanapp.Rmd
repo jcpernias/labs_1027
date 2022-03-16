@@ -1,0 +1,82 @@
+---
+title: "Discriminación en la concesión de hipotecas"
+author: "EC1027 --- Econometría I"
+date: "Curso 2021-2022"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+
+```{r load-data, echo=FALSE}
+library(wooldridge)
+data("loanapp")
+```
+
+# Datos
+
+Se utilizará la base de datos `loanapp` que está contenida en el paquete `wooldridge`. Estos datos fueron utilizados en el trabajo de W. C. Hunter y M. B. Walker (1996): "The Cultural Affinity Hypothesis and Mortgage Lending Decisions", *Journal of Real Estate Finance and Economics*, 13, 57-70.
+
+Estimaremos un modelo lineal de probabilidad con el objetivo de determinar si existió discriminación racial a la hora de conceder hipotecas en Boston en 1990.
+
+Se utilizarán las siguientes variables:
+
+- `approve`: variable ficticia que toma el valor 1 para aquellos solicitantes a los que se les concede un préstamo hipotecario.
+
+- `black`, `hispan`: variables ficticias que toma el valor 1 para solicitantes negros e hispanos, respectivamente.
+
+- `obrat`: porcentaje de la renta mensual del solicitante que se destina a otras obligaciones financieras. 
+
+- `loanprc`: importe del préstamo solicitado como fracción del precio de la casa.
+
+- `unem`: tasa de desempleo en el sector de actividad del solicitante.
+
+- `self`: ficticia que toma el valor 1 si el solicitante trabaja por cuenta propia.
+
+- `male`: ficticia que toma el valor 1 si el solicitante es hombre.
+
+- `married`: ficticia que toma el valor 1 si el solicitante está casado.
+
+- `dep`: número de personas dependientes del solicitante.
+
+- `sch`: ficticia que toma el valor 1 si el solicitante completó la educación secundaria.
+
+- `chist`: historia crediticia. Ficticia que toma el valor 1 si el solicitante nunca se ha retrasado más de 60 días en sus pagos.
+
+- `pubrec`: ficticia que toma el valor 1 si el solicitante se ha declarado en quiebra en el pasado.
+
+
+# Observaciones incompletas
+
+En algunas variables de la base de datos `loanapp` hay valores ausentes (*missing values*). R codifica los valores ausentes con la etiqueta `NA`. Por ejemplo, encontramos un valor ausente en la primera observación de la variable `male`:
+```{r na}
+head(loanapp$male)
+```
+
+Para eliminar todos las observaciones que tengan un valor ausente en alguna variable usamos la función `na.omit`. 
+
+1. Cargue la base de datos `loanapp` en una sesión de R.
+
+1. Cree una base de datos `db` que contenga únicamente las observaciones completas de `loanapp` con la instrucción:
+    ````{r, eval=FALSE}
+    db <- na.omit(loanapp)
+    ````
+  Utilice la base de datos `db` en el resto de la sesión.
+
+# Modelo lineal de probabilidad
+
+1. Estime un modelo lineal de probabilidad donde la variable dependiente es `approve` y las explicativas son `black` e `hispan`.
+
+2. Interprete los parámetros estimados en el punto anterior. ¿Son significativas individualmente las variables explicativas?
+
+3. Contraste si son iguales los parámetros de `black` e `hispan`. 
+
+
+# Más controles
+
+1. Añada al modelo lineal de probabilidad estimado antes las siguientes variables explicativas: `obrat`, `loanprc`, `unem`, `male`, `married`, `dep`, `self`, `sch`, `chist` y `pubrec`.
+
+2. Contraste la significación conjunta de las variables añadidas en el punto anterior.
+
+3. ¿Qué ha ocurrido con las estimaciones de los parámetros de `black` e `hispan`? ¿Los resultados obtenidos son evidencia de discriminación en contra de las minorías raciales?
