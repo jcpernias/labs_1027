@@ -77,7 +77,7 @@ produce al compilarse el siguiente resultado:
 ::::
 
 
-# Problemas comunes
+# Problemas comunes en Windows
 
 En Windows es posible encontrarse con errores cuando se escribe texto con acentos u otros caracteres especiales. Cuando se intenta compilar o guardar un archivo que contenga esos caracteres, aparece un cuadro de diálogo solicitando la selección de una codificación de caracteres:
 
@@ -111,4 +111,10 @@ Finalmente, nos podemos encontrar con un fichero que guardamos en una sesión an
 knitr::include_graphics("compile_report/menu.png")
 ```
 
+# RStudio Cloud
 
+Los informes pueden generarse en [RStudio Cloud](https://rstudio.cloud/). Para descargar los archivos de un proyecto (incluyendo los informes que se hayan generado) utilizamos el icono de descarga que aparece en la página `Your Workspace | Projects` de  RStudio Cloud:
+
+```{r rstudio-cloud-fig, out.width="90%", out.height="90%", fig.align='center', echo=FALSE}
+knitr::include_graphics("compile_report/RStudio Cloud.png")
+```
