@@ -1,0 +1,72 @@
+---
+title: "Brecha salarial"
+author: "EC1027 --- Econometría I"
+date: "Curso 2021-2022"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+
+# Introducción
+
+Estimaremos la brecha salarial entre hombres y mujeres en España utilizando los datos del proyecto PIAAC de la OCDE. Los datos se recogieron entre septiembre de  2011 y mayo de 2012. Se puede acceder en el Aula Virtual a un documento que detalla las variables del PIACC que se usarán.
+
+Se estimará una ecuación de salarios donde la variable dependiente será el logaritmo de los salarios y como explicativas se utilizarán variables que reflejen la cualificación académica, la experiencia laboral y otras características de los trabajadores. El parámetro de interés será la pendiente de la variable ficticia `female` que toma el valor 1 para las mujeres y 0 para los hombres.
+
+**Utilice un nivel de significación del 5% (o, en su caso, un nivel de confianza del 95%).**
+
+# Transformación de los datos
+
+1. Cree la base de datos `db` que contenga `lwage`, el logaritmo de los salarios,  y la variable ficticia `female` tal como se describe en el documento `PIAAC` del Aula virtual.
+
+2. Añada a la base de datos `db` las siguientes variables:
+
+  - `educ`: años de educación. Coincide con la variable `YRSQUAL`.
+  
+  - `exper`: años de experiencia laboral. Coincide con `C_Q09`.
+  
+  - `age`: edad en años. Coincide con `AGE_R`.
+
+  - Tipo de empresa para la que trabaja (categoría de referencia: empresa privada):
+    - `public`: trabaja en el sector público. Ficticia que toma el valor 1 cuando  `D_Q03` es igual a 2.
+
+    - `ngo`: trabaja en instituciones sin ánimo de lucro. Ficticia que toma el valor 1 cuando `D_Q03` es igual a 3.
+
+  - Tipo de contrato laboral (categoría de referencia: contrato indefinido):
+    - `temp`: contrato temporal. Ficticia que toma el valor 1 cuando `D_Q09` es igual a 2 o  a 3.
+
+    - `appr`: contrato de aprendizaje.  Ficticia que toma el valor 1 cuando `D_Q09` es igual a 4.
+
+    - `other`: otra situación contractual. Ficticia que toma el valor 1 cuando `D_Q09` es igual a 5 o 6.
+
+  - `children`: ficticia que toma el valor 1 si el trabajador tiene hijos dependientes. Toma el valor 1 cuando `J_Q03a` es igual a 1.
+
+  - `native`: ficticia que toma el valor 1 si el trabajador nació en España. Toma el valor 1 cuando `J_Q04a` es igual a 1.
+
+  - `partner`: ficticia que toma el valor 1 si el trabajador convive con su pareja. Toma el valor 1 cuando `J_Q02a` es igual a 1.
+
+3. Cree la base de datos `db_emp` eliminando las observaciones incompletas de `db`.
+
+# Estimación por MCO
+
+1. Estime por mínimos cuadrados ordinarios los parámetros de un modelo de regresión con `lwage` como variable dependiente y las otras 12 variables que contiene la base de datos `db_emp`. Calcule errores típicos robustos a la heteroscedasticidad.
+
+2. Contraste la presencia de heteroscedasticidad con la alternativa al contraste de White propuesta por Wooldridge.
+
+3. Utilice el contraste RESET para evaluar la forma funcional del modelo de regresión.
+
+# Interpretación
+
+1. Interprete los resultados de la estimación de la ecuación de salarios. En concreto, discuta el signo y la magnitud de las estimaciones de los parámetros y la significación de las variables explicativas.
+
+2. Obtenga un intervalo de confianza al 95% para la brecha salarial entre hombres y mujeres.
+
+# Extensión
+
+1. Reestime la ecuación de salarios añadiendo una interacción entre las variables ficticias `female` y `partner`. ¿Es significativa la interacción? 
+
+2. ¿Qué ocurre con la estimación del parámetro de `female`? ¿Qué puede decirse de la brecha salarial ahora?
+
+

@@ -1,0 +1,282 @@
+---
+title: "PIAAC"
+author: "EC1027 --- Econometría I"
+date: "Curso 2021-2022"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+# Introducción 
+
+El Programa para la Evaluación Internacional de las Competencias de los adultos (PIAAC) es una iniciativa de la OCDE para valorar el nivel de conocimientos y el grado y distribución de destrezas de la población adulta a lo largo de su vida laboral, entre los 16 y los 65 años. Esta evaluación se encuadra en un marco comparativo coherente para poder establecer contrastes internacionales.
+
+La [página](https://www.oecd.org/skills/piaac/) de la OCDE del PIAAC contiene mucha información. En concreto, proporciona acceso a:
+
+- Las [bases de datos públicas](https://www.oecd.org/skills/piaac/data/) en varios formatos.
+- Informes técnicos y los diferentes [informes nacionales](https://www.oecd.org/skills/piaac/country-specific-material.htm).
+
+
+# Variables 
+
+En el archivo comprimido `esp.csv.gz` se ha recopilado parte de la información para España. En concreto, contiene las siguientes variables:
+
+- `SEQID`: Sequential ID (randomly derived).
+- `GENDER_R`: Person resolved gender from BQ and QC check (derived).
+
+  Value   Label
+  ------- --------
+  1       Male
+  2       Female
+
+- `AGE_R`:   Person resolved age from BQ and QC check (derived).
+- `AGEG5LFS`:   Age groups in 5-year intervals based on LFS groupings (derived).
+
+  Value   Label
+  ------- ------------
+  1       Aged 16-19
+  2       Aged 20-24
+  3       Aged 25-29
+  4       Aged 30-34
+  5       Aged 35-39
+  6       Aged 40-44
+  7       Aged 45-49
+  8       Aged 50-54
+  9       Aged 55-59
+  10      Aged 60-65
+
+- `EDCAT7`:   Highest level of formal education obtained (7 categories - derived).
+
+  Value   Label
+  ------- ---------------------------------------------------------
+  1       Primary or less (ISCED 1 or less)
+  2       Lower secondary (ISCED 2, ISCED 3C short)
+  3       Upper secondary (ISCED 3A-B, C long)
+  4       Post-secondary, non-tertiary (ISCED 4A-B-C)
+  5       Tertiary - professional degree (ISCED 5B)
+  6       Tertiary - bachelor degree (ISCED 5A)
+  7       Tertiary - master/research degree (ISCED 5A/6)
+  8       Tertiary - bachelor/master/research degree (ISCED 5A/6)
+
+- `EARNHR`:   Hourly earnings excluding bonuses for wage and salary earners (derived).
+- `YRSQUAL`:   Highest level of education obtained imputed into years of education (derived).
+- `YRSGET`:   Imputed years of formal education needed to get the job (self-reported - derived).
+- `C_Q07_T`:   Current work situation (Trend-IALS/ALL).
+
+  Value   Label
+  ------- -----------------------------------
+  1       Employed or self employed
+  2       Retired
+  3       Not working and looking for work
+  4       Student (including work programs)
+  5       Doing unpaid household work
+  6       Other
+
+- `C_D05`:   Current status/work history - Employment status (DERIVED BY CAPI).
+
+  Value   Label
+  ------- -------------------------
+  1       Employed
+  2       Unemployed
+  3       Out of the labour force
+  4       Not known
+
+- `C_Q09`:   Current status/work history - Years of paid work during lifetime.
+- `D_Q03`:   Current work - Economic sector.
+
+  Value   Label
+  ------- -------------------------------------------------------------------------------------------------------
+  1       The private sector (for example a company)
+  2       The public sector (for example the local government or a state school)
+  3       A non-profit organisation (for example a charity, professional association or religious organisation)
+
+- `D_Q04`:   Current work - Employee or self-employed.
+
+  Value   Label
+  ------- ---------------
+  1       Employee
+  2       Self-employed
+
+- `D_Q05a1_C`:   Current work - Start of work for employer - Age (categorised, 9 categories).
+
+  Value   Label
+  ------- --------------------
+  1       Aged 19 or younger
+  2       Aged 20-24
+  3       Aged 25-29
+  4       Aged 30-34
+  5       Aged 35-39
+  6       Aged 40-44
+  7       Aged 45-49
+  8       Aged 50-54
+  9       Aged 55 or older
+
+- `D_Q05a2`:   Current work - Start of work for employer - Year.
+- `D_Q05b2`:   Current work - Start of work for business - Year.
+- `D_Q09`:   Current work - Type of contract.
+
+  Value   Label
+  ------- --------------------------------------------
+  1       An indefinite contract
+  2       A fixed term contract
+  3       A temporary employment agency contract
+  4       An apprenticeship or other training scheme
+  5       No contract
+  6       Other
+
+- `D_Q12a`:   Current work - Requirements - Education level
+
+  Value   Label
+  ------- -------------------------------------------------------------------------
+  1       No formal qualification or below ISCED 1
+  2       ISCED 1
+  3       ISCED 2
+  4       ISCED 3C shorter than 2 years
+  5       ISCED 3C 2 years or more
+  6       ISCED 3A-B
+  7       ISCED 3 (without distinction A-B-C, 2y+)
+  8       ISCED 4C
+  9       ISCED 4A-B
+  10      ISCED 4 (without distinction A-B-C)
+  11      ISCED 5B
+  12      ISCED 5A, bachelor degree
+  13      ISCED 5A, master degree
+  14      ISCED 6
+  15      ISCED 5A bachelor degree, 5A master degree, and 6 (without distinction)
+
+- `D_Q12b`:   Current work - Requirements - To do the job satisfactorily
+
+  Value   Label
+  ------- -----------------------------------
+  1       This level is necessary
+  2       A lower level would be sufficient
+  3       A higher level would be needed
+
+- `D_Q12c`:   Current work - Requirements - Related work experience
+
+  Value   Label
+  ------- -------------------
+  1       None
+  2       Less than 1 month
+  3       1 to 6 months
+  4       7 to 11 months
+  5       1 or 2 years
+  6       3 years or more
+
+- `J_Q02a`:   Background - Living with spouse or partner.
+
+  Value   Label
+  ------- -------
+  1       Yes
+  2       No
+
+- `J_Q02c`:   Background - Work situation of spouse or partner.
+
+  Value   Label
+  ------- ------------------------------------------------------------
+  1       Full-time employed (self-employed, employee)
+  2       Part-time employed (self-employed, employee)
+  3       Unemployed
+  4       Pupil, student
+  5       Apprentice, internship
+  6       In retirement or early retirement
+  7       Permanently disabled
+  8       In compulsory military or community service
+  9       Fulfilling domestic tasks or looking after children/family
+  10      Other
+
+- `J_Q03a`:   Background - Children.
+
+  Value   Label
+  ------- -------
+  1       Yes
+  2       No
+
+- `J_Q03b`:   Background - Number of children.
+- `J_Q04a`:   Background - Born in country.
+
+  Value   Label
+  ------- -------
+  1       Yes
+  2       No
+
+- `J_Q04c2`:   Background - Year of immigration.
+- `J_Q06a_T`:   Mother or female guardian born in country (Trend-IALS/ALL).
+
+  Value   Label
+  ------- ----------------
+  1       Yes
+  2       No
+  3       Not applicable
+
+- `J_Q06b_T`:   Highest level of education - mother or female guardian (Trend-IALS/ALL).
+
+  Value   Label
+  ------- ------------------------------------
+  1       ISCED 1, 2, and 3C short
+  2       ISCED 3 (excluding 3C short) and 4
+  3       ISCED 5 and 6
+  4       Not definable
+
+- `J_Q07a_T`:   Father or male guardian born in country (Trend-IALS/ALL).
+
+  Value   Label
+  ------- ----------------
+  1       Yes
+  2       No
+  3       Not applicable
+
+- `J_Q07b_T`:   Highest level of education - father or male guardian (Trend-IALS/ALL).
+
+  Value   Label
+  ------- ------------------------------------
+  1       ISCED 1, 2, and 3C short
+  2       ISCED 3 (excluding 3C short) and 4
+  3       ISCED 5 and 6
+  4       Not definable
+
+- `J_Q08`:   Background - Number of books at home.
+
+  Value   Label
+  ------- ---------------------
+  1       10 books or less
+  2       11 to 25 books
+  3       26 to 100 books
+  4       101 to 200 books
+  5       201 to 500 books
+  6       More than 500 books
+
+- `PVLIT1`:   Literacy scale score - Plausible value 1.
+- `PVNUM1`:   Numeracy scale score - Plausible value 1.
+- `SPFWT0`:   Final full sample weight.
+
+# Ejemplo
+
+Si el archivo `esp.csv.gz` está en el directorio de trabajo, la base de datos puede leerse con la instrucción:
+```{r}
+esp <- read.csv("esp.csv.gz")
+```
+
+Creamos una nueva base de datos que contiene sólo el logaritmo de los salarios por hora:
+```{r}
+db <- data.frame(lwage = log(esp$EARNHR))
+```
+
+Añadimos la variable ficticia `female` que toma el valor 1 para las mujeres.
+```{r}
+db$female <- as.integer(esp$GENDER_R == 2)
+```
+
+Eliminamos las observaciones incompletas (en este caso se trata en su mayoría de personas que no perciben salarios: desempleados, inactivos y autónomos):
+
+```{r}
+db_emp <- na.omit(db)
+```
+
+Estimación de la brecha salarial mediante una regresión simple:
+```{r}
+mod1 <- lm(lwage ~ female, data = db_emp)
+summary(mod1)
+```
+
