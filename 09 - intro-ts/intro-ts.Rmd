@@ -1,0 +1,151 @@
+---
+title: "Introducción a los datos de series temporales"
+author: "EC1027 --- Econometría I"
+date: "Curso 2021-2022"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+
+# Preparativos
+Utilizaremos el paquete `car` para contrastar hipótesis sobre los parámetros de los modelos de regresión y el paquete `ggplot2` para hacer gráficos.
+```{r load-packages, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(car)
+```
+
+# Datos
+
+Usaremos el paquete `readxl` para leer hojas de cálculo Excel y el paquete `zoo` para trabajar con series temporales:
+```{r data-pkgs}
+library(readxl)
+library(zoo)
+```
+
+## PIB
+
+Serie histórica anual. Desde 1954 hasta 2020. Cita.
+
+```{r years}
+years <- 1954:2020
+```
+
+```{r PIB}
+pib_db <- read_xlsx("BDMACRO.xlsx", sheet = "SERIES INDIVIDUALES",
+                    range = "b3:b70")
+```
+
+```{r}
+# years <- seq(as.Date("1954-1-1"), as.Date("2020-1-1"), "1 year")
+pib_ts <- zoo(pib_db$PIBpm, order.by = years, frequency = 1)
+```
+
+
+```{r}
+autoplot(pib_ts) + 
+  scale_x_continuous(breaks = seq(1960, 2020, 10), 
+                     minor_breaks = seq(1960, 2020, 5))
+```
+
+```{r}
+autoplot(pib_ts) + 
+  scale_x_continuous(breaks = seq(1960, 2020, 10), 
+                     minor_breaks = seq(1960, 2020, 5)) +
+  scale_y_log10()
+```
+
+## Deflactor PIB
+
+```{r}
+defl_pib_ts <- zoo(read_xlsx("BDMACRO.xlsx", 
+                             sheet = "SERIES INDIVIDUALES",
+                             range = "n3:n70"),
+                   order.by = years, frequency = 1)
+```
+
+```{r}
+autoplot(defl_pib_ts) + 
+  scale_x_continuous(breaks = seq(1960, 2020, 10), 
+                     minor_breaks = seq(1960, 2020, 5))
+```
+
+## PIB real
+
+```{r}
+y <- 100 * pib_ts / defl_pib_ts
+```
+
+```{r}
+autoplot(merge(pib_ts, y), facets = NULL) + 
+  scale_x_continuous(breaks = seq(1960, 2020, 10), 
+                     minor_breaks = seq(1960, 2020, 5))
+```
+
+## Crecimiento PIB real
+
+```{r}
+ly <- log(y)
+dly <- diff(ly)
+```
+
+```{r}
+autoplot(dly) + 
+  scale_x_continuous(breaks = seq(1960, 2020, 10), 
+                     minor_breaks = seq(1960, 2020, 5))
+```
+
+```{r}
+mean(dly)
+```
+
+```{r}
+dly_db <- na.trim(merge(dly = dly, dly1 = lag(dly, -1)))
+ggplot(data = dly_db) +
+  geom_point(aes(x = dPIB.dly1, y = dPIB.dly))
+```
+
+
+## IPC 
+
+```{r}
+ipc_1 <- zooreg(read_xlsx("268.xlsx", 
+                          range = "b8:b499", 
+                          col_names = "IPC"),
+                start = c(1961, 1), frequency = 12)
+
+ipc_2 <- zooreg(read_xlsx("23706.xlsx", 
+                          range = "b9:b310", 
+                          col_names = "IPC"),
+                start = c(1997, 1), frequency = 12)
+```
+
+
+```{r warning=FALSE}
+autoplot(merge(ipc_1, ipc_2), facets = NULL)
+```
+
+Cambio base índices
+
+```{r}
+mean(window(ipc_2, start = as.yearmon("2015-1"), end = as.yearmon("2015-12")))
+```
+
+```{r}
+ipc_1997_1 <- as.numeric(ipc_1[as.yearmon("1997-1")])
+ipc_1997_2 <- as.numeric(ipc_2[as.yearmon("1997-1")])
+
+ipc <- rbind(window(ipc_1997_2 * ipc_1$IPC / ipc_1997_1,
+                    end = as.yearmon("1996-12")),
+             unname(ipc_2))
+       
+autoplot(ipc)
+```
+
+```{r}
+infl <- 100 * diff(log(ipc), 12)
+autoplot(infl)
+```
+
+
