@@ -2,6 +2,7 @@ library(ggplot2)
 library(readxl)
 library(forecast)
 library(zoo)
+library(dynlm)
 
 ## PIB
 ## =================================================================
@@ -73,8 +74,49 @@ autoplot(db$unem)  +
   geom_hline(yintercept = mean(db$unem, na.rm = TRUE), color = I("DarkGray"))
 
 
+lags <- na.trim(cbind(unem = db$unem, unem_1 = lag(db$unem, -1)))
+cor(lags)
 
-# Autocorrelación
+ggtsdisplay(db$unem, plot.type = "scatter")
+
+
+
+## Curva de Phillips
+##
+ph1 <- dynlm(unem ~ infl, data = db, start = 1960)
+summary(ph1)
+
+
+## Retardos distribuidos
+##
+ph2 <- dynlm(unem ~ infl + L(infl), data = db, start = 1960)
+summary(ph2)
+
+## Modelo autorregresivo
+##
+ph3 <- dynlm(unem ~ L(unem), data = db, start = 1960)
+summary(ph3)
+
+## Modelo ARDL
+##
+ph4 <- dynlm(unem ~ L(unem) + infl + L(infl), data = db, start = 1960)
+summary(ph4)
+
+
+ph4 <- dynlm(d(unem) ~ d(infl), data = db, start = 1960)
+summary(ph4)
+
+autoplot(resid(ph4))
+
+ph5 <- dynlm(d(unem) ~ L(d(unem)) + d(infl) + L(d(infl)), data = db, start = 1960)
+summary(ph5)
+
+ph6 <- dynlm(d(unem) ~ L(d(unem)) + d(infl), data = db, start = 1960)
+summary(ph6)
+
+autoplot(resid(ph6))
+
+van # Autocorrelación
 
 autoplot(db$gy) +
   scale_x_continuous(breaks = major, minor_breaks = minor)
