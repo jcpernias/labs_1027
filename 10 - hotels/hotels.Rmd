@@ -1,0 +1,121 @@
+---
+title: "Empleo en los hoteles españoles"
+author: "EC1027 --- Econometría I"
+date: "Curso 2021-2022"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+
+# Introducción
+
+En este laboratorio trataremos de cuantificar la relación entre el empleo  en los hoteles españoles y la demanda de plazas hoteleras. Utilizaremos datos mensuales que cubren el periodo que va desde enero de 1999 hasta diciembre de 2019.    
+
+# Paquetes R
+
+En este laboratorio necesitaremos los siguientes paquetes:
+
+- `readxl`: Funciones para leer ficheros Excel.
+
+- `zoo`: Operaciones con series temporales.
+
+- `ggplot2`: Gráficos.
+
+- `dynlm`: Estimación de modelos de regresión con series temporales. 
+
+1. Cargue los paquetes anteriores en R. Si en su ordenador no está instalado alguno de ellos, utilice el menú `Tools > Install packages...` para instalarlos. *No incluya la función `install.packages` en el fichero de instrucciones R*.
+
+# Datos
+
+Los datos que utilizaremos se han obtenido de la página web del INE y se encuentran disponibles en el Aula Virtual:
+
+- El fichero `2011.xlsx` contiene información sobre el total de plazas hoteleras, el grado de ocupación de las plazas hoteleras (en porcentaje) y el personal empleado desde enero de 1999 hasta marzo de 2022.
+
+- El fichero `25980.xlsx` recoge un índice de actividad en el comercio al por menor. El índice tiene base 2015 y se calcula a precios constantes. Con él tratamos de aproximar la evolución de la actividad económica mes a mes en España.
+
+Para cargar las series de esas hojas de cálculo usaremos la función `read_xlsx` del paquete `readxl`. *Esta instrucción supone que dentro de la hoja de cálculo los datos se disponen verticalmente: cada columna es una variable y cada fila es una observación*.
+
+La siguiente instrucción lee los datos referentes a los hoteles españoles y los guarda en la variable `db_hotels`:
+```{r eval=FALSE}
+db_hotels <- read_xlsx("2011.xlsx",
+                       range = "B9:D287",
+                       col_names =  c("total_beds", "occup", "empl"),
+                       na = ".")
+```
+
+El primer argumento de la función `read_xlsx` es el nombre del archivo que pretendemos leer. Para que R pueda encontrarlo, este archivo debe de estar en el directorio de trabajo actual. *Esto puede hacerse seleccionando en la pestaña `Files` la carpeta donde está el fichero de datos y utilizando el menú `More > Set as working directory`*. Los restantes argumentos de la función `read_xlsx` son:
+
+- `range`: el rango de celdas que contienen los datos que queremos importar. En nuestro caso indicamos las celdas con los datos de las variables y no icluimos la columna con las fechas de las observaciones ni la fila con la descripción de las variables.
+
+- `col_names`: vector con los nombres de las variables que estamos leyendo. El vector se crea con la función `c()` y se usan comas para separar cada elemento. *Cada uno de los nombres se escribe entre comillas*. Si sólo leemos una columna podemos establecer el nombre de una forma algo más simple: `col_names = "nombre"`. 
+
+- `na`: caracteres con los que se codifican los valores ausentes. El INE suele usar el carácter "." en aquellas observaciones para las que no hay información. 
+
+1. Descargue los ficheros `2011.xlsx` y `25980.xlsx` en su ordenador. Asegúrese de que estos ficheros están en la misma carpeta que su fichero de instrucciones R y que esa carpeta es el directorio de trabajo actual.
+
+2. Lea el fichero `2011.xlsx` cómo se describió anteriormente.
+
+3. Lea el fichero `25980.xlsx` que contiene únicamente el índice de actividad al por menor. Utilice "index" como el nombre de la única columna de datos y guarde el resultado de la instrucción en la variable `db_index`. Inspeccione el fichero para determinar el rango de celdas que debe de leer y los periodos inicial y final para los que hay datos.
+
+
+# Series temporales
+
+## Añadir atributos de series temporales
+
+El paquete `zoo` proporciona funciones para trabajar con series temporales. En primer lugar estableceremos el periodo muestral para las bases de datos que leímos en la sección anterior. La función `zooreg` permite crear series temporales con frecuencia regular:
+```{r eval=FALSE}
+ts_hotels <- zooreg(db_hotels, start = c(1999, 1), frequency = 12)
+```
+La instrucción anterior añade atributos de series temporales (inicio, fin, frecuencia) a la base de datos `db_hotels`. Los restantes argumentos son:
+
+- `start`: el periodo inicial. Si son datos anuales se introduce el año inicial de la muestra. En datos trimestrales o mensuales es un vector de dos elementos que describen el año y el periodo de la primera observación. En nuestro caso este vector es `c(1999, 1)` ya que la primera observación se corresponde a enero de 1999.
+
+- `frequency`: El número de observaciones por año: 1 para datos anuales, 4 para trimestrales, 12 para mensuales, etc.
+
+1. Con la instrucción `zoo` cree la variable `ts_index` a partir de la base de datos `db_index` creada anteriormente. 
+
+## Combinar bases de datos y transformaciones
+
+Podemos combinar las dos bases de datos de series temporales con la instrucción `merge`:
+
+```{r eval=FALSE}
+db_all <- merge(ts_hotels, ts_index)
+```
+
+Podemos realizar operaciones y crear nuevas variables con `db_all`, seleccionando las variables que necesitemos con el operador `$`.
+
+1. Cree una nueva variable `beds` y guárdela en la base de datos `db_all`. La variable `beds` contendrá el número de plazas efectivamente ocupadas y se calcula a partir de `total_beds`, el número total de plazas, y `occup`, el grado de ocupación de las plazas en porcentaje. 
+
+## Selección de periodos y gráficos
+ 
+Podemos realizar gráficos de series temporales con la función `autoplot`:
+```{r eval=FALSE}
+autoplot(db_all$beds)
+```
+
+Como puede verse en el gráfico, en `db_all` tenemos valores ausentes al principio. Tampoco queremos en este laboratorio incluir observaciones afectadas por la pandemia de la COVID-19. Con la instrucción `window` podemos acotar la muestra a las observaciones que nos interesan. Para indicar los periodos inicial y final utilizamos variables de texto (entre comillas) que expresan el mes y el año correspondiente.
+```{r eval=FALSE}
+db <- window(db_all, start = "1999-01", end = "2019-12")
+```
+
+1. Cree en la base de datos `db` nuevas variables `lempl`, `lbeds` y `lindex` con los logaritmos de `empl`, `beds` y `index`, respectivamente.
+
+2. Represente gráficamente las variables creadas en el apartado anterior.
+
+# Regresión con series temporales
+
+La función `dynlm` permite realizar regresiones con series temporales. La siguiente instrucción estima por MCO una regresión estática que explica el empleo en los hoteles españoles a través de las plazas ocupadas y del estado de la actividad económica (todas las variables en logaritmos):
+
+```{r eval=FALSE}
+mod1 <- dynlm(lempl ~ lbeds + lindex, data = db, start = "2001-01")
+```
+
+Además de permitir especificar el inicio y el final de la muestra utilizada en la estimación, con `dynlm` podemos añadir fácilmente elementos que aparecen en las regresiones con series temporales como retardos y diferencias. En esta sesión añadiremos a la regresión estática dos término deterministas:
+
+- Tendencia lineal: si añadimos un término `trend(db)` a las explicativas, se crea una tendencia lineal que aumenta en una unidad *por cada año transcurrido*.
+
+- Ficticias estacionales: añadiendo otro término `season(db)` se incluyen en la regresión variables ficticias que capturan oscilaciones estacionales.
+
+1. Amplíe el modelo `mod1` incluyendo una tendencia lineal y variables estacionales. ¿Son muy diferentes las estimaciones obtenidas ahora?
