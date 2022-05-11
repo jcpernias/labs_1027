@@ -1,0 +1,44 @@
+---
+title: "Función de consumo agregado"
+author: "EC1027 --- Econometría I"
+date: "Curso 2021-2022"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Planteamiento
+
+El archivo de Excel `consump.xlsx` contiene 37 observaciones anuales (desde 1959 hasta 1995) de dos variables medidas en miles de millones de dólares de 1995 y referidas a la economía de Estados Unidos:
+
+- $\textit{cons}$: consumo agregado real per cápita; y 
+
+- $\textit{ydisp}$: renta disponible real per cápita.
+
+Con estos datos trataremos de estimar la elasticidad del consumo con respecto de la renta partiendo del modelo de regresión:
+$$
+  \mathit{\log(\textit{cons}_t)} = \beta_0 + \beta_1 \mathit{\log(\textit{ydisp}_t)} + u_t
+$$
+
+1. Lea las variables del fichero `consump.xlsx`, convierta los datos en series temporales usando la función `zooreg` y represente la evolución temporal de las variables. Estime la función de consumo agregado. ¿Qué valor toma la estimación de la elasticidad consumo-renta?
+
+2. Ahora trataremos de determinar si se cumplen los supuestos necesarios para garantizar buenas propiedades asintóticas de MCO. 
+
+    - Compruebe si es probable la existencia de raíces unitarias y tendencias lineales en los logaritmos del consumo y de la renta disponible. 
+
+    - Contraste la existencia de autocorrelación de orden 1.
+
+    A la luz de los resultados obtenidos, discuta qué problemas tiene la función de consumo esimada en el primer punto.
+
+3. Tomando diferencias en la función de consumo se obtiene el modelo de regresión:
+$$
+  \Delta \mathit{\log(\textit{cons}_t)} = \beta_1 \Delta \mathit{\log(\textit{ydisp}_t)} + v_t
+$$
+¿Por qué sería una buena idea tomar diferencias de las variables en este caso? Utilice la función `diff` para crear las diferencias de los logaritmos del consumo y de la renta disponible. Representelas gráficamente y estime el modelo en diferencias (incluyendo un término constante). ¿Es muy diferente la estimación de la elasticidad consumo-renta a la que se obtuvo con las variables en niveles?
+
+4. Evalúe la especificación del modelo en diferencias:
+
+    - Contraste la presencia de autocorrelación de orden 1.
+
+    - Añada un retardo de las diferencias del consumo y la renta y contraste si son significativos individual y conjuntamente. ¿Son necesarios retardos de alguna de las variables? 
