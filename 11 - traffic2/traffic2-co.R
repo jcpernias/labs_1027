@@ -6,11 +6,21 @@ library(car)
 library(sandwich)
 library(lmtest)
 
+#' # Apartado 1
+#'
+
 db <- read_xlsx("traffic2.xlsx")
 
 ts_db <- zooreg(db, start = c(1989, 1), frequency = 12)
 
+#' Entrada en vigor de la ley que eleva el límite de velocidad
+ts_db$spdlaw[which(ts_db$spdlaw == 1)[1]]
+
+#' Entrada en vigor de la ley que obliga a usar el cinturón de seguridad
+ts_db$spdlaw[which(ts_db$spdlaw == 1)[1]]
+
 ts_db$ltotacc <- log(ts_db$totacc)
+
 
 autoplot(ts_db$ltotacc)
 
@@ -68,5 +78,5 @@ library(forecast)
 uhat <- zooreg(resid(co1)[, 1], start = c(1989, 2), frequency = 12)
 
 Acf(uhat)
-tsdiag(co1)
+ggtsdisplay(uhat)
 
