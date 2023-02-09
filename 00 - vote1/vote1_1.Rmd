@@ -143,14 +143,16 @@ Más adelante discutiremos cómo obtener otros estadísticos descriptivos y cóm
 
 ## Gráficos
 
-Con R se pueden producir gráficos muy sofisticados. En este curso utilizaremos las funciones proporcionadas por el paquete `ggplot2`. A pesar de ser uno de los paquetes más populares no viene instalado por defecto en R y hay que instalarlo antes de poder usarlo. Una vez instalado, lo cargamos con `library`:
-```{r}
-library(ggplot2)
+Con R se pueden producir gráficos muy sofisticados. En este curso utilizaremos las funciones proporcionadas por el paquete `mosaic`. Este paquete no viene instalado por defecto en R y antes de poder usarlo hay que instalarlo manualmente. Una vez instalado, lo cargamos con `library`:
+
+```{r message=FALSE, warning=FALSE}
+library(mosaic)
 ```
 
-Podemos representar un gráfico de dispersión de los votos obtenidos por el candidato A, $\mathit{voteA}$, con respecto a sus gastos de campaña, $\mathit{expendA}$, utilizando la función `qplot` (*quick plot*). El primer argumento es la variable que se representará en el eje horizontal, el segundo argumento es la variable del eje vertical y con el argumento `data` indicamos en qué base de datos se encuentran esas variables:
+Podemos representar un gráfico de dispersión de los votos obtenidos por el candidato A, $\mathit{voteA}$, con respecto a sus gastos de campaña, $\mathit{expendA}$, utilizando la función `gf_point`. El primer argumento de esta función es una **fórmula** que describe qué variables queremos representar. Indicamos los nombres de la variable del eje vertical y del eje horizontal separadas por el carácter `~` (`AltGr + 4` en un teclado para Windows: `option + ñ` en teclados para Mac).  También indicamos en qué base de datos se encuentran las variables del modelo con el argumento `data`:
+
 ```{r}
-qplot(expendA, voteA, data = vote1)
+gf_point(voteA ~ expendA, data = vote1)
 ```
 
 
@@ -188,6 +190,6 @@ uhat1 <- resid(mod1)
 ```
 Después de ejecutar esa instrucción tenemos en memoria la variable `uhat1` con los residuos de nuestro modelo de regresión simple. Podemos usar esa variable en otras funciones: por ejemplo, podemos obtener un gráfico de los residuos frente a la variable explicativa:
 ```{r}
-qplot(expendA, uhat1, data = vote1)
+gf_point(uhat1 ~ expendA, data = vote1)
 ```
 
