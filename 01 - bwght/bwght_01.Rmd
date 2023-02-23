@@ -1,12 +1,20 @@
 ---
 title: "El efecto del tabaco sobre el peso de los recién nacidos (I)"
 author: "EC1027 --- Econometría I"
-date: "Curso 2021-2022"
+date: "Curso 2022-2023"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+# Configuración inicial
+
+Antes de empezar a trabajar con RStudio conviene comprobar las siguientes opciones, accesibles desde el menú `Tools | Global Options...`:
+
+- No está marcada la opción `Restore .RData into workspace at startup`.
+- La opción `Save workspace to .RData on exit:` está fijada a `Never`.
+- En la pestaña `Saving` del panel `Code` la opción `Default text encoding` toma el vlaor `UTF-8`.
 
 # Datos
 
@@ -31,13 +39,13 @@ R proporciona muchas funciones para calcular estadísticos descriptivos. Por eje
 
 En la base de datos que estamos utilizando, el peso de los recién nacidos se mide en onzas. A veces es útil crear nuevas variables para expresar la información en unidades de medida más convenientes. En R podemos utilizar los operadores aritméticos habituales (`+`, `-`, `*` y `/`) para realizar cálculos con variables. Para calcular potencias se usa el operador `^` (por ejemplo, el cuadrado de `x` se expresa `x ^ 2`). Otra transformación común es el logaritmo natural que en R se obtiene con la función `log`.  
 
-- Cree una nueva variable con el peso de los recién nacidos expresado en kilogramos (una onza son aproximadamente 29 gramos). Utilice esta variable para calcular la media y la desviación típica del peso en kg.
+- Cree una nueva variable con el peso de los recién nacidos expresado en kilogramos (una onza son aproximadamente 29 gramos). Utilice esta variable para calcular la media y la desviación típica del peso en kilogramos.
 
 - Cree una nueva variable y almacene en ella el logaritmo del peso de los recién nacidos. Calcule la media y la desviación típica de esa variable. ¿Tienen interpretaciones útiles estas variables?
 
 # Variables ficticias
 
-Es muy frecuente el uso de variables ficticias para expresar información cualitativa. Para crear este tipo de variables se usan los operadores lógicos de igualdad (`==`), no igualdad (`!=`), comparación (`<`, `>`, `<=` y `>=`) y negación (`!`). Se pueden crear expresiones lógicas complejas conectado expresiones simples con el operador Y (`&`) y el operador O (`|`). Cuando usamos esos operadores obtenemos variables lógicas que toman los valores `TRUE` y `FALSE` dependiendo si la condición se cumple o no en cada observación. Si queremos transformar estos valores lógicos en enteros podemos usar la función `as.integer`.
+Es muy frecuente el uso de variables ficticias para expresar información cualitativa. Para crear este tipo de variables se usan los operadores lógicos de igualdad (`==`), no igualdad (`!=`), comparación (`<`, `>`, `<=` y `>=`) y negación (`!`). Se pueden crear expresiones lógicas complejas conectado expresiones simples con el operador Y (`&`) y el operador O (`|`). Cuando usamos esos operadores obtenemos variables lógicas que toman los valores `TRUE` y `FALSE` dependiendo si la condición se cumple o no en cada observación. Si queremos transformar estos valores lógicos en enteros podemos usar la función `as.integer`, que transforma el valor `TRUE` en 1 y el valor `FALSE` en 0. Una  alternativa más general es usar la función `ifelse`.
 
 - Cree una variable ficticia que tome valor 1 para las madres que fumaron durante su embarazo y 0 para las que no lo hicieron. Use la función `table` para determinar cuantas observaciones hay en cada categoría.
 
