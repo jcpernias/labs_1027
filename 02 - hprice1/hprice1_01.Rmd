@@ -1,7 +1,7 @@
 ---
 title: "Determinantes del precio de venta de las casas (I)"
 author: "EC1027 --- Econometría I"
-date: "Curso 2021-2022"
+date: "Curso 2022-2023"
 ---
 
 ```{r setup, include=FALSE}
@@ -27,35 +27,44 @@ Trabajaremos con las variables:
 - `lotsize`: tamaño de la parcela en pies cuadrados.
 - `bdrms`: número de dormitorios.
 
+
+Para facilitar la lectura de resultados, transformaremos las variables medidas en pies cuadrados. Dividiendo por $10{,}76$ obtenemos las áreas de las casas y las parcelas en metros cuadrados.
+```{r change-units}
+hprice1$house_m2 <- hprice1$sqrft / 10.76
+hprice1$lot_m2 <- hprice1$lotsize / 10.76
+```
+
+
 # Paquetes 
 
 Utilizaremos varios paquetes que proporcionan funciones útiles para, entre otras cosas, tratar la heteroscedasticidad.
 ```{r load-packages, warning=FALSE, message=FALSE}
-library(ggplot2)
+library(mosaic)
 library(sandwich)
 library(lmtest)
 library(car)
 ```
 
-- `ggplot2`: con la función `qplot` podemos realizar gráficos para explorar la existencia de patrones heteroscedásticos.
+- `mosaic`: con la función `gf_point` podemos realizar gráficos para explorar la existencia de patrones heteroscedásticos.
 
 - `sandwich`: proporciona la función `vcovHC` para estimar la matriz de covarianzas robusta a heteroscedasticidad.
 
 - `lmtest`: con la función `coeftest` obtendremos la tabla de coeficientes de MCO con errores típicos robustos a heteroscedasticidad.
 
-- `car`: usaremos dos funciones de este paquete. Con `compareCoefs` generamos una tabla con la que podemos comparar los resultados de diferentes métodos de estimación. La función `lht` sirve para contrastar hipótesis lineales sobre los parámetros y permite utilizar matrices de covarianzas robustas. 
+- `car`: La función `lht` sirve para contrastar hipótesis lineales sobre los parámetros y permite utilizar matrices de covarianzas robustas. 
+
 
 # Estimación por MCO
 
 Explicamos los precios de las casas utilizando las variables descritas anteriormente:
 $$
- \mathit{price} = \beta_0 + \beta_1 \mathit{sqrft} + \beta_2 \mathit{lotsize} + \beta_3 \mathit{bdrms} + u 
+ \mathit{price} = \beta_0 + \beta_1 \mathit{house\_m2} + \beta_2 \mathit{lot\_m2} + \beta_3 \mathit{bdrms} + u 
 $$
 Esperamos que los parámetros $\beta_1$ y $\beta_2$ sean positivos y que se vendan más caras las casas más grandes o con parcelas mayores, manteniendo constante el resto de parámetros. El parámetro $\beta_3$ también tendría signo positivo, al menos para valores moderados de $\mathit{bdrms}$. Pero esta variable podría tener un efecto negativo sobre el precio de venta si hay un número excesivo de habitaciones.
 
 Estimación por MCO:
 ```{r ols}
-mod1 <- lm(price ~ sqrft + lotsize + bdrms, data = hprice1)
+mod1 <- lm(price ~ house_m2 + lot_m2 + bdrms, data = hprice1)
 summary(mod1)
 ```
 
@@ -69,9 +78,9 @@ La función `coeftest` permite presentar los resultados de la estimación de MCO
 coeftest(mod1, vcov. = vcovHC) 
 ```
 
-Las estimaciones son las mismas que las presentadas anteriormente pero los errores típicos robustos son, en este caso,  mucho mayores que los obtenidos con las fórmulas habituales de MCO. De hecho, la efecto de la variable $\mathit{lotsize}$ no es significativamente distinto de $0$. 
+Las estimaciones son las mismas que las presentadas anteriormente pero los errores típicos robustos son, en este caso,  mucho mayores que los obtenidos con las fórmulas habituales de MCO. De hecho, la efecto de la variable $\mathit{lot\_m2}$ no es significativamente distinto de $0$. 
 
-Para facilitar la comparación utilizamos la función `compareCoefs`:
+Para facilitar la comparación utilizamos la función `compareCoefs` del paquete `car`:
 ```{r ols-compare}
 compareCoefs(mod1, mod1, vcov. = list(vcov, vcovHC))
 ```
@@ -81,13 +90,13 @@ compareCoefs(mod1, mod1, vcov. = list(vcov, vcovHC))
 
 Como vimos antes, la tabla generada con `coeftest(mod1, vcovHC)` incluye contrastes $t$ robustos con los que podemos contrastar la significación individual de los parámetros del modelo de regresión. 
 
-Para contrastar hipótesis lineales generales sobre los parámetros del modelo utilizaremos la función `lht`. El primer argumento es el modelo para el que construimos los contrastes. El segundo argumento especifica la hipótesis que queremos contrastar. En nuestro caso contrastaremos la hipótesis de que $\mathit{lotsize}$ y $\mathit{bdrms}$ no son conjuntamente significativas:
+Para contrastar hipótesis lineales generales sobre los parámetros del modelo utilizaremos la función `lht`. El primer argumento es el modelo para el que construimos los contrastes. El segundo argumento especifica la hipótesis que queremos contrastar. En nuestro caso contrastaremos la hipótesis de que $\mathit{lot\_m2}$ y $\mathit{bdrms}$ no son conjuntamente significativas:
 $$
 H_0\!: \beta_2 = \beta_3 = 0
 $$
 En casos como este, donde queremos contrastar la significación de un conjunto de regresores, simplemente podemos pasar a la función `lht` un vector con los nombres de las variables cuyas pendientes son 0 bajo la hipótesis nula.
 ```{r names-h0} 
-names_h0 <- c("lotsize", "bdrms")
+names_h0 <- c("lot_m2", "bdrms")
 ```
 
 Si no indicamos nada más, la función `lht` calcula un contraste de Wald usando la matriz de covarianzas de MCO:
@@ -99,7 +108,7 @@ Para obtener un contraste robusto a heteroscedasticidad, añadimos el argumento 
 ```{r wald-test-robust}
 lht(mod1, names_h0, vcov. = vcovHC)
 ```
-El contraste robusto a heteroscedasticidad toma un valor muy bajo, por lo que no se podría rechazar la hipótesis de no significación de las variables $\mathit{lotsize}$ y $\mathit{bdrms}$ para un nivel de significación del $5\%$.
+El contraste robusto a heteroscedasticidad toma un valor muy bajo, por lo que no se podría rechazar la hipótesis de que los parámetros de las variables $\mathit{lot\_m2}$ y $\mathit{bdrms}$ son iguuales a $0$ para un nivel de significación del $5\%$.
 
 # Contrastes de hetroscedasticidad
 
@@ -109,10 +118,10 @@ uhat1 <- resid(mod1)
 uhat1_sq <- uhat1 ^ 2
 ```
 
-Podemos examinar un gráfico de los residuos o los residuos al cuadrado con respecto de las predicciones como una prueba informal de heteroscedasticidad:
+Podemos examinar un gráfico de los residuos al cuadrado con respecto de las predicciones como una prueba informal de heteroscedasticidad:
 ```{r plot}
 yhat1 <- fitted(mod1)
-qplot(yhat1, uhat1)
+gf_point(uhat1_sq ~ yhat1)
 ```
 
 El gráfico parece indicar que la varianza de los residuos $\hat{u}$ es mayor cuanto mayor es $\hat{y}$.
@@ -122,7 +131,7 @@ El gráfico parece indicar que la varianza de los residuos $\hat{u}$ es mayor cu
 
 Estimamos una regresión auxiliar utilizando los mismos regresores que en el modelo de regresión:
 ```{r aux-bp}
-aux_bp <- lm(uhat1_sq ~ sqrft + lotsize + bdrms, data = hprice1)
+aux_bp <- lm(uhat1_sq ~ house_m2 + lot_m2 + bdrms, data = hprice1)
 summary(aux_bp)
 ```
 
@@ -138,18 +147,18 @@ Tanto la forma $F$ como la forma $\chi^2$ del contraste de Breusch-Pagan muestra
 
 El contraste de White incluye más términos en la regresión auxiliar que el contraste de Breusch y Pagan. A las variables explicativas se añaden sus cuadrados y productos cruzados. En primer lugar, construimos esos regresores adicionales:
 ```{r white-regr}
-lotsize_sq <- hprice1$lotsize ^ 2
-sqrft_sq <- hprice1$sqrft ^ 2
-bdrms_sq <- hprice1$bdrms ^ 2
-lotsize_sqrft <- hprice1$lotsize * hprice1$sqrft
-lotsize_bdrms <- hprice1$lotsize * hprice1$bdrms
-sqrft_bdrms <- hprice1$sqrft * hprice1$bdrms
+hprice1$lot_m2_sq <- hprice1$lot_m2 ^ 2
+hprice1$house_m2_sq <- hprice1$house_m2 ^ 2
+hprice1$bdrms_sq <- hprice1$bdrms ^ 2
+hprice1$lot_m2_house_m2 <- hprice1$lot_m2 * hprice1$house_m2
+hprice1$lot_m2_bdrms <- hprice1$lot_m2 * hprice1$bdrms
+hprice1$house_m2_bdrms <- hprice1$house_m2 * hprice1$bdrms
 ```
 En segundo lugar, estimamos la regresión auxiliar:
 ```{r white-aux}
-aux_white <- lm(uhat1_sq ~ sqrft + lotsize + bdrms + 
-                  lotsize_sq +  sqrft_sq + bdrms_sq +
-                  lotsize_sqrft + lotsize_bdrms + sqrft_bdrms,
+aux_white <- lm(uhat1_sq ~ house_m2 + lot_m2 + bdrms + 
+                  lot_m2_sq +  house_m2_sq + bdrms_sq +
+                  lot_m2_house_m2 + lot_m2_bdrms + house_m2_bdrms,
                 data = hprice1)
 summary(aux_white)
 ```
