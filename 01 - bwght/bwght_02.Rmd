@@ -1,7 +1,7 @@
 ---
 title: "El efecto del tabaco sobre el peso de los recién nacidos (y II)"
 author: "EC1027 --- Econometría I"
-date: "Curso 2021-2022"
+date: "Curso 2022-2023"
 ---
 
 ```{r setup, include=FALSE}
