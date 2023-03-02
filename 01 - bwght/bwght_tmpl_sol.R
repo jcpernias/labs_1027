@@ -1,5 +1,5 @@
 #' ---
-#' author: "=============== NOMBRE Y APELLIDO(S) ==============="
+#' author: "José Pernías Cerrillo"
 #' title: "El efecto del tabaco sobre el peso de los recién nacidos (y II)"
 #' date: "`r format(Sys.Date(), '%d-%m-%Y')`"
 #' output:
@@ -64,7 +64,7 @@ confint(mod1)
 #'
 #' - `lfaminc`: el logaritmo de la renta familiar.
 #'
-## >>>>>>>>
+bwght$lfaminc <- log(bwght$faminc)
 
 #' - `smoker_hi`: indica si la madre fumó más de 15 cigarrillos
 #' diarios. Usamos la función `as.integer` para convertir los
@@ -75,19 +75,18 @@ bwght$smoker_hi <- as.integer(bwght$cigs > 15)
 #' - `smoker_med`: indica si la madre fumó entre 6 y 15 cigarrillos
 #' diarios.
 #'
-## >>>>>>>>
-
+bwght$smoker_med <- as.integer(bwght$cigs > 5 & bwght$cigs <= 15)
 
 #' - `smoker_low`: indica si la madre fumó entre 1 y 5 cigarrillos
 #' diarios.
 #'
 ## >>>>>>>>
-
+bwght$smoker_low <- as.integer(bwght$cigs > 0 & bwght$cigs <= 5)
 
 #' - `first`: indica si la observación corresponde al primer hijo de
 #' la madre (la variable `parity` toma el valor 1).
 #'
-## >>>>>>>>
+bwght$first <- as.integer(bwght$parity == 1)
 
 
 #' ## Regresión múltiple
@@ -108,12 +107,15 @@ bwght$smoker_hi <- as.integer(bwght$cigs > 15)
 #' $$
 #'
 #' Estime por MCO un modelo de regresión de `lbwght` sobre las
-#' explicativas `first`, `male`, `white`, `lfaminc`, `smoker_low`,
+#' explicativas `first`, `white`, `male`, `lfaminc`, `smoker_low`,
 #' `smoker_med` y `smoker_hi`. Guarde los resultados de la estimación
 #' en la variable `mod2` e imprima la tabla con los resultados de la
 #' estimación con la función `summary`.
 #'
-## >>>>>>>>
+mod2 <- lm(lbwght_kg ~ first + white + male + lfaminc +
+             smoker_low + smoker_med + smoker_hi,
+           data = bwght)
+summary(mod2)
 
 #' ## Contrastes de hipótesis
 #'
@@ -122,7 +124,7 @@ bwght$smoker_hi <- as.integer(bwght$cigs > 15)
 #' de regresión. Cargue el paquete `car` con la función `library` (es
 #' posible que tenga que instalar el paquete previamente).
 #'
-## >>>>>>>>
+library(car)
 
 #' Para contrastar la hipótesis nula de que el parámetro de `male`
 #' es igual a 0, primero creamos una variable con el nombre de la
@@ -134,17 +136,17 @@ h0_1 <- "male"
 #' modelo de regresión, `mod2`, y, en segundo lugar, la hipótesis que
 #' queremos contrastar, `h0_1`:
 #'
-## lht(mod2, h0_1)
+lht(mod2, h0_1)
 
 
 #' Contraste ahora la significación de la variable `lfaminc`.
 #' Cree la variable `h0_2` para especificar la nueva hipótesis nula.
 #'
-## >>>>>>>>
+h0_2 <- "lfaminc"
 
 #' Realice el contraste de la hipótesis guardada en `h0_2` usando
 #' la función `lht`.
-## >>>>>>>>
+lht(mod2, h0_2)
 
 #' Para contrastar hipótesis complejas necesitamos crear vectores que
 #' indiquen qué parámetros o combinaciones de parámetros son iguales
@@ -163,7 +165,7 @@ h0_3 <- c("smoker_low - smoker_med", "smoker_low - smoker_hi")
 
 #' Contraste la hipótesis `h0_3`.
 #'
-## >>>>>>>>
+lht(mod2, h0_3)
 
 
 #' Podemos combinar vectores usando la función `c` para concatenarlos.
@@ -177,20 +179,38 @@ h0_3 <- c("smoker_low - smoker_med", "smoker_low - smoker_hi")
 #' Obtenga la hipótesis `h0_4` combinando los vectores
 #' `h0_2` y `h0_3` con la función `c`:
 #'
-## h0_4 <- c(h0_2, h0_3)
+h0_4 <- c(h0_2, h0_3)
 
 #' Contraste la hipótesis `h0_4`.
-#'
-## >>>>>>>>
+lht(mod2, h0_4)
 
 #' ## Modelo final
 #'
 #' Estime y presente los resultados del modelo de regresión después
 #' de imponer las hipótesis contenidas en `h0_4`.
 #'
-## >>>>>>>>
+mod3 <- lm(lbwght_kg ~ first + white + male + smoker,
+           data = bwght)
+summary(mod3)
 
 #' Comente los resultados obtenidos. ¿Qué efecto tiene el consumo de
 #' tabaco durante el embarazo sobre el peso de los recién nacidos?
 #'
-## >>>>>>>>
+#' Las estimaciones del efecto del tabaco sobre el peso de los recién
+#' nacidos son muy similares a las obtenidas con el modelo de regresión
+#' simple: los hijos de las madres que fumaron durante el embarazo
+#' pesaban al nacer casi un 8% menos que los hijos de madres no
+#' fumadoras. Este efecto es significativamente distinto de 0 a un
+#' nivel de significación del 5%.
+#'
+#' Por otro lado, los efectos sobre el peso de los recién nacidos de
+#' las otras variables explicativas son significativos al 5% de
+#' significación:
+#'
+#' - `first`: los hijos de madres primerizas pesan un 3% menos.
+#'
+#' - `white`: los recién nacidos blancos pesan un 6% más que los
+#' recien nacidos de otras etnias.
+#'
+#' - `male`: el peso al nacer de los varones es casi un 2,5% mayor
+#'  que el de las mujeres.
