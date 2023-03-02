@@ -66,24 +66,25 @@ confint(mod1)
 #'
 bwght$lfaminc <- log(bwght$faminc)
 
-#' - `smoker_hi`: indica si la madre fumó más de 15 cigarrillos
-#' diarios. Usamos la función `as.integer` para convertir los
-#' valores `TRUE` y `FALSE` en 0 y 1, respectivamente:
+#' - `smoker_hi`: variable ficticia que indica si la madre fumó más
+#' de 15 cigarrillos  diarios. Usamos la función `as.integer` para
+#' convertir los valores `TRUE` y `FALSE` en 0 y 1, respectivamente:
 #'
 bwght$smoker_hi <- as.integer(bwght$cigs > 15)
 
-#' - `smoker_med`: indica si la madre fumó entre 6 y 15 cigarrillos
-#' diarios.
+#' - `smoker_med`: variable ficticia que indica si la madre fumó
+#' entre 6 y 15 cigarrillos diarios.
 #'
 bwght$smoker_med <- as.integer(bwght$cigs > 5 & bwght$cigs <= 15)
 
-#' - `smoker_low`: indica si la madre fumó entre 1 y 5 cigarrillos
-#' diarios.
+#' - `smoker_low`: variable ficticia que indica si la madre fumó
+#' entre 1 y 5 cigarrillos diarios.
 #'
 bwght$smoker_low <- as.integer(bwght$cigs > 0 & bwght$cigs <= 5)
 
-#' - `first`: indica si la observación corresponde al primer hijo de
-#' la madre (la variable `parity` toma el valor 1).
+#' - `first`: variable ficticia que indica si la observación
+#' corresponde al primer hijo de la madre (la variable `parity`
+#' toma el valor 1).
 #'
 bwght$first <- as.integer(bwght$parity == 1)
 
@@ -167,7 +168,6 @@ h0_3 <- c("smoker_low - smoker_med", "smoker_low - smoker_hi")
 lht(mod2, h0_3)
 
 
-#' Podemos combinar vectores usando la función `c` para concatenarlos.
 #' La última hipótesis que contrastaremos es la unión de `h0_2` y
 #' `h0_3`:
 #' $$ H_0: \begin{cases}
@@ -175,6 +175,7 @@ lht(mod2, h0_3)
 #' \beta_5 = \beta_6 = \beta_7.
 #' \end{cases}
 #' $$
+#' Podemos combinar vectores usando la función `c` para concatenarlos.
 #' Obtenga la hipótesis `h0_4` combinando los vectores
 #' `h0_2` y `h0_3` con la función `c`:
 #'
