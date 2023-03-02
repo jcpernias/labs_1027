@@ -80,7 +80,6 @@ bwght$smoker_med <- as.integer(bwght$cigs > 5 & bwght$cigs <= 15)
 #' - `smoker_low`: indica si la madre fumó entre 1 y 5 cigarrillos
 #' diarios.
 #'
-## >>>>>>>>
 bwght$smoker_low <- as.integer(bwght$cigs > 0 & bwght$cigs <= 5)
 
 #' - `first`: indica si la observación corresponde al primer hijo de
