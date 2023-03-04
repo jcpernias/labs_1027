@@ -108,7 +108,7 @@ bwght$smoker_hi <- as.integer(bwght$cigs > 15)
 #' \end{align*}
 #' $$
 #'
-#' Estime por MCO un modelo de regresión de `lbwght` sobre las
+#' Estime por MCO un modelo de regresión de `lbwght_kg` sobre las
 #' explicativas `first`, `male`, `white`, `lfaminc`, `smoker_low`,
 #' `smoker_med` y `smoker_hi`. Guarde los resultados de la estimación
 #' en la variable `mod2` e imprima la tabla con los resultados de la

@@ -106,7 +106,7 @@ bwght$first <- as.integer(bwght$parity == 1)
 #' \end{align*}
 #' $$
 #'
-#' Estime por MCO un modelo de regresión de `lbwght` sobre las
+#' Estime por MCO un modelo de regresión de `lbwght_kg` sobre las
 #' explicativas `first`, `white`, `male`, `lfaminc`, `smoker_low`,
 #' `smoker_med` y `smoker_hi`. Guarde los resultados de la estimación
 #' en la variable `mod2` e imprima la tabla con los resultados de la
