@@ -118,8 +118,11 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 #' Guarde en `uhat1_sq` el cuadrado de los residuos de MCO
 ## >>>>>>>>>>>>>>>>>>>>>
 
-#' Use `gf_point` para obterner el gráfico de los residuos al cuadrado y
+#' Use `gf_point` para obtener el gráfico de los residuos al cuadrado y
 #' las predicciones.
+## >>>>>>>>>>>>>>>>>>>>>
+
+#' ¿Muestra el gráfico evidencias de la existencia de heteroscedasticidad?
 ## >>>>>>>>>>>>>>>>>>>>>
 
 #' Usaremos también el **contraste de Breusch-Pagan** para determinar

@@ -146,9 +146,12 @@ uhat1 <- resid(mod1)
 #' Guarde en `uhat1_sq` el cuadrado de los residuos de MCO
 uhat1_sq <- uhat1 ^ 2
 
-#' Use `gf_point` para obterner el gráfico de los residuos al cuadrado y
+#' Use `gf_point` para obtener el gráfico de los residuos al cuadrado y
 #' las predicciones.
 gf_point(uhat1_sq ~ yhat)
+
+#' ¿Muestra el gráfico evidencias de la existencia de heteroscedasticidad?
+## >>>>>>>>>>>>>>>>>>>>>
 
 #' Usaremos también el **contraste de Breusch-Pagan** para determinar
 #' la existencia de heteroscedasticidad.
