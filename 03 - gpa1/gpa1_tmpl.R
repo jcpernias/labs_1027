@@ -122,7 +122,7 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 #' las predicciones.
 ## >>>>>>>>>>>>>>>>>>>>>
 
-#' ¿Muestra el gráfico evidencias de la existencia de heteroscedasticidad?
+#' ¿Muestra el gráfico alguna evidencia de heteroscedasticidad?
 ## >>>>>>>>>>>>>>>>>>>>>
 
 #' Usaremos también el **contraste de Breusch-Pagan** para determinar
