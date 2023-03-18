@@ -14,7 +14,7 @@ Antes de empezar a trabajar con RStudio conviene comprobar las siguientes opcion
 
 - No está marcada la opción `Restore .RData into workspace at startup`.
 - La opción `Save workspace to .RData on exit:` está fijada a `Never`.
-- En la pestaña `Saving` del panel `Code` la opción `Default text encoding` toma el vlaor `UTF-8`.
+- En la pestaña `Saving` del panel `Code` la opción `Default text encoding` toma el valor `UTF-8`.
 
 # Datos
 
