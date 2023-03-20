@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 
 
 # Preparativos
-Utilizaremos los paquetes `sandwich` y `lmtest` para obtener errores típicos robustos a heteroscedasticidad y el paquete `ggplot2` para hacer gráficos.
+Utilizaremos los paquetes `sandwich` y `lmtest` para obtener errores típicos robustos a heteroscedasticidad y el paquete `mosaic` para hacer gráficos.
 ```{r load-packages, warning=FALSE, message=FALSE}
 library(sandwich)
 library(lmtest)
@@ -22,7 +22,6 @@ library(mosaic)
 Cargamos la base de datos `hprice1` que pertenece al paquete `woldridge`:
 ```{r load-data}
 library(wooldridge)
-
 data(hprice1)
 ```
 
@@ -30,7 +29,6 @@ Construimos nuevas variables que miden en metros cuadrados la superficie de las 
 ```{r}
 hprice1$house_m2 <- hprice1$sqrft / 10.763910
 hprice1$lot_m2 <- hprice1$lotsize / 10.763910
-str(hprice1)
 ```
 
 # Estimación por MCO
