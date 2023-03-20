@@ -109,7 +109,7 @@ sigma_A <- sigma(mod_A)
 # Error típico del Modelo B
 sigma_B <- sigma(mod_B)
 
-# Coeficiente de determinación ajustado del modelo A
+# Coeficiente de determinación ajustado del modelo B
 1 - sigma_B ^ 2 / var_y
     ```
 
