@@ -265,9 +265,9 @@ $$
 
 - ¿Hay diferencias entre la brecha salarial no ajustada y la ajustada?
 
-- Obtenga un intervalo de confianza para la brecha salarial no ajustada.
+- Obtenga un intervalo de confianza para la brecha salarial ajustada.
 
-# Participación en el mercado de trabajo
+# Participación en el mercado laboral
 
 En segundo lugar, se estudiará la incorporación de la mujer al mercado de trabajo utilizando modelos lineales de probabilidad donde la variable dependiente es la variable ficticia `activ` que toma el valor 1 para las personas que participan en el mercado de trabajo. 
 
@@ -285,7 +285,7 @@ $$
 
 - ¿Cuál es la interpretación del parámetro $\alpha_1$? 
 
-- ¿Hay diferencias entre las tasas de actividad de hombres y mujeres? ¿Son significativas?
+- ¿Hay diferencias entre las tasas de actividad de hombres y mujeres? ¿Son significativas esas diferencias?
 
 ## Modelo de probabilidad lineal múltiple
 
@@ -310,5 +310,3 @@ $$
 - Contraste la significación conjunta de la regresión.
 
 - Discuta brevemente el signo y la magnitud de las estimaciones de los parámetros y la significación de las variables explicativas.
-
-- De acuerdo con las estimaciones del modelo $\mathrm{(Mod4)}$, ¿hay diferencias entre las tasas de actividad de hombres y mujeres? ¿Son significativas?
