@@ -4,18 +4,16 @@ library(car)
 
 esp <- read.csv("esp.csv")
 
+
 esp$lsalario <- log(esp$EARN)
 
-esp$asalariado <- as.integer(!is.na(esp$lsalario))
-
-esp$desempl <- as.integer(esp$C_D05 == 2)
-
-esp$activ <- as.integer(esp$C_D05 != 3)
-
+esp$asalariado <- !is.na(esp$EARNHR)
 
 esp$mujer <- as.integer(esp$GENDER_R == 2)
 
 esp$educ <- esp$YRSQUAL
+
+esp$activ <- as.integer(esp$C_D05 != 3)
 
 esp$exper <- esp$C_Q09
 
@@ -39,8 +37,10 @@ esp$inmigr <- as.integer(esp$J_Q04a == 2)
 
 esp$pareja <- as.integer(esp$J_Q02a == 1)
 
+esp_asal <- subset(esp, asalariado)
 
-mod1 <- lm(lsalario ~ mujer, data = esp, subset = asalariado == 1)
+
+mod1 <- lm(lsalario ~ mujer, data = esp_asal)
 summary(mod1)
 
 mod2 <- update(mod1, . ~ . + educ + exper + antig +
@@ -48,6 +48,11 @@ mod2 <- update(mod1, . ~ . + educ + exper + antig +
                  temp + apr + otro + edad + hijos +
                  inmigr + pareja)
 coeftest(mod2, vcov. = vcovHC)
+
+bhat2 <- coef(mod2)
+joint_h0 <- names(bhat2[-1])
+lht(mod2, joint_h0, vcov. = vcovHC)
+
 coefci(mod2, vcov. = vcovHC)
 
 
@@ -59,7 +64,12 @@ mod4 <- lm(activ ~ mujer + educ + exper +
 					 	edad + hijos + inmigr + pareja,
 					 data = esp)
 coeftest(mod4)
-coefci(mod4, vcov. = vcovHC)
+
+bhat4 <- coef(mod4)
+joint_h0 <- names(bhat4[-1])
+lht(mod4, joint_h0, vcov. = vcovHC)
+
+
 
 
 
