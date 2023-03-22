@@ -198,7 +198,7 @@ Además de las variables `lsalario` y `asalariado` que hemos creado en la subsec
 - `pareja`: ficticia que toma el valor 1 si el trabajador convive con su pareja. Se construye a partir de `J_Q02a`.
 
 
-# Ecuación de salarios
+# Ecuaciones de salarios
 
 En esta sección plantemos la estimación de **ecuaciones de salarios**: modelos econométricos que explican los salarios (usualmente en logaritmos) a partir de características de los trabajadores (cualificación académica, experiencia laboral, etc.) y de su puesto de trabajo (tipo de empresa, tipo de contrato, etc.)  
 
