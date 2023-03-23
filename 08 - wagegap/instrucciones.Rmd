@@ -13,6 +13,31 @@ library(tidyverse)
 library(kableExtra)
 ```
 
+# Instrucciones {.unnumbered}
+
+1. Descargue el archivo `labor.zip` y descomprímalo. Este archivo contiene una carpeta `labor` donde se encuentran varios documentos:
+    - `esp.csv`: datos en formato csv.
+
+    - `labor_templ.R`: plantilla que debe completar para realizar la tarea.
+
+    - `labor.Rproj`: opciones de proyecto de RStudio.
+
+    - `instrucciones.html`: este documento.
+
+2. Haga una copia de `labor_tmpl.R` y guárdela con el nombre `labor.R` dentro de la carpeta `labor`. Utilice el documento `labor.R` para completar la tarea y no modifique `labor_tmpl.R` que servirá como copia de seguridad.
+
+3. Para trabajar en el proyecto haga doble-click sobre el icono de `labor.Rproj`. Alternativamente, abra el proyecto desde RStudio usando el menú `File | Open Project...` y seleccione el archivo `labor.Rproj`.
+
+4. **No olvide escribir su nombre completo al principio de `labor.R`**.
+
+5. Para llevar a cabo la tarea que se describe en este documento complete el archivo `labor.R` siguiendo las instrucciones que aparecen allí. Reemplace las líneas que contienen los caracteres `## >>>>>>>>>>>>>>>>>>>>>` con sus respuestas.
+
+6. Obtenga un documento `labor.html` compilando `labor.R` usando el icono correspondiente en el panel de edición o mediante el menú `File | Compile Report...`.
+
+7. Para entregar su trabajo en el Aula Virtual cree un archivo zip comprimiendo la carpeta `labor` y todos los documentos que contenga. Los archivos zip pueden usarse también para guardar su trabajo y continuarlo en otro ordenador.
+
+8. Para que la entrega sea considerada válida el archivo zip que se suba al Aula Virtual debe contener, además de los documentos enumerados en el punto 1, los documentos `labor.R`  y `labor.html`, obtenidos como se ha descrito más arriba. 
+
 # Objetivos
 
 Estimaremos dos modelos de regresión que nos permitan describir el papel de las mujeres en el mercado laboral de España a principios de la segunda década del siglo XXI. En primer lugar estimaremos la **brecha salarial** que padecen las mujeres. En segundo lugar, examinaremos las diferencias en las **tasas de actividad** de hombres y mujeres.
@@ -221,9 +246,9 @@ esp_asal <- subset(esp, asalariado == TRUE)
 
 ## Brecha salarial no ajustada
 
-La **brecha salarial no ajustada** mide la diferencia entre los salarios percibidos por las mujeres y los percibidos por los hombres sin tener en cuenta ninguna otra característica de los trabajadores. La estimamos a partir de un modelo de regresión simple:
+La **brecha salarial no ajustada** mide la diferencia entre los salarios percibidos por las mujeres y los percibidos por los hombres sin tener en cuenta ninguna otra característica de los trabajadores. La estimamos a partir de un modelo de regresión simple que tiene el logaritmo del salario, `lsalario`, como variable dependiente y `mujer` como variable explicativa:
 $$
-  \log(\mathit{salario}) = \beta_0 
+  \mathit{lsalario} = \beta_0 
     + \beta_1 \mathit{mujer} 
     + u 
     \tag{Mod1}
@@ -239,7 +264,7 @@ $$
 La **brecha salarial ajustada** tiene en cuenta otras variables que capturan características individuales y del puesto de trabajo. La estimaremos a partir del modelo de regresión múltiple:
 $$
 \begin{aligned}
-  \log(\mathit{salario}) =\, &\beta_0 
+  \mathit{lsalario} =\, &\beta_0 
     + \beta_1 \mathit{mujer} 
     + \beta_2 \mathit{educ} 
     + \beta_3 \mathit{exper} 
@@ -277,7 +302,7 @@ En segundo lugar, se estudiará la incorporación de la mujer al mercado de trab
 
 Podemos medir diferencias en la tasa de actividad de las mujeres estimando el modelo de regresión simple:
 $$
-  activ = \alpha_0 
+  \mathit{activ} = \alpha_0 
     + \alpha_1 \mathit{mujer} 
     + v 
     \tag{Mod3}
@@ -292,7 +317,7 @@ $$
 Añadiremos más variables explicativas al modelo $\mathrm{(Mod3)}$:
 $$
 \begin{aligned}
-  activ =\, &\alpha_0 
+  \mathit{activ} =\, &\alpha_0 
     + \alpha_1 \mathit{mujer} 
     + \alpha_2 \mathit{educ} 
     + \alpha_3 \mathit{exper} 
