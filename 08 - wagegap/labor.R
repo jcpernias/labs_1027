@@ -118,7 +118,7 @@ esp$hijos <- as.integer(esp$J_Q03b > 0)
 
 esp$inmigr <- as.integer(esp$J_Q04a == 2)
 
-#' - Cree la variable `lsalario`.
+#' - Cree la variable `pareja`.
 ## >>>>>>>>>>>>>>>>>>>>>
 
 esp$pareja <- as.integer(esp$J_Q02a == 1)

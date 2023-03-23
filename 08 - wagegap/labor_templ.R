@@ -115,7 +115,7 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 
 
 
-#' - Cree la variable `lsalario`.
+#' - Cree la variable `pareja`.
 ## >>>>>>>>>>>>>>>>>>>>>
 
 
