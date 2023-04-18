@@ -1,10 +1,9 @@
 library(readxl)
-library(mosaic, quietly = TRUE, warn.conflicts = FALSE)
+library(mosaic, warn.conflicts = FALSE)
 library(zoo)
 library(dynlm)
 library(sandwich)
 library(lmtest)
-
 
 ## BASE DE DATOS MACROECONÓMICOS DE ESPAÑA 1954 - 2022
 ## Fecha de actualización: 31 de Marzo de 2023
@@ -20,76 +19,93 @@ library(lmtest)
 ## dPIB: N4:N72 (1954-2022)
 ## dCpr: O4:O72 (1954-2022)
 
-
 bdmacro <- read_excel("BDMACRO.xlsx",
                       sheet = "SERIES INDIVIDUALES",
-                      range = "JZ14:JZ72",
-                      col_names = "unem")
+                      skip = 2)
+
+bdm_unem <- read_excel("BDMACRO.xlsx",
+                   sheet = "SERIES INDIVIDUALES",
+                   range = "JZ14:JZ72",
+                   col_names = "unem")
 
 
-bdmacro2 <- read_excel("BDMACRO.xlsx",
-                        sheet = "SERIES INDIVIDUALES",
-                        range = "O4:O72",
-                        col_names = "p")
+bdm_p <- read_excel("BDMACRO.xlsx",
+                    sheet = "SERIES INDIVIDUALES",
+                    range = "O4:O72",
+                    col_names = "p")
 
-unem <- zooreg(bdmacro$unem, start = 1964, frequency = 1)
-p <- zooreg(bdmacro2$p, start = 1954, frequency = 1)
+unem <- zooreg(bdm_unem$unem, start = 1964, frequency = 1)
+p <- zooreg(bdm_p$p, start = 1954, frequency = 1)
 
 st <- merge(unem, p)
-rm(bdmacro, bdmacro2, unem, p)
+rm(bdm_unem, bdm_p, unem, p)
 
 autoplot(st$unem)
 autoplot(st$p)
 st$lp <- log(st$p)
 st$infl <- 100 * diff(st$lp)
 
-smpl <- window(st, start = 1964, end = 2019)
+smpl <- window(st, start = 1964, end = 2022)
 
 autoplot(smpl$infl)
 autoplot(smpl$unem)
 
+smpl2 <- merge(smpl,
+               infl_end = stats::lag(smpl$infl),
+               unem_end = stats::lag(smpl$unem))
 
-gf_point(infl ~ unem, data = smpl) +
-  geom_segment(aes(xend = c(tail(unem, n = -1), NA),
-                   yend = c(tail(infl, n = -1), NA),
-                   color = Index)) +
-  scale_color_gradientn(colours = rainbow(5))
+gf_segment(infl +  infl_end ~ unem + unem_end,
+           data = window(smpl2, start = 1967, end = 2021),
+           color = ~ Index) |>
+  gf_refine(scale_color_gradientn(colours = hcl.colors(5, "Dark 3"))) |>
+  gf_point(infl ~ unem) +
+  gf_theme(theme_bw())
 
-mod1 <- dynlm(infl ~ unem, data = smpl)
+
+
+mod1 <- dynlm(infl ~ unem, data = smpl, start = 1967)
 summary(mod1)
 uhat1 <- resid(mod1)
 autoplot(uhat1)
-
-
-
 coeftest(mod1, vcov. = vcovHAC)
 
-mod2 <- dynlm(d(infl) ~ L(unem, 0:2), data = smpl)
-summary(mod2)
-uhat2 <- resid(mod2)
-autoplot(uhat2)
 
-coeftest(mod2, vcov. = vcovHAC)
+library(urca)
+unem_df <- ur.df(smpl$unem, type = "drift", lags = 3, selectlags = "AIC")
+summary(unem_df)
 
-mod3 <- dynlm(d(infl) ~ L(unem, 0:1), data = smpl)
-summary(mod3)
-uhat3 <- resid(mod3)
-autoplot(uhat3)
+infl_df <- ur.df(smpl$infl, type = "drift", lags = 3, selectlags = "AIC")
+summary(infl_df)
 
-coeftest(mod3, vcov. = vcovHAC)
+infl_df <- ur.df(diff(smpl$infl), type = "drift", lags = 3, selectlags = "AIC")
+summary(infl_df)
 
-mod4 <- dynlm(d(infl) ~ L(d(unem), 0:1) + L(unem, 2), data = smpl)
-summary(mod4)
-uhat4 <- resid(mod4)
-autoplot(uhat4)
+library(mFilter)
+unem_tc <- hpfilter(smpl$unem, freq = 10)
+smpl$unem_gap <- zooreg(unem_tc$cycle, start = start(smpl), frequency = 1)
 
-coeftest(mod4, vcov. = vcovHAC)
+autoplot(smpl$unem_gap)
+autoplot(smpl$unem - smpl$unem_gap)
+
+unem_df <- ur.df(smpl$unem_gap, type = "drift", lags = 3, selectlags = "AIC")
+summary(unem_df)
 
 
-mod5 <- dynlm(d(infl) ~ L(d(unem), 0) + L(unem, 1), data = smpl)
-summary(mod5)
-uhat5 <- resid(mod5)
-autoplot(uhat5)
+for (i in 0:3) {
+  print(BIC(dynlm(d(infl) ~ L(unem_gap, 0:i) , data = smpl, start = 1967)))
+}
 
-coeftest(mod5, vcov. = vcovHAC)
+mod20 <- dynlm(d(infl) ~ L(unem_gap, 0:1), data = smpl)
+summary(mod20)
+uhat20 <- resid(mod20)
+autoplot(uhat20)
+coeftest(mod20, vcov. = vcovHAC)
+
+
+mod25 <- dynlm(d(infl) ~ L(d(unem_gap), 0:0) + L(unem_gap, 1), data = smpl, start = 1967)
+summary(mod25)
+uhat25 <- resid(mod25)
+autoplot(uhat25)
+
+coeftest(mod25, vcov. = vcovHAC)
 
