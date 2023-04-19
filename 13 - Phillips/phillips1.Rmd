@@ -1,0 +1,151 @@
+---
+title: "Curva de Phillips (I)"
+author: "EC1027 --- Econometría I"
+date: "Curso 2022-2023"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Planteamiento
+
+En este laboratorio se investigará la existencia de una relación de intercambio entre inflación y desempleo en España durante el periodo 1967-2022.
+
+## Curva de Phillips
+
+En primer lugar se estimarán los parámetros de la curva de Phillips estática:
+$$
+\pi_t = \alpha + \beta u_t + \epsilon_t \tag{Mod1}
+$$
+donde $\pi_t$ es la tasa de inflación, $u_t$ es la tasa de paro y $\epsilon_t$ es el término de error.
+
+## Curva de Phillips con expectativas
+La curva de Phillips aumentada con expectativas se puede escribir como:
+$$
+\pi_t - \pi^e_t= \alpha + \beta (u_t - u^n) + \epsilon_t
+$$
+donde $\pi^e_t$ son las expectativas de los agentes económicos sobre la inflación en el periodo $t$, y $u^n$ es la tasa natural de paro, que se supone que no varía en el tiempo. Supondremos también que las expectativas son adaptativas y se espera que la inflación en el periodo $t$ sea igual a la del periodo anterior:
+$$
+\pi^e_t = \pi_{t-1}
+$$
+Sustituyendo en la curva de Phillips:
+$$
+\pi_t - \pi_{t-1}= \alpha + \beta (u_t - u^n) + \epsilon_t
+$$
+Podemos estimar el parámetro $\beta$ con el modelo de regresión:
+$$
+\Delta\pi_t = \delta + \beta u_t + \epsilon_t \tag{Mod2}
+$$
+donde el parámetro $\delta$ es igual a $\alpha - \beta u^n$.
+
+## Datos
+
+El archivo `phillips.csv` contiene series anuales referidas a la ecoomía española y que cubren el periodo que va desde 1963 hasta 2022. En este laboratorio usaremos las series:
+
+- `defl`: deflactor del consumo privado, base 2015.
+
+- `paro`: tasa de paro.
+
+La información ha sido obtenida de la base de datos [BDMACRO](https://www.sepg.pap.hacienda.gob.es/sitios/sepg/es-ES/Presupuestos/DocumentacionEstadisticas/Documentacion/paginas/bdmacro.aspx) que mantiene la Subdirección General de Análisis y Programación Económica del Ministerio de Hacienda y Función Pública.
+
+El siguiente gráfico muestra la evolución de las tasas de paro e inflación.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+library(zoo)
+library(ggformula)
+st <- read.csv("phillips.csv") |> 
+  zooreg(start = 1963, frequency = 1)
+
+st$infl <- 100 * diff(log(st$defl))
+smpl <-  window(st, start = 1964, end = 2022)
+smpl2 <- merge(smpl,
+               infl_end = stats::lag(smpl$infl),
+               paro_end = stats::lag(smpl$paro))
+
+gf_segment(infl +  infl_end ~ paro + paro_end,
+           data = smpl2,
+           color = ~ Index) |>
+  gf_refine(scale_color_gradientn(colours = hcl.colors(5, "Dark 3"))) |>
+  gf_point(infl ~ paro) |>
+  gf_labs(x = "Tasa de paro", y = "Tasa de inflación", color = "Año") |>
+  gf_theme(theme_bw())
+```
+
+# Instrucciones
+
+## Paquetes R
+
+Cargue los siguientes paquetes:
+
+- `mosaic`: gráficos. Es recomendable usar el argumento `warn.conflicts = FALSE` al cargarlo:
+    ```{r eval=FALSE}
+     library(mosaic, warn.conflicts = FALSE)
+    ```
+
+- `sandwich` y `lmtest`: estimación robusta de la varianza de los estimadores.
+
+- `zoo`: series temporales.
+
+- `dynlm`: regresión con series temporales.
+
+## Datos
+
+- Cree la variable `db` donde se guardan los datos del archivo `phillips.csv`. Para leer los datos use la función `read.csv`.
+
+- Cree una base de datos de series temporales con la instrucción `zooreg`. Con esta función especificamos el periodo inicial de nuestra muestra (1963) y la frecuencia de los datos (anual). La variable `st` contendrá la base de datos de series temporales.
+    ```{r eval=FALSE}
+st <- zooreg(db, start = 1963, frequency = 1)
+    ```
+
+- Cree una nueva variable `infl` dentro de la base de datos `st`. En esta variable almacenaremos la inflación calculada a partir del deflactor del consumo privado usando la diferencia de los logaritmos de los precios:
+$$
+  \pi_t = 100 \Delta \log(p_t)
+$$
+En R se usa la función `diff` para calcular la diferencia de una serie temporal:
+    ```{r eval=FALSE}
+st$infl <- 100 * diff(log(st$defl))
+    ```
+
+- Obtenga gráficos de series temporales de las variables `infl` y `paro`. Use la función `autoplot`. Por ejemplo:
+    ```{r eval=FALSE}
+autoplot(smpl$infl)
+    ```
+
+## Regresiones
+
+- Estime la curva de Phillips estática con la función `dynlm`. Esta función se usa de forma similar a `lm`, pero añade extensiones útiles cuando se trabaja con series temporales. Indicaremos que sólo use la submuestra que comienza en 1967 con el argumento `start = 1967`:
+    ```{r eval=FALSE}
+mod1 <- dynlm(infl ~ paro, data = smpl, start = 1967)
+    ```
+
+- Obtenga la tabla de la regresión con la función `summary`.
+
+- Obtenga la tabla de la regresión con errores típicos y cocientes $t$ robustos a autocorrelación y heteroscedasticidad con la función `coeftest`:
+    ```{r eval=FALSE}
+coeftest(mod1, vcov. = vcovHAC)
+    ```
+
+- Calcule los residuos de la regresión anterior  y guárdelos en la variable `uhat1`. Represéntelos en un gráfico de series temporales. 
+
+- Calcule los coeficientes de autocorrelación de los residuos con la función `acf`:
+    ```{r eval=FALSE}
+acf(uhat1, plot = FALSE)
+    ```
+La función `acf` también puede representar gráficamente los coeficientes de autocorrelación:
+    ```{r eval=FALSE}
+acf(uhat1)
+    ```
+¿Se comportan como un proceso estacionario y débilmente dependiente?
+
+- Estime la curva de Phillips con expectativas. Con la función `dynlm` no es necesario crear previamente las diferencias o los retardos que necesitemos en nuestros modelos de regresión. Podemos especificar que la variable  dependiente es la diferencia de `infl` con la notación `d(infl)`  
+    ```{r eval=FALSE}
+mod2 <- dynlm(d(infl) ~ paro, data = smpl, start = 1967)
+    ```
+
+- Obtenga la nueva tabla de la regresión y calcule los estadísticos $t$ robustos.
+
+- Examine los residuos y sus coeficientes de autocorrelación.
+
+- De acuerdo con las estimaciones realizadas, ¿existe una relación de intercambio entre inflación y paro en el periodo analizado?
+
