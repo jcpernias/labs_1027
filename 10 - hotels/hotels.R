@@ -2,6 +2,7 @@ library(readxl)
 library(zoo)
 library(ggplot2)
 library(dynlm)
+library(lmtest)
 
 db_hotels <- read_xlsx("2011.xlsx",
                        range = "B9:D287",
@@ -31,6 +32,19 @@ autoplot(db$lbeds)
 autoplot(db$lempl)
 autoplot(db$lindex)
 
+library(urca)
+
+ur.df(db$lempl, type = "trend") |>
+  summary()
+
+ur.df(db$lbeds, type = "trend") |>
+  summary()
+
+ur.df(db$lindex, type = "trend") |>
+  summary()
+
+
+
 mod1 <- dynlm(lempl ~ lbeds + lindex, data = db, start = "2001-01")
 summary(mod1)
 
@@ -40,10 +54,33 @@ autoplot(uhat1)
 mod2 <- update(mod1, . ~ . + trend(db) + season(db))
 summary(mod2)
 
-X <- model.matrix(mod3)
+uhat2 <- resid(mod2)
+autoplot(uhat2)
+
+
+for(i in 1:12) {
+  update(mod2, . ~ . + L(lempl, 1:i) + L(lbeds, 1:i) + L(lindex, 1:i)) |>
+    BIC() |>
+    print()
+}
+
+mod3 <- update(mod2, . ~ . + L(lempl, c(1:2, 12)) + L(lbeds, 1:2) + L(lindex, 1:2))
+summary(mod3)
 
 uhat3 <- resid(mod3)
 autoplot(uhat3)
+
+bgtest(mod3, order = 12, type = "F")
+
+mod4 <- update(mod1, . ~ . + L(lempl, c(1:2, 12)) + L(lbeds, 1) + L(lindex, 1))
+summary(mod4)
+
+
+uhat4 <- resid(mod4)
+autoplot(uhat4)
+
+
+bgtest(mod3, order = 1, type = "F")
 
 
 mod4 <- dynlm(lempl ~ trend(db2) + season(db2),
