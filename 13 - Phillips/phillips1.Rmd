@@ -23,7 +23,7 @@ donde $\pi_t$ es la tasa de inflación, $u_t$ es la tasa de paro y $\epsilon_t$ 
 ## Curva de Phillips con expectativas
 La curva de Phillips aumentada con expectativas se puede escribir como:
 $$
-\pi_t - \pi^e_t= \alpha + \beta (u_t - u^n) + \epsilon_t
+\pi_t = \pi^e_t + \beta (u_t - u^n) + \epsilon_t
 $$
 donde $\pi^e_t$ son las expectativas de los agentes económicos sobre la inflación en el periodo $t$, y $u^n$ es la tasa natural de paro, que se supone que no varía en el tiempo. Supondremos también que las expectativas son adaptativas y se espera que la inflación en el periodo $t$ sea igual a la del periodo anterior:
 $$
@@ -31,13 +31,13 @@ $$
 $$
 Sustituyendo en la curva de Phillips:
 $$
-\pi_t - \pi_{t-1}= \alpha + \beta (u_t - u^n) + \epsilon_t
+\pi_t - \pi_{t-1}= \beta (u_t - u^n) + \epsilon_t
 $$
-Podemos estimar el parámetro $\beta$ con el modelo de regresión:
+Finalmente, se puede estimar el parámetro $\beta$ con el modelo de regresión:
 $$
 \Delta\pi_t = \delta + \beta u_t + \epsilon_t \tag{Mod2}
 $$
-donde el parámetro $\delta$ es igual a $\alpha - \beta u^n$.
+donde el parámetro $\delta$ es igual a $-\beta u^n$.
 
 ## Datos
 
@@ -109,14 +109,14 @@ st$infl <- 100 * diff(log(st$defl))
 
 - Obtenga gráficos de series temporales de las variables `infl` y `paro`. Use la función `autoplot`. Por ejemplo:
     ```{r eval=FALSE}
-autoplot(smpl$infl)
+autoplot(st$infl)
     ```
 
 ## Regresiones
 
 - Estime la curva de Phillips estática con la función `dynlm`. Esta función se usa de forma similar a `lm`, pero añade extensiones útiles cuando se trabaja con series temporales. Indicaremos que sólo use la submuestra que comienza en 1967 con el argumento `start = 1967`:
     ```{r eval=FALSE}
-mod1 <- dynlm(infl ~ paro, data = smpl, start = 1967)
+mod1 <- dynlm(infl ~ paro, data = st, start = 1967)
     ```
 
 - Obtenga la tabla de la regresión con la función `summary`.
@@ -140,7 +140,7 @@ acf(uhat1)
 
 - Estime la curva de Phillips con expectativas. Con la función `dynlm` no es necesario crear previamente las diferencias o los retardos que necesitemos en nuestros modelos de regresión. Podemos especificar que la variable  dependiente es la diferencia de `infl` con la notación `d(infl)`  
     ```{r eval=FALSE}
-mod2 <- dynlm(d(infl) ~ paro, data = smpl, start = 1967)
+mod2 <- dynlm(d(infl) ~ paro, data = st, start = 1967)
     ```
 
 - Obtenga la nueva tabla de la regresión y calcule los estadísticos $t$ robustos.
