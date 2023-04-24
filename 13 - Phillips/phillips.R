@@ -114,7 +114,7 @@ uhat25 <- resid(mod25)
 autoplot(uhat25)
 
 coeftest(mod25, vcov. = vcovHAC)
-acf(uhat25, plot=FALSE)
+acf(uhat25, plot = FALSE)
 acf(uhat25)
 
 mod35 <- dynlm(d(infl) ~ L(paro_c, 0:1) + L(d(infl)), data = smpl, start = 1967)
