@@ -133,3 +133,15 @@ summary(mod40)
 uhat40 <- resid(mod40)
 autoplot(uhat40)
 coeftest(mod40, vcov. = vcovHAC)
+
+
+
+st$d1999 <- as.integer(time(st) >= "1999")
+mod3_lp1_chow <- update(mod3_l1, . ~ (.) * d1999)
+coeftest(mod3_lp1_chow)
+car::lht(mod3_lp1_chow,
+         car::matchCoefs(mod3_lp1_chow, "d1999"),
+         vcov. = vcovHAC)
+
+
+
