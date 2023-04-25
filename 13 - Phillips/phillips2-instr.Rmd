@@ -1,0 +1,185 @@
+---
+title: "Curva de Phillips (II)"
+author: "EC1027 --- Econometría I"
+date: "Curso 2022-2023"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Planteamiento
+
+En este laboratorio se estima una curva de Phillips con expectativas y tasa natural de desempleo variable en el tiempo. También se exploran relaciones dinámicas entre la inflación y el desempleo.
+
+## Curva de Phillips 
+
+En en esta sesión modificamos la curva de Phillips con expectativas para incorporar, por un lado, una tasa de desempleo natural variable en el tiempo, y, por otro lado, una especificación dinámica que permita que cambios en la tasa de desempleo afecten a la inflación en más de un periodo:
+$$
+\Delta\pi_t = \alpha + 
+\beta_0 (u_{t} - u^n_{t}) + 
+\beta_1 (u_{t-1} - u^n_{t-1}) +
+\dots +
+\beta_L (u_{t-L} - u^n_{t-L}) + 
+\epsilon_t 
+\tag{Mod3}
+$$
+donde $\pi_t$ es la tasa de inflación, $u_t$ es la tasa de paro, $u^n_t$ es la tasa natural de desempleo y $\epsilon_t$ es el término de error. La ecuación anterior muestra que cambios en el desempleo cíclico, $u_t - u^n_t$, provocan cambios en la tasa de inflación en el periodo en que se producen y en los $L$ periodos siguientes.
+
+
+
+## La tasa de desmpleo natural
+
+Para poder estimar el modelo anterior necesitamos obtener de algún modo la tasa natural de desempleo en los años que cubre nuestra muestra. Una alternativa que se utiliza con frecuencia es utilizar el [filtro de Hodrick y Prescott](https://es.wikipedia.org/wiki/Filtro_de_Hodrick-Prescott). Este filtro es un método diseñado para descomponer una serie en un componente de tendencia, que capture los movimientos a largo plazo, y un componente cíclico, que recoge las desviaciones con respecto de la tendencia de largo plazo. Aunque su uso ha sido criticado en numerosas ocasiones, el filtro de Hodrick y Prescott se sigue utilizando con frecuencia. 
+
+En el fichero `phillips.csv` se ha incluido la variable `paro_n` que es el resultado de aplicar el filtro de Hodrick-Prescott ($\lambda = 6.25$) a la tasa de desempleo observada y que utilizaremos como aproximación a la tasa natural de desempleo en este laboratorio. En el siguiente gráfico se muestra la evolución de la tasa natural de desempleo (línea continua) y de la tasa de desempleo observado, (línea discontinua).
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+library(zoo)
+library(ggformula)
+st <- read.csv("phillips.csv") |> 
+  zooreg(start = 1963, frequency = 1)
+
+smpl <-  window(st, start = 1964, end = 2022)
+autoplot(st$paro_n) |> 
+  gf_line(paro ~ periodo, data = st, linetype = 5, color = "gray") |> 
+  gf_labs(x = "", 
+          y = "Tasa de desempleo") |>
+  gf_theme(theme_bw())
+```
+
+
+## Efectos a largo plazo
+
+Además de estimar los multiplicadores dinámicos, $\beta_0, \beta_1, \dots, \beta_L$, obtendremos también los multiplicadores acumulativos, $\delta_0, \delta_1, \dots, \delta_{L-1}$, y el multiplicador de largo plazo, $\delta_L$. Estos parámetros pueden estimarse directamente a partir de la siguiente reparametrización del modelo $(\mathrm{Mod3})$:
+$$
+\begin{equation}
+\begin{aligned}
+\Delta\pi_t = \alpha &+ 
+\delta_0 \Delta (u_{t} - u^n_{t}) + 
+\delta_1 \Delta (u_{t-1} - u^n_{t-1}) +
+\dots \\ &+
+\delta_{L-1} \Delta (u_{t-L+1} - u^n_{t-L+1}) +
+\delta_L (u_{t-L} - u^n_{t-L}) + 
+\epsilon_t 
+\end{aligned}
+\tag{Mod3'}
+\end{equation}
+$$
+En el contexto de la estimación de la curva de Phillips, una hipótesis interesante es que no exista una relación a largo plazo entre inflación y desempleo. En ese caso $\delta_L = 0$ hipótesis que puede contrastarse directamente en el modelo $(\mathrm{Mod3}')$ mediante un estadístico $t$. En caso de que la hipótesis no sea rechazada, se pueden obtener estimaciones más eficientes estimando el modelo de regresión que impone la restricción $\delta_L = 0$:
+$$
+\Delta\pi_t = \alpha + 
+\delta_0 \Delta (u_{t} - u^n_{t}) + 
+\delta_1 \Delta (u_{t-1} - u^n_{t-1}) +
+\dots +
+\delta_{L-1} \Delta (u_{t-L+1} - u^n_{t-L+1}) +
+\epsilon_t 
+\tag{Mod4}
+$$
+
+# Instrucciones
+
+## Paquetes R
+
+- Cargue los paquetes `mosaic`, `sandwich`, `lmtest`, `zoo` y `dynlm`.
+
+- Cargue el paquete `urca` que se usará para contrastar la existencia de raíces unitaria en las series. Instálelo previamente, si es necesario.
+
+
+## Datos
+
+- Cree la variable `db` donde se guardan los datos del archivo `phillips.csv`. Para leer los datos use la función `read.csv`.
+
+- Cree la variable `st`, una base de datos de series temporales con la instrucción `zooreg` indicando el año inicial, 1963 y la frecuencia de los datos.
+
+- Calcule la tasa de inflación y guárdela en una nueva variable `infl` dentro de la base de datos `st`. Utilice la fórmula:
+$$
+  \pi_t = 100 \Delta \log(p_t)
+$$
+- Calcule el desempleo cíclico como diferencia de la tasa de desempleo observada, `paro`, y la tasa natural de desempleo, `paro_n`. Guarde el resultado en una nueva variable `paro_c` dentro de la base de datos `st`. 
+
+- Elimine la observación correspondiente a 1963. La función `window` sirve para seleccionar una parte de la muestra especificando una fecha inicial, `start`, y una fecha final, `end`. En nuestro caso sólo necesitamos especificar la fecha inicial: 
+    ```{r}
+st <- window(st, start = 1964)
+    ```
+
+## Contrastes de raíces unitarias
+
+Para contrastar la presencia de raíces unitarias utilizaremos la función `ur.df` del paquete `urca`. Esta función calcula los contrastes aumentados de Dickey-Fuller y, opcionalmente, selecciona el número de retardos usando un criterio de información. Al usar esta función especificaremos el tipo de contraste que queremos llevar a cabo con los siguientes argumentos:
+
+- `type`: puede tomar el valor `"trend"` o `"drift"` si queremos incluir en la regresión de Dickey-Fuller una constante y una tendencia lineal o sólo una constante.
+
+- `lags`: el número de retardos a incluir en la regresión de Dickey-Fuller.
+
+- `selectlags`: si es igual a `"AIC"` o `"BIC"` selecciona el número de retardos minimizando un criterio de información. El número máximo de retardos sería el valor especificado en `lags`.
+
+
+### Inflación
+
+- Obtenga un gráfico de series temporales de la variables `infl`.
+
+- Contraste la existencia de una raíz unitaria en `infl`, seleccionando el número de retardos con el AIC, usando 3 retardos como máximo y sin incluir una tendencia lineal:
+    ```{r eval=FALSE}
+df_infl <- ur.df(st$infl, type = "drift", lags = 3, selectlags = "AIC")
+summary(df_infl)
+    ```
+- Verifique que la diferencia de la inflación no tiene una raíz unitaria:
+    ```{r eval=FALSE}
+df_dinfl <- ur.df(diff(st$infl), type = "drift", lags = 3, selectlags = "AIC")
+summary(df_dinfl)
+    ```
+
+### Desempleo cíclico
+
+- Obtenga un gráfico de series temporales de la variables `paro_c`.
+
+- Contraste la existencia de una raíz unitaria en `paro_c`. 
+
+## Selección del número de retardos
+
+En primer lugar, se estimarán modelos de retardos distribuidos para 0, 1, 2 y 3 retardos. En todas las regresiones se usará la misma muestra, 1967-2022. En segundo lugar, usaremos el BIC para escoger el número de retardos.
+
+- Estimación del modelo estático:
+    ```{r eval=FALSE}
+mod3_l0 <- dynlm(d(infl) ~ paro_c , data = st, start = 1967)
+    ```
+
+- Dentro de `dynlm` podemos incluir el primer retardo de una variable con la notación `L(variable)`. Añadimos un retardo de `paro_c`:
+    ```{r eval=FALSE}
+mod3_l1 <- dynlm(d(infl) ~ paro_c + L(paro_c) , data = st, start = 1967)
+    ```
+
+- Añadimos el segundo retardo usando la notación `L(paro_c, 2)` dentro de `dynlm`. Una forma conveniente de actualizar el modelo de regresión es usar la función `update`:
+    ```{r eval=FALSE}
+mod3_l2 <- update(mod3_l1, . ~ . + L(paro_c, 2))
+    ```
+
+- Estime el modelo con 3 retardos y guárdelo en la variable `mod3_l3`.
+
+- Calculamos el BIC del modelo estático con la función `BIC`:
+    ```{r eval=FALSE}
+BIC(mod3_l0)
+    ```
+
+- Calcule el BIC de los restantes modelos. ¿Cuál es el modelo que presenta un menor BIC?
+
+
+## Modelo dinámico
+
+De acuerco con el BIC, el número de retardos óptimo es 1 y trabajaremos con el modelo `mod3_l1`.
+
+- Obtenga la tabla de la regresión con la función `summary`.
+
+- Obtenga los errores típicos y cocientes $t$ robustos a heteroscedasticidad y autocorrelación.
+
+- Obtenga el gráfico de los coeficientes de autocorrelación de los residuos. ¿Muestra síntomas de mala especificación?
+
+- ¿Es necesario añadir un retardo de la variable dependiente? Amplíe el modelo `mod3_l1` para que incluya un retardo de la variable dependiente, `L(d(infl))`. Compruebe que ese retardo no es significativo empleando un contraste de significación individual robusto a heteroscedasticidad y autocorrelación.
+
+
+## Efectos a largo plazo
+
+- Reparametrice el modelo `mod3_l1` para estimar los multiplicadores acumulativos y de largo plazo.
+
+- Contraste que el multiplicador a largo plazo sea igual a 0. En caso de no poder rechazar la hipótesis, estime un modelo que imponga la restricción de que no hay efectos a largo plazo.
+
