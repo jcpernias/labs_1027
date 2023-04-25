@@ -21,6 +21,7 @@ $$
 donde $\pi_t$ es la tasa de inflación, $u_t$ es la tasa de paro y $\epsilon_t$ es el término de error.
 
 ## Curva de Phillips con expectativas
+
 La curva de Phillips aumentada con expectativas se puede escribir como:
 $$
 \pi_t = \pi^e_t + \beta (u_t - u^n) + \epsilon_t
@@ -41,7 +42,7 @@ donde el parámetro $\delta$ es igual a $-\beta u^n$.
 
 ## Datos
 
-El archivo `phillips.csv` contiene series anuales referidas a la ecoomía española y que cubren el periodo que va desde 1963 hasta 2022. En este laboratorio usaremos las series:
+El archivo `phillips.csv` contiene series anuales referidas a la economía española y que cubren el periodo que va desde 1963 hasta 2022. En este laboratorio usaremos las series:
 
 - `defl`: deflactor del consumo privado, base 2015.
 
