@@ -37,8 +37,16 @@ st <- window(st, start = 1964)
 
 
 #' # Contrastes de raíz unitaria
-
+#'
+#' Se usan los contrastes aumentados de Dickey-Fuller para
+#' determinar la presencia de raíces unitarias en las series
+#' de inflación y desempleo. Se seleccionará el número de
+#' retardos de acuerdo con el AIC considerando 3 retardos como
+#' máximo.
+#'
 #' ## Inflación.
+#'
+#' Gráfico de series temporales: inflación.
 autoplot(st$infl)
 
 #' Contraste de raíz unitaria: inflación.
@@ -46,12 +54,15 @@ df_infl <- ur.df(st$infl, type = "drift",
                  lags = 3, selectlags = "AIC")
 summary(df_infl)
 
-
 #' Contraste de raíz unitaria: diferencia de la inflación.
 df_dinfl <- ur.df(diff(st$infl), type = "drift",
                   lags = 3, selectlags = "AIC")
 summary(df_dinfl)
 
+#' Los contrastes muestran que la inflación tiene una raíz
+#' unitaria y que la diferencia de la inflación no tiene
+#' tendencias estocásticas.
+#'
 #' ## Desempleo cíclico
 #'
 #' Gráfico de series temporales: desempleo cíclico.
@@ -62,6 +73,8 @@ df_paro_c <- ur.df(st$paro_c, type = "drift",
                    lags = 3, selectlags = "AIC")
 summary(df_paro_c)
 
+#' El desempleo cíclico no tiene una raíz unitaria.
+#'
 #' # Selección del número de retardos
 #'
 #' Estimamos modelos de retardos distribuidos para 0, 1, 2 y
@@ -87,10 +100,12 @@ BIC(mod3_l1)
 BIC(mod3_l2)
 BIC(mod3_l3)
 
+#' Seleccionamos el modelo con 1 retardo, `mod3_l1` por ser el que
+#' tiene menor BIC.
+#'
 #' # Modelo dinámico
 #'
-#' Seleccionamos el modelo con 1 retardo, `mod3_l1` por ser el que
-#' tiene menor BIC. Tabla de las regresiones:
+#' Tabla de la regresión de3l modelo con 1 retardo:
 summary(mod3_l1)
 
 #' Tabla de la regresión usando errores típicos robustos a
@@ -99,22 +114,31 @@ coeftest(mod3_l1, vcov. = vcovHAC)
 
 #' Coeficientes de autocorrelación de los residuos:
 acf(resid(mod3_l1))
+#' Los coeficientes de autocorrelación de los residuos son muy
+#' pequeños y no muestran evidencias de dependencia fuerte.
+#'
+#' Investigamos la posibilidad de que sea necesario incluir un
+#' retardo de la variable dependiente. Estimación de un modelo
+#' ARDL(1, 1):
+ardl <- update(mod3_l1, . ~ . + L(d(infl)))
+coeftest(ardl, vcov. = vcovHAC)
+#' El retardo de la variable dependiente no es significativo.
 
-#' Estimación de un modelo ARDL(1, 1)
-mod4 <- update(mod3_l1, . ~ . + L(d(infl)))
-summary(mod4)
-coeftest(mod4)
-
-
+#'
 #' # Efectos a largo plazo
 #'
 #' Reparametrización del modelo `mod3_l1` para obtener los
 #' multiplicadores acumulativos y de largo plazo:
 mod3_lp <- update(mod3_l1, . ~ d(paro_c) + L(paro_c))
-coeftest(mod3_lp)
+coeftest(mod3_lp, vcov. = vcovHAC)
 
+#' Las estimaciones anteriores indican que a corto plazo hay un
+#' efecto negativo y significativo del paro cíclico sobre la
+#' variación de la  inflación. Sin embargo, a largo plazo el
+#' desempleo no influiría en la inflación.
+#'
 #' Estimamos el modelo imponiendo un multiplicador de largo
 #' plazo igual a 0:
-mod3_lp2 <- update(mod3_l1, . ~ d(paro_c))
-coeftest(mod3_lp2)
+mod3_lp0 <- update(mod3_lp, . ~ . - L(paro_c))
+coeftest(mod3_lp0, vcov. = vcovHAC)
 
