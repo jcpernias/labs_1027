@@ -22,6 +22,7 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 #' de covarianzas robustas a heteroscedasticidad y realizar
 #' contrastes de hipótesis lineales sobre los parámetros de los
 #' modelos de regresión.
+#+packages, warning=FALSE, message=FALSE
 library(lmtest)
 library(sandwich)
 library(car)
@@ -156,9 +157,9 @@ lht(mod2, joint_h0, vcov. = vcovHC)
 #'   de las mujeres es un $16\%$ inferior al de los hombres.
 #'
 #'   La educación de los trabajadores también es un determinante
-#'   significativo de los salario de los trabajadores. Las estimaciones
+#'   significativo de sus salarios. Las estimaciones
 #'   del Modelo 2 muestran que cada año adicional de educación se
-#'   traduce en un aumento del $6\%$ del salario medio.
+#'   traduce, en promedio, en un aumento del $6\%$ del salario.
 #'
 #'   Los años de experiencia laboral parecen tener un efecto pequeño
 #'   sobre el salario medio (aumento de $0.2\%$ al año) y no significativo.
@@ -170,15 +171,30 @@ lht(mod2, joint_h0, vcov. = vcovHC)
 #'   que el salario de de las empresas públicas
 #'   es significativamente mayor que el que pagan las empresas privadas
 #'   (un $16.7\%$ mayor). Por el contrario, el salario en las empresas
-#'   sin ánimo de lucro el salario es un $10.8\%$ inferior al de las
+#'   sin ánimo de lucro es un $10.8\%$ inferior al de las
 #'   empresas privadas. La precisión de la estimación del parámetro de
 #'   `ong` no es grande y el efecto no es significativo para
 #'   $\alpha = 5\%$.
 #'
+#'   El tipo de contrato también ayuda a explicar las diferencias entre
+#'   los salarios de los trabajadores. Los trabajadores con un contrato
+#'   temporal, de aprendizaje u otros tipos de contrato tienen,
+#'   respectivamente, salarios un $4.2\%$, un $21.6\%$ y un $3.9\%$
+#'   inferiores a los trabajadores con un contrato indefinido. Sin embargo,
+#'   solo la diferencia con los salarios de los aprendices es
+#'   significativamente distinta de 0.
+#'
+#'   Otras características individuales no tienen efectos significativos al
+#'   $5\%$ sobre los salarios. La variable `edad` tiene un efecto muy pequeño
+#'   (incremento salarial de $0.2\%$ al año), mientras que los efectos de tener
+#'   hijos dependientes a cargo o de convivir con la pareja son
+#'   cuantitativamente similares (un salario un $5\%$ mayor en ambos casos).
+#'
+#'   Finalmente, el salario de los trabajadores nacidos fuera de España es
+#'   un $12\%$ inferior al de los españoles, siendo este un efecto fuertemente
+#'   significativo.
 #'
 #'
-
-
 #' - ¿Hay diferencias entre la brecha salarial no ajustada
 #' y la ajustada?
 #'
@@ -191,8 +207,11 @@ lht(mod2, joint_h0, vcov. = vcovHC)
 #' - Obtenga un intervalo de confianza para la brecha salarial
 #' ajustada.
 coefci(mod2, parm = "mujer", vcov. = vcovHC)
-
-
+#'
+#'   A un nivel de confianza del $95\%$, los salarios medios de las mujeres
+#'   son entre un $12\%$ y un $20\%$ más bajos que los salarios medios de los
+#'   hombres, a igualdad de las variables incluidas en el Modelo 2.
+#'
 #' # Participación en el mercado laboral
 #'
 #' ## Modelo de probabilidad lineal simple
@@ -208,7 +227,7 @@ coeftest(mod3, vcov. = vcovHC)
 
 #' - ¿Cuál es la interpretación del parámetro $\alpha_1$?
 #'
-#'   El parámetro $\alpha_1$ mide la diferencia de la probabilidades
+#'   El parámetro $\alpha_1$ mide la diferencia de las probabilidades
 #'   de estar activo en el mercado laboral de mujeres y hombres.
 #'   Alternativamente, $100 \alpha_1$ es la diferencia en las tasas de
 #'   actividad de mujeres y de hombres.
@@ -238,12 +257,11 @@ coeftest(mod4, vcov. = vcovHC)
 #' en el modelo $\mathrm{(Mod3)}$ y en el modelo $\mathrm{(Mod4)}$?
 #'
 #'   Sí: una vez se toman en cuenta otras características de los
-#'   trabajadores la diferencia en las probabilidades de hombres y
+#'   trabajadores, la diferencia en las probabilidades de hombres y
 #'   mujeres de participar en el mercado de trabajo se reduce a
-#'   6.6 puntos porcentuales. Aún así la diferencia sigue siendo
-#'   significativa y se corresponde a una menor participaciópn de las
-#'   mujeres en el mercado laboral, a igualdad de las características
-#'   que se han incluido en la regresión.
+#'   6.6 puntos porcentuales. Aún así, la diferencia sigue siendo
+#'   significativa y se corresponde a una menor participación de las
+#'   mujeres en el mercado laboral.
 
 #' - Contraste la significación conjunta de la regresión.
 #'
@@ -258,4 +276,35 @@ lht(mod4, joint_h0, vcov. = vcovHC)
 #'
 #' - Discuta brevemente el signo y la magnitud de las estimaciones
 #' de los parámetros y la significación de las variables explicativas.
-## >>>>>>>>>>>>>>>>>>>>>
+#'
+#'   Todas las variables del Modelo 4, a excepción de `pareja`, tienen un
+#'   efecto significativo al $5\%$ sobre la probabilidad de participar en
+#'   el mercado de trabajo.
+#'
+#'   Como se comentó antes, el parámetro de `mujer` muestra que, a igualdad
+#'   de las otras características incluidas en el Modelo 4, las mujeres tienen
+#'   una menor probabilidad de participar en el mercado de trabajo que los
+#'   hombres.
+#'
+#'   Tanto `educ` como `exper` tienen un efecto positivo sobre probabilidad
+#'   de estar activo laboralmente. Cada año adicional de educación eleva esa
+#'   probabilidad en $2$ puntos porcentuales mientras que cada año de
+#'   experiencia laboral la eleva en $1.1$ puntos porcentuales. Por el
+#'   contrario, la edad está inversamente relacionada con la participación
+#'   en el mercado laboral y, *ceteris paribus*, la probabilidad de estar
+#'   activo se reduce en $1.8$ puntos porcentuales cada año que pasa.
+#'
+#'   Tener hijos dependientes afecta a la situación laboral, siendo la
+#'   probabilidad de estar activo $7.7$ puntos porcentuales más alta
+#'   en el caso de los individuos con hijos a cargo que en el caso de aquellos
+#'   sin hijos.
+#'
+#'   La pendiente de `pareja` indica que la participación en el mercado laboral
+#'   de los individuos que conviven con su pareja es $1.5$ puntos porcentuales
+#'   más alta que la de los que no conviven con sus parejas. Como se comentó antes,
+#'   no se puede rechazar la hipótesis de que este parámetro sea
+#'   igual a $0$ para $\alpha = 5\%$.
+#'
+#'   Por último, comparada con la de los trabajadores españoles, la tasa de
+#'   actividad de los nacidos fuera de España es $4.1$ puntos porcentuales más
+#'   alta.
