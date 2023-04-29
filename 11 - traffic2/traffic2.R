@@ -35,8 +35,8 @@ st <- zooreg(traffic2, start = c(1981, 1), frequency = 12)
 
 ## May 87 -> spdlaw
 ## Jan 86 -> beltlaw
-st$belt <- as.integer(time(st) >= "Jan 1986")
-st$speed <- as.integer(time(st) >= "May 1987")
+st$belt <- as.integer(time(st) >= "1986-01")
+st$speed <- as.integer(time(st) >= "1987-01")
 
 st$ltotal <- log(st$total)
 autoplot(st$ltotal)
@@ -53,7 +53,8 @@ autoplot(st$unem)
 ur.df(st$unem, type = "trend", lags = 6, selectlags = "AIC") |>
   summary()
 
-ur.df(diff(st$unem), type = "drift", lags = 6, selectlags = "AIC") |>
+autoplot(st$unem)
+ur.df(st$unem, type = "drift", lags = 6, selectlags = "AIC") |>
   summary()
 
 
