@@ -8,42 +8,30 @@
 knitr::opts_chunk$set(echo = TRUE, comment = "")
 
 #+ packages, warning=FALSE, message=FALSE
-library(readxl)
 library(mosaic, warn.conflicts = FALSE)
 library(zoo)
-library(urca)
 library(dynlm)
+library(urca)
 library(sandwich)
 library(lmtest)
-
-traffic2 <- read_excel("traffic2.xlsx") |>
-  select(-c(spdlaw, beltlaw)) |>
-  rename(total = totacc, fatal = fatacc, weekends = wkends)
-
-st <- zooreg(traffic2, start = c(1981, 1), frequency = 12)
-st_month <- cycle(st)
-st_year <- format(time(st), "%Y") |> as.integer() |>
-  zooreg(start = start(st), frequency = frequency(st))
-
-st <- merge(year = st_year, month = st_month, st)
-
-write.csv(st, "traffic2.csv", quote = FALSE, row.names = FALSE)
+library(car)
 
 
 traffic2 <- read.csv("traffic2.csv")
 st <- zooreg(traffic2, start = c(1981, 1), frequency = 12)
 
+st$t <- 1:nrow(st)
+
 ## May 87 -> spdlaw
 ## Jan 86 -> beltlaw
 st$belt <- as.integer(time(st) >= "1986-01")
-st$speed <- as.integer(time(st) >= "1987-01")
+st$speed <- as.integer(time(st) >= "1987-05")
 
 st$ltotal <- log(st$total)
 autoplot(st$ltotal)
 
 ur.df(st$ltotal, type = "trend", lags = 6, selectlags = "AIC") |>
   summary()
-
 
 autoplot(st$weekends)
 ur.df(st$weekends, type = "drift", lags = 6, selectlags = "AIC") |>
@@ -58,28 +46,26 @@ ur.df(st$unem, type = "drift", lags = 6, selectlags = "AIC") |>
   summary()
 
 
-mod1 <- dynlm(ltotal ~ trend(st) + season(st) + weekends + unem +
+mod1 <- dynlm(ltotal ~ t + season(st) + weekends + unem +
                 belt + speed, data = st)
 summary(mod1)
 coeftest(mod1, vcov. = vcovHAC)
-
 acf(resid(mod1))
 
-mod2 <- dynlm(ltotal ~ trend(st) + season(st) + weekends + d(unem) +
-                belt + speed, data = st)
-summary(mod2)
-coeftest(mod2, vcov. = vcovHAC)
-acf(resid(mod2))
-
+h0 <- matchCoefs(mod1, "season")
+lht(mod1, h0, vcov. = vcovHAC)
 
 st$fr_fatal <- st$fatal / st$total * 1000
 autoplot(st$fr_fatal)
 ur.df(st$fr_fatal, type = "trend", lags = 6, selectlags = "AIC") |>
   summary()
 
-mod3 <- dynlm(fr_fatal ~ trend(st) + season(st) + weekends +
+mod2 <- dynlm(fr_fatal ~ t + season(st) + weekends +
                 + unem + speed + belt, data = st)
-summary(mod3)
-coeftest(mod3, vcov. = vcovHAC)
+summary(mod2)
+coeftest(mod2, vcov. = vcovHAC)
+
+h0 <- matchCoefs(mod2, "season")
+lht(mod2, h0, vcov. = vcovHAC)
 
 
