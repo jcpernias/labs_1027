@@ -1,0 +1,93 @@
+---
+title: "Accidentes de tráfico y leyes de circulación (I)"
+author: "EC1027 --- Econometría I"
+date: "Curso 2022-2023"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Planteamiento
+
+El archivo `traffic2.csv` contiene observaciones mensuales que cubren el periodo que va desde enero de 1981 hasta diciembre de 1989 y recoge información sobre accidentes automovilísticos en California y algunas otras variables relacionadas:
+
+- `year`, `month`: el año y el mes (1, 2, ..., 12) de cada observación.
+
+- `total`: número total de accidentes de tráfico.
+
+- `fatal`: número de accidentes con víctimas mortales.
+
+- `weekends`: número de días de fin de semana en cada mes.
+
+- `unem`: tasa de desempleo en California.
+
+En este laboratorio trataremos de cuantificar el efecto que sobre los accidentes de tráfico tuvieron dos leyes que se aprobaron en esa época.
+
+# Instrucciones
+
+## Preliminares
+
+- Cargue los paquetes `mosaic`, `zoo`, `dynlm`, `urca`, `sandwich`, `lmtest` y `car`.
+
+- Lea el archivo `traffic2.csv` y guarde los resultados en la variable `traffic2`.
+
+- Cree un conjunto de datos de series temporales con la función `zooreg` y guárdelo en la variable `st`:
+    ```{r eval=FALSE}
+st <- zooreg(traffic2, start = c(1981, 1), frequency = 12)
+    ```
+  En la instrucción anterior se indica que los datos tienen frecuencia mensual, `frequency = 12`,  y que el periodo inicial es enero de 1981, `start = c(1981, 1)`. 
+
+
+## Transformación de variables
+
+Cree las siguientes variables y guárdelas en `st`:
+
+- La variable `ltotal` es el logaritmo de `total`.
+
+- La variable `pfatal` es la tasa de accidentes fatales por cada 1000 accidentes.
+
+- La variable `t` es una tendencia lineal y toma los valores consecutivos 1, 2, ...:
+    ```{r eval=FALSE}
+st$t <- 1:nrow(st)
+    ```
+
+- La variable `belt` es una ficticia que indica en qué meses estaba vigente la obligación del cinturón de seguridad. En California es obligatorio desde enero de 1986:
+    ```{r eval=FALSE}
+st$belt <- as.integer(time(st) >= "1986-01")
+    ```
+
+- La variable `speed` es una variable ficticia que toma el valor 1 desde mayo de 1987, cuando se elevó el límite de velocidad en California de 50 a 65 millas por hora.
+
+
+## Contrastes de raíces unitarias
+
+- Examine con un gráfico la evolución temporal del logaritmo de los accidentes totales en California, `ltotal`. Contraste la presencia de una raíz unitaria. Incluya una tendencia en la regresión de Dickey-Fuller y seleccione el número de retardos a incluir con el AIC, considerando 6 retardos como máximo.
+
+- Analice `pfatal` de la misma forma que `ltotal` en el punto anterior.
+
+- ¿Hay raíces unitarias en `unem`? ¿Y en `weekends`?
+
+## Accidentes totales
+
+- Estime con la función `dynlm` los parámetros de un modelo estático que explique el logaritmo de los accidentes totales, `ltotal`, con una tendencia lineal, `t`, variables ficticias estacionales, `season(st)`, y las variables `weekends`, `unem`, `belt` y `speed`. Obtenga los errores típicos robustos a heteroscedasticidad y autocorrelación.
+
+- ¿Qué interpretación tiene el parámetro de `t`? ¿Es significativamente distinto de 0?
+
+- ¿Qué interpretación tienen las variables estacionales ficticias? En concreto, ¿cuál es la interpretación del parámetro de febrero? ¿Y el de agosto? Contraste la significación conjunta de las variables estacionales. ¿Qué conclusión se extrae de este contraste?
+
+- Interprete y evalúe la significación individual de los parámetros de `weekends` y `unem`.
+
+- De acuerdo con nuestros objetivos, las variable más importantes son `belt` y `speed`. Interprete y determine la significación individual de sus parámetros. ¿Cómo pueden explicarse los signos obtenidos?
+
+- ¿Es razonable el supuesto de exogeneidad estricta de las explicativas de esta regresión? ¿Por qué?
+
+## Accidentes con víctimas mortales
+
+- Estime un modelo de regresión que explique la proporción de accidentes fatales, `pfatal`, usando las mismas variables explicativas que en la sección anterior. 
+
+- ¿Es significativa la tendencia lineal? ¿Son relevantes los efectos estacionales?
+
+- Interprete y determine la significación del resto de variables. 
+
+- ¿Son razonables los signos obtenidos?
