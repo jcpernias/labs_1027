@@ -1,0 +1,184 @@
+---
+title: "Accidentes de tráfico y leyes de circulación (I): solución"
+author: "EC1027 --- Econometría I"
+date: "Curso 2022-2023"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+
+# Preliminares
+
+- Cargue los paquetes `mosaic`, `zoo`, `dynlm`, `urca`, `sandwich`, `lmtest` y `car`.
+    ```{r packages, message = FALSE, warning = FALSE}
+library(mosaic, warn.conflicts = FALSE)
+library(zoo)
+library(dynlm)
+library(urca)
+library(sandwich)
+library(lmtest)
+library(car)
+    ```
+
+- Lea el archivo `traffic2.csv` y guarde los resultados en la variable `traffic2`.
+    ```{r}
+traffic2 <- read.csv("traffic2.csv")
+    ```
+
+- Cree un conjunto de datos de series temporales con la función `zooreg` y guárdelo en la variable `st`:
+    ```{r}
+st <- zooreg(traffic2, start = c(1981, 1), frequency = 12)
+    ```
+  En la instrucción anterior se indica que los datos tienen frecuencia mensual, `frequency = 12`,  y que el periodo inicial es enero de 1981, `start = c(1981, 1)`. 
+
+
+# Transformación de variables
+
+Cree las siguientes variables y guárdelas en `st`:
+
+- La variable `ltotal` es el logaritmo de `total`.
+    ```{r}
+st$ltotal <- log(st$total)
+    ```
+
+- La variable `pfatal` es la tasa de accidentes fatales por cada 1000 accidentes.
+    ```{r}
+st$pfatal <- st$fatal / st$total * 1000
+    ```
+
+- La variable `t` es una tendencia lineal y toma los valores consecutivos 1, 2, ...:
+    ```{r}
+st$t <- 1:nrow(st)
+    ```
+
+- La variable `belt` es una ficticia que indica en qué meses estaba vigente la obligación del cinturón de seguridad. En California es obligatorio desde enero de 1986:
+    ```{r}
+st$belt <- as.integer(time(st) >= "1986-01")
+    ```
+
+- La variable `speed` es una variable ficticia que toma el valor 1 desde mayo de 1987, cuando se elevó el límite de velocidad en California de 50 a 65 millas por hora.
+    ```{r}
+st$speed <- as.integer(time(st) >= "1987-05")
+    ```
+
+
+# Contrastes de raíces unitarias
+
+- Examine con un gráfico la evolución temporal del logaritmo de los accidentes totales en California, `ltotal`. Contraste la presencia de una raíz unitaria. Incluya una tendencia en la regresión de Dickey-Fuller y seleccione el número de retardos a incluir con el AIC, considerando 6 retardos como máximo.
+    ```{r}
+autoplot(st$ltotal)
+    ```
+  
+  El gráfico anterior muestra una tendencia creciente en el número de accidentes totales durante el periodo analizado. 
+    ```{r}
+df <- ur.df(st$ltotal, type = "trend", lags = 6, selectlags = "AIC")
+summary(df)
+    ```
+  El valor del contraste $t$ de Dickey-Fuller aumentado es $-3.601$. Este valor es más pequeño que $-3.43$, el valor crítico para un nivel de significación del $5\%$. Por tanto, rechazamos la hipótesis nula de que la variable `ltotal` tenga una raíz unitaria.
+  
+- Analice `pfatal` de la misma forma que `ltotal` en el punto anterior.
+    ```{r}
+autoplot(st$pfatal)
+    ```
+
+  La variable `pfatal` presenta una tendencia decreciente a lo largo del periodo muestral.
+    ```{r}
+df <- ur.df(st$pfatal, type = "trend", lags = 6, selectlags = "AIC")
+summary(df)
+    ```
+  En este caso también se rechaza la hipótesis nula de raíz unitaria, al obtener un valor del contraste de Dickey-Fuller igual a $-6.378$, que es muy inferior a $-3.43$, el valor crítico para $\alpha = 5\%$.
+  
+- ¿Hay raíces unitarias en `unem`? ¿Y en `weekends`?
+    ```{r}
+autoplot(st$unem)
+    ```
+
+  El desempleo presenta una marcada tendencia decreciente.
+    ```{r}
+df <- ur.df(st$unem, type = "trend", lags = 6, selectlags = "AIC")
+summary(df)
+    ```
+  Se rechaza la hipótesis nula de raíz unitaria a un nivel de significación del $5\%$ ya que el valor del contraste, $-3.610$, es inferior al valor crítico, $-3.43$. 
+
+    ```{r}
+autoplot(st$weekends)
+    ```
+
+  Los valores que toma la variable `weekends` dependen del calendario, su variación es sistemática y no presentan tendencia. Usualmente no realizamos contrastes de raíz unitaria con este tipo de variables.   
+    ```{r}
+df <- ur.df(st$weekends, type = "drift", lags = 6, selectlags = "AIC")
+summary(df)
+    ```
+La hipótesis de raíz unitaria se rechaza fuertemente. 
+
+En conclusión, ninguna de las variables que utilizaremos en los modelos de regresión presenta raíces unitarias. Por otro lado, se han detectado tendencias crecientes en el número de accidentes totales y decrecientes en la proporción de accidentes fatales y en la tasa de desempleo. Por tanto, incluiremos una tendencia lineal en las regresiones para evitar obtener resultados espurios.
+
+
+# Accidentes totales
+
+- Estime con la función `dynlm` los parámetros de un modelo estático que explique el logaritmo de los accidentes totales, `ltotal`, con una tendencia lineal, `t`, variables ficticias estacionales, `season(st)`, y las variables `weekends`, `unem`, `belt` y `speed`. Obtenga los errores típicos robustos a heteroscedasticidad y autocorrelación.
+    ```{r}
+mod1 <- dynlm(ltotal ~ t + season(st) + weekends + unem +
+                belt + speed, data = st)
+coeftest(mod1, vcov. = vcovHAC)
+    ```
+
+- ¿Qué interpretación tiene el parámetro de `t`? ¿Es significativamente distinto de 0?
+
+  El coeficiente de `t` indica que el número de accidentes totales crece un $0.11\%$ cada mes, manteniendo constantes los efectos de las restantes variables.  
+
+- ¿Qué interpretación tienen las variables estacionales ficticias? En concreto, ¿cuál es la interpretación del parámetro de febrero? ¿Y el de agosto? Contraste la significación conjunta de las variables estacionales. ¿Qué conclusión se extrae de este contraste?
+
+  Los parámetros de las variables ficticias muestran la diferencia media entre el número de accidentes en cada mes y los accidentes ocurridos en enero del mismo año. De acuerdo con nuestras estimaciones, el número de accidentes en febrero suele ser un $3.4\%$ inferior al número de accidentes de enero. Y en agosto hay un $5.5\%$ más de accidentes que en enero del mismo año, *ceteris paribus*.
+
+    ```{r}
+h0 <- matchCoefs(mod1, "season")
+lht(mod1, h0, vcov. = vcovHAC)
+    ```
+  El valor del contraste $F$ es $7.97$ con un valor $p$ prácticamente igual a 0, por lo que se rechaza la hipótesis nula de que todos los parámetros de las variables estacionales sean iguales a 0 aun nivel de significación del $5\%$.
+
+- Interprete y evalúe la significación individual de los parámetros de `weekends` y `unem`.
+
+  El parámetro de `weekends` es positivo, lo que mostraría que el número de accidentes tiende a ser mayor en aquellos meses en que hay más días de fin de semana. Sin embargo, el efecto es pequeño y no significativo al $5\%$ (el valor $p$ es $0.2$).
+
+  Las estimaciones del modelo de regresión muestran que los accidentes disminuyen en los periodos con mayor desempleo. En concreto, los accidentes disminuyen un $2.1\%$ por cada punto porcentual que se incremente la tasa de desempleo, *ceteris paribus*. El efecto es significativamente distinto de $0$ (el valor $p$ es inferior al $1\%$).
+  
+
+
+- De acuerdo con nuestros objetivos, las variable más importantes son `belt` y `speed`. Interprete y determine la significación individual de sus parámetros. ¿Cómo pueden explicarse los signos obtenidos?
+
+  El parámetro de `belt` muestra que, manteniendo constante el efecto del resto de variables, después de que entrara en vigor la ley que obligaba a usar el cinturón de seguridad los accidentes aumentaron un $9.5\%$ en comparación a los meses en que no existía la obligación de usar el cinturón. El valor $p$ es prácticamente $0$ por lo que este parámetro es significativo a los niveles usuales de significación.
+  
+  En el caso de la variable ficticia `speed`, comparados con los meses anteriores a la elevación del límite de velocidad, los accidentes disminuyeron un $5.5\%$ a partir de mayo del 1987. El efecto es significativo para $\alpha = 5\%$ ya que el valor $p = 0.003 < \alpha$.
+  
+  El signo de la variable `belt` puede parecer contrario a la intuición. Sin embargo, es posible explicarlo si pensamos que la obligación de portar el cinturón de seguridad aumenta la seguridad de los conductores y puede mitigar las consecuencias de los accidentes. Si esto es correcto, es posible que los conductores actúen de forma más imprudente cuando se les obliga a usar el cinturón y que esto se refleje en un mayor número de accidentes.
+  
+  De forma similar, el signo negativo de `speed` podría ser la consecuencia de que los conductores conduzcan con mayor cuidado después de que se eleve el límite de velocidad y las consecuencias de tener un accidente se agraven al ser mayor la velocidad a la que se circula en las carreteras de California.
+
+
+- ¿Es razonable el supuesto de exogeneidad estricta de las explicativas de esta regresión? ¿Por qué?
+
+  En esta regresión el supuesto de exogeneidad estricta de las variables explicativas sería razonable. No hay retardos de la variable dependiente y, posiblemente, no sean necesarios retardos de las variables explicativas (aunque esta posibilidad podría investigarse con regresiones adicionales). Por otro lado, no hay motivos para pensar que el número de accidentes totales afecte a los valores que toman las explicativas en el futuro. Muchas de los regresores dependen del paso del tiempo y del calendario y no se ven afectadas por los accidentes de tráfico pasados. Tampoco parece que haya motivos para pensar que afecten a las tasas de desempleo futuras. El número de accidentes sí que podría afectar a la futura legislación de tráfico pero no de forma continua: las leyes no se aprueban y se derogan repetidas veces al año de acuerdo con las fluctuaciones al alza o a la baja de la cifra de accidentes.
+
+
+
+# Accidentes con víctimas mortales
+
+- Estime un modelo de regresión que explique la proporción de accidentes fatales, `pfatal`, usando las mismas variables explicativas que en la sección anterior. 
+    ```{r}
+mod2 <- dynlm(pfatal ~ t + season(st) + weekends +
+                + unem + speed + belt, data = st)
+coeftest(mod2, vcov. = vcovHAC)
+    ```
+
+- ¿Es significativa la tendencia lineal? ¿Son relevantes los efectos estacionales?
+    ```{r}
+h0 <- matchCoefs(mod2, "season")
+lht(mod2, h0, vcov. = vcovHAC)
+    ```
+
+- Interprete y determine la significación del resto de variables. 
+
+- ¿Son razonables los signos obtenidos?
