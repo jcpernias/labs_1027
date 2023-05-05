@@ -70,3 +70,45 @@ h0 <- matchCoefs(mod2, "season")
 lht(mod2, h0, vcov. = vcovHAC)
 
 
+
+X <- coredata(model.matrix(mod1))
+Y <- model.response(model.frame(mod1)) |> coredata()
+uhat <- coredata(resid(mod1))
+Nobs <- nrow(X)
+Yname <- mod1$terms[[2]] |> as.character()
+Xnames <- variable.names(mod1)
+frml <- paste(Yname,
+              paste0(paste0("`", Xnames, "`", collapse = " + "), " + 0"),
+              sep = " ~ ") |>
+  as.formula()
+
+rho_reg <- lm(uhat[-1] ~ uhat[-Nobs])
+rho <- coef(rho_reg)[2]
+Xd <- X[-1, ] - rho * X[-Nobs, ]
+Yd <-  Y[-1] - rho * Y[-Nobs]
+YXd <- cbind(Yd, Xd)
+colnames(YXd) <- c(Yname, Xnames)
+co_reg <- dynlm(frml, data = as.data.frame(YXd))
+
+## co_reg <- lm(Yd ~ Xd + 0)
+summary(co_reg)
+uhat <- Y - X %*% coef(co_reg)
+
+
+X <- coredata(model.matrix(mod1))
+Y <- model.response(model.frame(mod1)) |> coredata()
+uhat <- coredata(resid(mod1))
+Nobs <- nrow(X)
+
+rho_reg <- lm(uhat[-1] ~ uhat[-Nobs])
+rho <- coef(rho_reg)[2]
+Xd <- X[-1, ] - rho * X[-Nobs, ]
+Yd <-  Y[-1] - rho * Y[-Nobs]
+X1 <- sqrt(1 - rho^2) * X[1, ]
+Y1 <- sqrt(1 - rho^2) * Y[1]
+
+Xpw <- rbind(X1, Xd)
+Ypw <- c(Y1, Yd)
+pw_reg <- lm(Ypw ~ Xpw + 0)
+summary(pw_reg)
+uhat <- Y - X %*% coef(pw_reg)
