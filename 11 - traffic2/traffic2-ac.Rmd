@@ -8,151 +8,221 @@ date: "Curso 2021-2022"
 knitr::opts_chunk$set(echo = TRUE, comment = "")
 ```
 
+# Introducción
+
+En este laboratorio se contrastará la existencia de autocorrelación en la regresión que explica el logaritmo de los accidentes totales. También se reestimará el modelo utilizando estimadores de mínimos cuadrados generalizados factibles.
+
 # Preliminares
 
-Se usarán los siguientes paquetes de R:
+## Paquetes R
 
-- `readxl`: lectura de archivos Excel.
-
-- `zoo`: manejo de series temporales.
-
-- `dynlm`: MCO con series temporales.
-
-- `ggplot2`: gráficos.
-
-- `sandwich`: estimación robusta a autocorrelación y heteroscedasticidad de las varianzas de los estimadores MCO.
-
-- `lmtest`: proporciona la función `coeftest` que imprime los resultados de las estimaciones utilizando errores típicos robustos.
-
-- `car`: contrastes de hipótesis lineales generales. 
-
+Utilizaremos los siguientes paquetes de R:
 ```{r packages, message=FALSE, warning=FALSE}
-library(readxl)
 library(zoo)
 library(dynlm)
-library(ggplot2)
 library(sandwich)
 library(lmtest)
 library(car)
 ```
 
-```{r other-packages, message=FALSE, warning=FALSE, echo=FALSE}
-library(forecast)
-library(orcutt)
-library(glue)
-```
+## Datos
 
-# Datos
-
-Leemos los datos del archivo de Excel `traffic2.xlsx` (para que R pueda encontrar ese archivo, antes hay que establecer el directorio de trabajo adecuadamente).
+Leemos los datos del archivo `traffic2.csv`:
 ```{r read-data}
-db <- read_xlsx("traffic2.xlsx")
+traffic2 <- read.csv("traffic2.csv")
 ```
 
-La base de datos contiene 108 observaciones mensuales que cubren el periodo que va desde enero de 1981 hasta diciembre de 1989 y recoge información sobre accidentes automovilísticos en California, leyes de tráfico y algunas otras variables relacionadas:
-
-- $\textit{totacc}$: número de accidentes de tráfico;
-
-- $\textit{fatacc}$: número de accidentes de tráfico mortales;
-
-- $\textit{wkends}$: número de días de fin de semana en cada mes; 
-
-- $\textit{unem}$: tasa de desempleo; 
-
-- $\textit{spdlaw}$: ley que eleva el límite de velocidad; y 
-
-- $\textit{beltlaw}$: ley que hace obligatorio el uso del cinturón de seguridad.
+La base de datos contiene 108 observaciones mensuales que cubren el periodo que va desde enero de 1981 hasta diciembre de 1989:
 
 ```{r ts-db}
-ts_db <- zooreg(db, start = c(1989, 1), frequency = 12)
+st <- zooreg(traffic2, start = c(1981, 1), frequency = 12)
 ```
+
+## Transformación de las variables
+
+La variable `ltotal` es el logaritmo de `total`:
+```{r}
+st$ltotal <- log(st$total)
+```
+
+La variable `t` es una tendencia lineal:
+```{r}
+st$t <- 1:nrow(st)
+```
+
+La variable `belt` es una ficticia que indica en qué meses estaba vigente la obligación del cinturón de seguridad. En California es obligatorio desde enero de 1986:
+```{r}
+st$belt <- as.integer(time(st) >= "1986-01")
+```
+
+La variable `speed` es una variable ficticia que toma el valor 1 desde mayo de 1987, cuando se elevó el límite de velocidad en California de 50 a 65 millas por hora:
+```{r}
+st$speed <- as.integer(time(st) >= "1987-05")
+```
+
 
 # Modelo de regresión
 
-En primer lugar estimamos por MCO un modelo de regresión para explicar el logaritmo de los accidentes totales en función de las variables  $\textit{wkends}$, $\textit{unem}$, $\textit{spdlaw}$, $\textit{beltlaw}$, una tendencia lineal y variables ficticias estacionales:
+Estimamos por MCO un modelo de regresión para explicar el logaritmo de los accidentes totales en función de las variables  `weekends`, `unem`, `belt`, `speed`, una tendencia lineal y variables ficticias estacionales:
 ```{r}
-ts_db$ltotacc <- log(ts_db$totacc)
-mod1 <- dynlm(ltotacc ~ wkends + unem + spdlaw + beltlaw + 
-                trend(ts_db) + season(ts_db), data = ts_db)
-summary(mod1)
+mod1 <- dynlm(ltotal ~ t + season(st) +
+                weekends + unem + belt + speed,
+              data = st)
+coeftest(mod1, vcov. = vcovHAC)
 ```
+
+Presentamos la tabla de la regresión con errores típicos robustos a heteroscedasticidad y autocorrelación:
+```{r}
+coeftest(mod1, vcov. = vcovHAC)
+```
+
+
+# Contrastes de autocorrelación
+
+
 Guardamos los residuos de la regresión anterior para estudiar la presencia de autocorrelación en el término de error.
 ```{r uhat}
 uhat1 <- resid(mod1)
 ```
 
 La inspección gráfica de los residuos muestra algunos síntomas de autocorrelación.
-```{r uhat-plot, echo=FALSE}
+```{r uhat-plot, echo=FALSE, warning=FALSE, message=FALSE}
+library(forecast)
 ggtsdisplay(uhat1, plot.type = "scatter")
 ```
 
-# Inferencia robusta a autocorrelación
-
-Newey y West propusieron un método para estimar consistentemente las varianzas de los estimadores MCO en presencia de autocorrelación. El estimador de Newey-West ha sido generalizado y refinado por muchos autores posteriores y se han incorporado en los programas informáticos. 
-```{r nw}
-ct <- coeftest(mod1, vcov. = vcovHAC)
-ct 
-```
-
-# Contrastes de autocorrelación
-
-## Exogeneidad estricta
-
-Cuando se cumple el supuesto de exogeneidad estricta es posible contrastar la existencia de autocorrelación de orden 1 con un contraste $t$ en una autorregresión de los residuos:
-```{r t-test}
-ar1_ttest <- dynlm(uhat1 ~ L(uhat1))
-summary(ar1_ttest)
-```
-El retardo de los residuos es fuertemente significativo, por lo que rechazaríamos la ausencia de autocorrelación en el término de error.
-
-Otro contraste de autocorrelación es el estadístico de Durbin y Watson. Sin embargo, las condiciones bajo las que este contraste es válido son mucho más exigentes que las del contraste $t$ anterior. El contraste Durbin-Watson requiere el cumplimiento de todos los supuestos del modelo clásico de regresión con series temporales. Además, la distribución del contraste bajo la hipótesis es complicada de obtener.  Dado que existen alternativas más simples de usar y que son válidas en condiciones más generales, no es recomendable usar el contraste Durbin-Watson.
-```{r dw}
-dwtest(mod1)
-```
-
 ## Contraste de Breusch-Godfrey
-
 Breusch y Godfrey propusieron un contraste de autocorrelación basado en el principio de multiplicadores de Lagrange. El contraste es válido aunque no se cumpla el supuesto de exogeneidad estricta y la distribución del término de error no sea normal. Para llevar a cabo un contraste de autocorrelación de orden 1, estimamos una regresión auxiliar utilizando los residuos MCO como variable dependiente, las mismas explicativas que en el modelo original y un retardo de los residuos.
 ```{r bg-ar1-aux}
 bgaux <- update(mod1, uhat1 ~ . + L(uhat1))
 summary(bgaux)
 ```
-
-El retardo de los residuos es significativo a los niveles convencionales de significación, por lo que rechazaríamos la hipótesis nula de no autocorrelación. 
+El retardo de los residuos es significativo a los niveles convencionales de significación, por lo que rechazaríamos la hipótesis nula de no autocorrelación. Si sospechamos que la varianza condicional del término de error no es constante podemos usar un contraste $t$ robusto a heteroscedasticidad:
+```{r bg-hc}
+coeftest(bgaux, vcov. = vcovHC)
+```
+Volvemos a obtener un valor $p$ inferior a $\alpha = 5\%$ por lo que rechazaríamos la hipótesis de no autocorrelación a un nivel de significación del $5\%$.
 
 Es sencillo extender el contraste Breusch-Godfrey para contrastar autocorrelación de orden superior a 1: simplemente se añaden más retardos de los residuos a la regresión auxiliar. En nuestro ejemplo, podemos contrastar autocorrelación de orden 2 añadiendo 2 retardos de los residuos:
 ```{r bg-ar2-aux}
 bgaux <- update(mod1, uhat1 ~ . + L(uhat1) + L(uhat1, 2))
 summary(bgaux)
 ```
-En este caso usamos un contraste $F$ para determinar la significación conjunta de los retardos de los residuos.
+El contraste se lleva a cabo examinando la significación conjunta de los retardos de los residuos con un estadístico $F$:
 ```{r bg-ar2-test}
-lht(bgaux, matchCoefs(bgaux, "uhat1"))
+h0_bg <- matchCoefs(bgaux, "uhat1")
+lht(bgaux, h0_bg)
 ```
+Alternativamente, podemos usar un contraste $F$ robusto a heteroscedasticidad:
+```{r bg-ar2-test-hc}
+lht(bgaux, h0_bg, vcov. = vcovHC)
+```
+En ambos casos se obtienen valores del estadístico de contraste muy elevados para ser compatibles con la hipótesis nula y rechazaríamos la hipótesis de no autocorrelación a un nivel de significación del $5\%$.
 
-El contraste rechaza la hipótesis nula de no autocorrelación a los niveles habituales de significación.
+## Otros contrastes de autocorrelación
+
+En el modelo de regresión que estamos analizando, podría considerarse razonable el supuesto de que las variables explicativas son estrictamente exógenas. En ese caso, puede contrastarse la presencia de autocorrelación con una autorregresión de los residuos:
+```{r t-test}
+ar1_ttest <- dynlm(uhat1 ~ L(uhat1))
+summary(ar1_ttest)
+```
+De acuerdo con el contraste $t$ de la tabla anterior, el retardo de los residuos es fuertemente significativo y rechazaríamos la ausencia de autocorrelación en el término de error.
+
+Otro contraste de autocorrelación es el estadístico de Durbin y Watson. Sin embargo, las condiciones bajo las que este contraste es válido son mucho más exigentes que las del contraste $t$ anterior. El contraste Durbin-Watson requiere el cumplimiento de todos los supuestos del modelo clásico de regresión con series temporales. Además, la distribución del contraste bajo la hipótesis es complicada de obtener.  Dado que existen alternativas más simples de usar y que son válidas en condiciones más generales, **no es recomendable usar el contraste Durbin-Watson**.
+```{r dw}
+dwtest(mod1)
+```
 
 # Estimación eficiente
 
-Si las variables explicativas son estrictamente exógenas, es posible obtener un estimador más eficiente que MCO en presencia de autocorrelación. El estimador de Cochrane-Orcutt se obtiene transformando el modelo de forma que las variables aparecen en cuasi-diferencias. Este procedimiento se suele iterar y se han propuesto extensiones para el caso de autocorrelación de orden superior. Prais y Winsten obtienen una transformación similar, pero que conserva la primera observación.
+Si las variables explicativas son estrictamente exógenas, es posible obtener un estimador más eficiente que MCO en presencia de autocorrelación. 
 
-```{r co, echo=FALSE}
-seas <- cycle(ts_db)
-the_months <- setNames(1:12, month.abb)
-sdummies <- outer(seas, the_months, "==") + 0
-colnames(sdummies) <- names(the_months)
-Z <- cbind(trend = 1 + (1:NROW(sdummies))/12, sdummies)
-ts_db2 <- merge(ts_db,
-                zooreg(Z, start = start(ts_db), frequency = frequency(ts_db)))
-yname <- "ltotacc"
-xnames <- c("trend", month.abb[-1], "wkends", "unem", "spdlaw", "beltlaw")
-frml_str <-  as.formula(glue("{yname} ~ {paste(xnames, collapse = ' + ')}"))
-co0 <- lm(frml_str, ts_db2)
-co1 <- cochrane.orcutt(co0)
+## Estimación por MCO
+
+En primer lugar necesitamos la estimación por MCO del modelo original. Posteriormente tendremos que cuasi diferenciar las variables, por lo que necesitamos crear en la base de datos las variables ficticias estacionales:
+```{r season-dummies}
+st$Feb <- as.integer(st$month == 2)
+st$Mar <- as.integer(st$month == 3)
+st$Abr <- as.integer(st$month == 4)
+st$May <- as.integer(st$month == 5)
+st$Jun <- as.integer(st$month == 6)
+st$Jul <- as.integer(st$month == 7)
+st$Ago <- as.integer(st$month == 8)
+st$Sep <- as.integer(st$month == 9)
+st$Oct <- as.integer(st$month == 10)
+st$Nov <- as.integer(st$month == 11)
+st$Dic <- as.integer(st$month == 12)
+```
+Estimación MCO:
+```{r}
+mco <- dynlm(ltotal ~ t + Feb + Mar + Abr + May + Jun +
+               Jul + Ago + Sep + Oct + Nov + Dic +
+               weekends + unem + belt + speed,
+             data = st)
 ```
 
-En nuestro ejemplo, después el procedimiento de Cochrane-Orcutt converge después de `r co1$number.interaction` iteraciones y se obtiener una estimación final del parámetro $\rho$ igual a $`r format(co1$rho, digits = 3, decimal.mark = "{,}")`$.
-```{r co-summ, echo=FALSE}
-summary(co1)
+## Estimación de $\rho$
+
+Estimamos el parámetro $\rho$ con una autorregresión de los residuos MCO. Si suponemos que el término de error sigue un proceso AR(1) basta con incluir un retardo de los residuos:
+```{r}
+uhat1 <- resid(mco)
+ar1 <- dynlm(uhat1 ~ L(uhat1))
+rho <- coef(ar1)[2]
+rho
 ```
+
+
+## Cuasi diferencias
+
+Transformamos todas las variables del modelo original. Crearemos una función que calcule la cuasi diferencia de una variable:
+```{r}
+cdiff <- function(x, rho) {
+  cdx <- x - rho * lag(x, -1)
+  c(NA, cdx)
+}
+```
+Usamos la función con todas las variables del modelo de regresión:
+```{r}
+st$cd_ltotal <- cdiff(st$ltotal, rho)
+st$cd_t <- cdiff(st$t, rho)
+st$cd_Feb <- cdiff(st$Feb, rho)
+st$cd_Mar <- cdiff(st$Mar, rho)
+st$cd_Abr <- cdiff(st$Abr, rho)
+st$cd_May <- cdiff(st$May, rho)
+st$cd_Jun <- cdiff(st$Jun, rho)
+st$cd_Jul <- cdiff(st$Jul, rho)
+st$cd_Ago <- cdiff(st$Ago, rho)
+st$cd_Sep <- cdiff(st$Sep, rho)
+st$cd_Oct <- cdiff(st$Oct, rho)
+st$cd_Nov <- cdiff(st$Nov, rho)
+st$cd_Dic <- cdiff(st$Dic, rho)
+st$cd_weekends <- cdiff(st$weekends, rho)
+st$cd_unem <- cdiff(st$unem, rho)
+st$cd_belt <- cdiff(st$belt, rho)
+st$cd_speed <- cdiff(st$speed, rho)
+```
+También creamos una variable que siempre toma el valor $1 - \rho$ y que nos servirá para estimar el parámetro $\beta_0$:
+```{r}
+st$cd_const <- 1 - rho
+```
+
+
+## Estimador MCGF
+
+
+El estimador de Cochrane-Orcutt se obtiene estimadando por MCO el modelo con las variables en cuasi diferencias.
+
+```{r}
+ar1_co <- dynlm(cd_ltotal ~ 0 + cd_const + cd_t + 
+                  cd_Feb + cd_Mar + cd_Abr + cd_May + cd_Jun +
+                  cd_Jul + cd_Ago + cd_Sep + cd_Oct + cd_Nov + cd_Dic +
+                  cd_weekends + cd_unem + cd_belt + cd_speed,
+                data = st)
+summary(ar1_co)
+```
+Las estimaciones obtenidas son muy similares las obtenidas por MCO. Por otro, lado si el término de error seguía un proceso AR(1), los errores típicos de MCGF son válidos. Si existe heteroscedasticidad o si la autocorrelación sigue un esquema más complejo que un AR(1) es posible usar la estimación de Cochrane-Orcutt junto con errores típicos robustos:
+```{r}
+coeftest(ar1_co, vcov. = vcovHAC)
+```
+
 
