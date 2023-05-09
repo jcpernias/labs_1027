@@ -1,5 +1,5 @@
 ---
-title: "La ley de Okun"
+title: "La ley de Okun en España: 1980--2019"
 author: "EC1027 --- Econometría I"
 date: "Curso 2022-2023"
 ---
@@ -12,6 +12,32 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 library(tidyverse)
 library(kableExtra)
 ```
+
+# Instrucciones {.unnumbered}
+
+1. Descargue el archivo `okun.zip` y descomprímalo. Este archivo contiene una carpeta `okun` donde se encuentran varios documentos:
+    - `okun.csv`: datos en formato csv.
+
+    - `okun_templ.R`: plantilla que debe completar para realizar la tarea.
+
+    - `okun.Rproj`: opciones de proyecto de RStudio.
+
+    - `okun-instr.html`: este documento.
+
+2. Haga una copia de `okun_tmpl.R` y guárdela con el nombre `okun.R` dentro de la carpeta `okun`. Utilice el documento `okun.R` para completar la tarea y no modifique `okun_tmpl.R` que servirá como copia de seguridad.
+
+3. Para trabajar en el proyecto haga doble-click sobre el icono de `okun.Rproj`. Alternativamente, abra el proyecto desde RStudio usando el menú `File | Open Project...` y seleccione el archivo `okun.Rproj`.
+
+4. **No olvide escribir su nombre completo al principio de `okun.R`**.
+
+5. Para llevar a cabo la tarea que se describe en este documento complete el archivo `okun.R` siguiendo las instrucciones que aparecen allí. Reemplace las líneas que contienen los caracteres `## >>>>>>>>>>>>>>>>>>>>>` con sus respuestas.
+
+6. Obtenga un documento `okun.html` compilando `okun.R` usando el icono correspondiente en el panel de edición o mediante el menú `File | Compile Report...`.
+
+7. Para entregar su trabajo en el Aula Virtual cree un archivo zip comprimiendo la carpeta `okun` y todos los documentos que contenga. Los archivos zip pueden usarse también para guardar su trabajo y continuarlo en otro ordenador.
+
+8. **Para que la entrega sea considerada válida el archivo zip que se suba al Aula Virtual debe contener, además de los documentos enumerados en el punto 1, los documentos `okun.R`  y `okun.html`, obtenidos como se ha descrito más arriba.** 
+
 
 # La ley de Okun
 
@@ -28,20 +54,6 @@ Estimación para España usando datos de la OCDE para el periodo que va desde 19
 
 En este laboratorio se tratan de replicar los resultados usando los datos de BDREMS y para un periodo que se extiende hasta el cuarto trimestre de 2019.
 
-## Proyecto
-
-Fichero de datos. Variables. Filtros de HP. 
-
-Archivo de proyecto.
-
-Plantilla.
-
-Archivo con las instrucciones R. Nombre.
-
-Archivo html generado con Compile report
-
-
-# Instrucciones
 
 ## Paquetes R
 

@@ -1,3 +1,27 @@
+#' ---
+#' author: "=============== NOMBRE Y APELLIDO(S) ==============="
+#' title: "La ley de Okun en España: 1980--2019"
+#' date: "`r format(Sys.Date(), '%d-%m-%Y')`"
+#' output:
+#'   html_document:
+#'     number_sections: false
+#'     toc: yes
+#'     toc_depth: 2
+#'     toc_float: yes
+#'     highlight: pygments
+#'     theme: cerulean
+#' ---
+
+#+ include=FALSE
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+
+
+#' # Preliminares
+#'
+#' - Cargue los paquetes  `mosaic`, `zoo`,  `urca`, `dynlm`, `sandwich`
+#' y `lmtest`.
+## >>>>>>>>>>>>>>>>>>>>>
+
 library(mosaic, warn.conflicts = FALSE)
 library(zoo)
 library(urca)
@@ -5,7 +29,18 @@ library(dynlm)
 library(sandwich)
 library(lmtest)
 
+#' # Datos
+#'
+#' - Lea los datos del fichero "okun.csv" y guárdelos en la
+#' variable `okun`.
+## >>>>>>>>>>>>>>>>>>>>>
+
 okun <- read.csv("okun.csv")
+
+#' - Con los datos guardados en `okun`, cree una base de datos de series
+#' temporales y guardela en la variable `st`. Los datos son trimestrales y
+#' comienzan en el segundo trimestre de 1980
+## >>>>>>>>>>>>>>>>>>>>>
 
 st <- zooreg(okun, frequency = 4, start = c(1980, 2))
 
