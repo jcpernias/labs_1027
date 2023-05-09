@@ -197,7 +197,7 @@ mod1_lp <- dynlm(uc ~ d(yb) + L(yb), data = st, start = "1982-1")
 coeftest(mod1_lp, vcov. = vcovHAC)
 
 #'
-#' # Estimación de la ecuación en diferencias
+#' # Estimación de la ecuación en tasas de crecimiento
 #'
 #'
 #' Para garantizar que todas las regresiones de esta sección utilizan la misma

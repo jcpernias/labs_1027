@@ -160,7 +160,7 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 ## >>>>>>>>>>>>>>>>>>>>
 
 #'
-#' # Estimación de la ecuación en diferencias
+#' # Estimación de la ecuación en tasas de crecimiento
 #'
 #'
 #' Para garantizar que todas las regresiones de esta sección utilizan la misma
