@@ -48,8 +48,9 @@ st <- zooreg(okun, frequency = 4, start = c(1980, 2))
 st$uc <- st$u - st$un
 
 #' - Calcule la brecha de la producción y guárdela en la variable `yb` en la
-#' base de datos `st`. La brecha de la producción, medida en puntos porcentuales
-#' de la producción potencial, es igual a 100 por la diferencia entre el
+#' base de datos `st`. Como puede verse en la ecuación (2) del documento de
+#' instrucciones, la brecha de la producción medida en puntos porcentuales
+#' de la producción potencial es igual a 100 por la diferencia entre el
 #' logaritmo de la producción, `ly`, y el logaritmo de la producción potencial,
 #' `lyp`.
 st$yb <- 100 * (st$ly - st$lyp)
