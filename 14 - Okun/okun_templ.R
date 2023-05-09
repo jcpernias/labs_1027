@@ -86,6 +86,7 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 #' - Resultado del contraste para un nivel de significación del $5\%$.
 ## >>>>>>>>>>>>>>>>>>>>
 
+#'
 #' ## Diferencia de la tasa de desempleo
 #'
 #' - Gráfico de series temporales de `diff(st$u)`.

@@ -99,6 +99,7 @@ summary(df)
 #' el valor crítico al $5\%$ de significación, por lo que se rechaza
 #' la hipótesis nula de una raíz unitaria en `uc`.
 
+#'
 #' ## Diferencia de la tasa de desempleo
 #'
 #' - Gráfico de series temporales de `diff(st$u)`.
