@@ -41,16 +41,61 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 
 Arthur Okun encontró en 1962 una regularidad empírica entre el desempleo y el nivel de producción agregado. Más recientemente, @ballOkunLawFit2017 estiman diversas especificaciones de la ley de Okun para varios países en el periodo 1980--2013. En este laboratorio trataremos de replicar los resultados que obtuvieron para España extendiendo el periodo analizado hasta el cuarto trimestre de 2019.
 
-Versión en niveles.
+La ley de Okun establece que existe una relación inversa entre el desempleo cíclico y la brecha de la producción:
+$$
+  u_t - u^n_t = \beta (\log y_t - \log y^p_t) + \epsilon_t, \tag{1}
+$$
+donde $u_t$ es la tasa de desempleo, $u^n_t$ es la tasa de desempleo natural, $y_t$ es la producción agregada en términos reales e $y^p_t$ es la producción potencial, $\beta$ es un parámetro negativo y $\epsilon_t$ es un término de error que recogería otros factores que afectarían al desempleo cíclico.
+
+Para estimar la ley de Okun se utilizan dos enfoques. La *versión en niveles* de la ley de Okun se obtiene planteando un modelo de regresión similar a la ecuación anterior, lo que requiere obtener aproximaciones de la tasa natural de desempleo y de la producción potencial. Por un lado, obtenemos una aproximación a $u^n_t$ usando el filtro de Hodrick y Prescott sobre la tasa de desempleo, $u_t$. Definimos el empleo cíclico como:
+$$
+  u^c_t = u_t - u^n_t.
+$$
+Por otro lado, calculamos la brecha de la producción (*output gap*) como:
+$$
+  y^b_t = 100  (\log y_t - \log y^p_t), \tag{2}
+$$
+y aproximamos el logaritmo de la producción potencial con el filtro de Hodrick y Prescott sobre $\log y_t$. Estimaremos la versión en niveles de la ley de Okun con el modelo de retardos distribuidos:
+$$
+  u^c_t = 
+  \alpha_0 + 
+  \beta_0 y^b_t + 
+  \beta_1 y^b_{t-1} + 
+  \dots +
+  \beta_L y^b_{t-L} + \epsilon_t.
+  \tag{Mod1}
+$$
+Los parámetros $\beta_0, \beta_1, \dots, \beta_L$ son los multiplicadores dinámicos. En concreto, $\beta_0$ es el multiplicador de corto plazo. También tiene especial interés el multiplicador de largo plazo:
+$$
+  \beta_{\text{LP}} = \sum_{j = 0}^L \beta_j.
+$$
+
+Un segundo enfoque consiste en estimar la *versión en variaciones* de la ley de Okun. Se puede deducir de la ecuación $(1)$ tomando diferencias si se suponen que tanto la tasa natural de desempleo como la producción potencial son constantes en el tiempo. Definiendo la tasa de crecimiento de la producción real como:
+$$
+ gy_t = 100 \Delta \log y_t,
+$$
+estimaremos la versión en variaciones con el siguiente modelo de retardos distribuidos:
+$$
+\Delta u_t = 
+\alpha_0 + 
+\theta_0 gy_t + 
+\theta_1 gy_{t-1} + 
+\dots + 
+\theta_L gy_{t-L} +
+\epsilon_t
+,
+\tag{Mod2}
+$$
+En este caso el multiplicador de corto plazo es $\theta_0$ y el multiplicador de largo plazo es:
+$$
+  \theta_{\text{LP}} = \sum_{j = 0}^L \theta_j.
+$$
 
 
-Versión en cambio.
-
-Estimación para España usando datos de la OCDE para el periodo que va desde 1980 hasta 2013. 
 
 # Datos
 
-La tarea debe completarse con los datos contenidos en el fichero `okun.csv`. Las  variables de ese fichero tienen frecuencia trimestral y cubren el periodo que va desde el segundo trimestre de 1980 hasta el último trimestre de 2019. 
+Las dos versiones de la ley de Okun se estimarán con los datos contenidos en el fichero `okun.csv`. Las  variables de ese fichero tienen frecuencia trimestral y cubren el periodo que va desde el segundo trimestre de 1980 hasta el último trimestre de 2019. 
 
 La producción agregada real, `y`, es el PIB a precios constantes (base 2015). Tanto esta variable como la tasa de desempleo, `u`, se han obtenido de la base de datos [BDREMS](https://www.sepg.pap.hacienda.gob.es/sitios/sepg/es-ES/Presupuestos/DocumentacionEstadisticas/Documentacion/paginas/basedatosmodelorems.aspx) (actualización de diciembre de 2021) que proporciona series trimestrales para la economía española que han sido corregidas de estacionalidad y efectos calendario.
 
