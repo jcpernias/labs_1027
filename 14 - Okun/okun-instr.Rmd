@@ -1,0 +1,82 @@
+---
+title: "La ley de Okun"
+author: "EC1027 --- Econometría I"
+date: "Curso 2022-2023"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+```{r , include=FALSE}
+library(tidyverse)
+library(kableExtra)
+```
+
+# La ley de Okun
+
+Arthur Okun encontró en 1962 una regularidad empírica entre el desempleo y el nivel de producción agregado. De acuerdo con Mankiw (2012), en la economía de Estados Unidos un aumento de la producción de un punto porcentual con respecto de la producción potencial reduce el desempleo en medio punto porcentual. 
+
+Más recientemente, Ball et al. (2017) estiman diversas especificaciones de la ley de Okun para varios países. 
+
+Versión en niveles.
+
+
+Versión en cambio.
+
+Estimación para España usando datos de la OCDE para el periodo que va desde 1980 hasta 2013. 
+
+En este laboratorio se tratan de replicar los resultados usando los datos de BDREMS y para un periodo que se extiende hasta el cuarto trimestre de 2019.
+
+## Proyecto
+
+Fichero de datos. Variables. Filtros de HP. 
+
+Archivo de proyecto.
+
+Plantilla.
+
+Archivo con las instrucciones R. Nombre.
+
+Archivo html generado con Compile report
+
+
+# Instrucciones
+
+## Paquetes R
+
+Es necesario cargar los paquetes `mosaic`, `zoo`, `urca`, `dynlm`, `sandwich` y  `lmtest`.
+
+## Datos y transformaciones
+
+Lectura de datos. 
+
+Base de datos temporales. Los datos son trimestrales y empiezan en el segundo trimestre de 1980.
+
+Desempleo cíclico.
+
+Output gap.
+
+## Contrastes de raíces unitarias
+
+Examine los gráficos de series temporales de las variables para determinar si es necesario incluir en la regresión de Dickey-Fuller una tendencia lineal o no. Especifique un número máximo de 6 retardos y seleccione el número de retardos adecuados mediante el AIC.
+
+- ly
+- gy
+- u
+- du
+- ugap
+- ygap
+
+## Estimación niveles
+
+Estime modelos que expliquen ugap con L = 0 hasta 6 retardos del output gap. Periodo inicial: 1982Q1. Seleccione el número de retardos usando el BIC. 
+
+Presente los resultados con errores típicos robustos a autocorrelación y heteroscedasticidad. Reescriba el modelo para estimar directamente los multiplicadores acumulativos y el multiplicador de largo plazo. Obtenga los errores típicos robustos a heteroscedasticidad y autocorrelación.
+
+## Estimación en diferencias
+
+Lo mismo que en niveles.
+
+
+
