@@ -111,7 +111,7 @@ summary(df)
 
 #' - Resultado del contraste para un nivel de significación del $5\%$.
 #'
-#' El valor del contraste de Dickey-Fuller es $-3.4$ que es menor que $-2.88$,
+#' El valor del contraste de Dickey-Fuller es $-3.38$ que es menor que $-2.88$,
 #' el valor crítico al $5\%$ de significación, por lo que se rechaza
 #' la hipótesis nula de una raíz unitaria en la diferencia de `u`.
 
