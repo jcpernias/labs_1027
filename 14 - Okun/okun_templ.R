@@ -31,19 +31,20 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 
 #' - Con los datos guardados en `okun`, cree una base de datos de series
 #' temporales y guárdela en la variable `st`. Los datos son trimestrales y
-#' comienzan en el segundo trimestre de 1980
+#' comienzan en el segundo trimestre de 1980.
 ## >>>>>>>>>>>>>>>>>>>>
 
 #'
 #' # Transformación de variables
 #'
-#' - Calcule el desempleo cíclico como la diferencia entre el desempleo, `u`, y
-#' el desempleo natural, `un`, y guárdelo en la variable `uc` en la base de
-#' datos `st`.
+#' - Calcule el desempleo cíclico como en la ecuación (2) del documento de
+#' instrucciones. Calcule la diferencia entre el desempleo, `u`, y el
+#' desempleo natural, `un` y guarde el resultado en la variable `uc` en
+#' la base de datos `st`.
 ## >>>>>>>>>>>>>>>>>>>>
 
 #' - Calcule la brecha de la producción y guárdela en la variable `yb` en la
-#' base de datos `st`. Como puede verse en la ecuación (2) del documento de
+#' base de datos `st`. Como puede verse en la ecuación (3) del documento de
 #' instrucciones, la brecha de la producción medida en puntos porcentuales
 #' de la producción potencial es igual a 100 por la diferencia entre el
 #' logaritmo de la producción, `ly`, y el logaritmo de la producción potencial,
@@ -53,14 +54,14 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 #'
 #' # Contrastes de raíces unitarias
 #'
-#' Determine para las variables que se enumeran a continuación la presencia de
-#' raíces unitarias. En todos los casos:
+#' Contraste la existencia de una raíz unitaria en cada una de las variables que
+#' se enumeran a continuación. En todos los casos:
 #'
 #' 1. Determine mediante la inspección de un gráfico de series temporales si es
 #' necesario incluir una tendencia lineal en la regresión de Dickey-Fuller.
 #'
-#' 2. Seleccione el número de retardos a incluir en la regresión de
-#' Dickey-Fuller usando el AIC usando como máximo 6 retardos.
+#' 2. Seleccione con el AIC el número de retardos a incluir en la regresión de
+#' Dickey-Fuller usando como máximo 6 retardos.
 #'
 #' ## Tasa de desempleo
 #'
@@ -135,9 +136,8 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 #'
 #' # Estimación de la ecuación en niveles
 #'
-#' Para garantizar que todas las regresiones de esta sección utilizan la misma
-#' muestra, **no utilice en las estimaciones los datos anteriores al primer
-#' trimestre de 1982.**
+#' Para garantizar que todas las regresiones de esta sección utilizan los mismos
+#' datos, **utilice la muestra que comienza en el primer trimestre de 1982.**
 #'
 #' ## Selección del número de retardos
 #'
@@ -146,8 +146,8 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 #' variable `mod1_l0`.
 ## >>>>>>>>>>>>>>>>>>>>
 
-#' - Amplíe el modelo estático añadiendo como regresores adicionales retardos
-#' de la brecha de la producción. Guarde en las variables `mod1_l1`,  `mod1_l2`,
+#' - Amplíe el modelo estático añadiendo retardos de la brecha de la producción
+#' como regresores adicionales. Guarde en las variables `mod1_l1`,  `mod1_l2`,
 #' ..., `mod1_l6` las estimaciones con 1, 2, ..., 6 retardos de `yb`.
 ## >>>>>>>>>>>>>>>>>>>>
 
@@ -175,9 +175,8 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 #' # Estimación de la ecuación en variaciones
 #'
 #'
-#' Para garantizar que todas las regresiones de esta sección utilizan la misma
-#' muestra, **no utilice en las estimaciones los datos anteriores al primer
-#' trimestre de 1982.**
+#' Para garantizar que todas las regresiones de esta sección utilizan los mismos
+#' datos, **utilice la muestra que comienza en el primer trimestre de 1982.**
 #'
 #'
 #' ## Selección del número de retardos
@@ -187,8 +186,8 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 #' variable `mod2_l0`.
 ## >>>>>>>>>>>>>>>>>>>>
 
-#' - Amplíe el modelo estático añadiendo como regresores adicionales retardos
-#' de la tasa de crecimiento de la producción. Guarde en las variables
+#' - Amplíe el modelo estático añadiendo retardos de la tasa de crecimiento de
+#' la producción como regresores adicionales. Guarde en las variables
 #' `mod2_l1`,  `mod2_l2`, ..., `mod2_l6` las estimaciones con 1, 2, ...,
 #' 6 retardos de `gy`.
 ## >>>>>>>>>>>>>>>>>>>>

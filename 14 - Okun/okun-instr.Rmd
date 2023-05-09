@@ -34,12 +34,12 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 
 7. Para entregar su trabajo en el Aula Virtual cree un archivo zip comprimiendo la carpeta `okun` y todos los documentos que contenga. Los archivos zip pueden usarse también para guardar su trabajo y continuarlo en otro ordenador.
 
-8. **Para que la entrega sea considerada válida el archivo zip que se suba al Aula Virtual debe contener, además de los documentos enumerados en el punto 1, los documentos `okun.R`  y `okun.html`, obtenidos como se ha descrito más arriba.** 
+8. **Para que la entrega sea considerada válida el archivo zip que se suba al Aula Virtual debe contener, además de los documentos enumerados en el punto 1, los documentos `okun.R`  y `okun.html`, obtenidos como se ha descrito en los puntos 4 a 6.** 
 
 
 # La ley de Okun
 
-Arthur Okun encontró en 1962 una regularidad empírica entre el desempleo y el nivel de producción agregado. Más recientemente, @ballOkunLawFit2017 estiman diversas especificaciones de la ley de Okun para varios países en el periodo 1980--2013. En este laboratorio trataremos de replicar los resultados que obtuvieron para España extendiendo el periodo analizado hasta el cuarto trimestre de 2019.
+Arthur Okun encontró en 1962 una regularidad empírica entre el desempleo y el nivel de producción agregado. Más recientemente, @ballOkunLawFit2017 estiman diversas especificaciones de la ley de Okun para varios países en el periodo 1980--2013. Las estimaciones que obtuvieron estos autores para España indicarían que un incremento de la producción de un $1\%$ reduciría la tasa de desempleo entre 0.7 y 0.9 puntos porcentuales. En este laboratorio trataremos de replicar esos resultados extendiendo el periodo analizado hasta el cuarto trimestre de 2019.
 
 La ley de Okun establece que existe una relación inversa entre el desempleo cíclico y la brecha de la producción:
 $$
@@ -49,11 +49,11 @@ donde $u_t$ es la tasa de desempleo, $u^n_t$ es la tasa de desempleo natural, $y
 
 Para estimar la ley de Okun se utilizan dos enfoques. La *versión en niveles* de la ley de Okun se obtiene planteando un modelo de regresión similar a la ecuación anterior, lo que requiere obtener aproximaciones de la tasa natural de desempleo y de la producción potencial. Por un lado, obtenemos una aproximación a $u^n_t$ usando el filtro de Hodrick y Prescott sobre la tasa de desempleo, $u_t$. Definimos el empleo cíclico como:
 $$
-  u^c_t = u_t - u^n_t.
+  u^c_t = u_t - u^n_t. \tag{2}
 $$
 Por otro lado, calculamos la brecha de la producción (*output gap*) como:
 $$
-  y^b_t = 100  (\log y_t - \log y^p_t), \tag{2}
+  y^b_t = 100  (\log y_t - \log y^p_t), \tag{3}
 $$
 y aproximamos el logaritmo de la producción potencial con el filtro de Hodrick y Prescott sobre $\log y_t$. Estimaremos la versión en niveles de la ley de Okun con el modelo de retardos distribuidos:
 $$
