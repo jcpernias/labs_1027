@@ -47,8 +47,8 @@ st <- zooreg(okun, frequency = 4, start = c(1980, 2))
 #' # Transformación de variables
 #'
 
-st$u_gap <- st$u - st$u_hp
-st$ly_gap <- 100 * (st$ly - st$ly_hp)
+st$uc <- st$u - st$un
+st$yb <- 100 * (st$ly - st$lyp)
 
 
 #'
@@ -84,16 +84,16 @@ summary(df)
 #' ## Desempleo cíclico
 #'
 
-autoplot(st$u_gap)
-df <- ur.df(st$u_gap, type = "drift", lags = 6, selectlags = "AIC")
+autoplot(st$uc)
+df <- ur.df(st$uc, type = "drift", lags = 6, selectlags = "AIC")
 summary(df)
 
 #'
 #' ## *Output gap*
 #'
 
-autoplot(st$ly_gap)
-df <- ur.df(st$ly_gap, type = "drift", lags = 6, selectlags = "AIC")
+autoplot(st$yb)
+df <- ur.df(st$yb, type = "drift", lags = 6, selectlags = "AIC")
 summary(df)
 
 
@@ -107,13 +107,13 @@ summary(df)
 #' ## Selección del número de retardos
 #'
 
-mod1_l0 <- dynlm(u_gap ~ ly_gap, data = st, start = "1982-1")
-mod1_l1 <- update(mod1_l0, . ~ . + L(ly_gap, 1))
-mod1_l2 <- update(mod1_l1, . ~ . + L(ly_gap, 2))
-mod1_l3 <- update(mod1_l2, . ~ . + L(ly_gap, 3))
-mod1_l4 <- update(mod1_l3, . ~ . + L(ly_gap, 4))
-mod1_l5 <- update(mod1_l4, . ~ . + L(ly_gap, 5))
-mod1_l6 <- update(mod1_l5, . ~ . + L(ly_gap, 6))
+mod1_l0 <- dynlm(uc ~ yb, data = st, start = "1982-1")
+mod1_l1 <- update(mod1_l0, . ~ . + L(yb, 1))
+mod1_l2 <- update(mod1_l1, . ~ . + L(yb, 2))
+mod1_l3 <- update(mod1_l2, . ~ . + L(yb, 3))
+mod1_l4 <- update(mod1_l3, . ~ . + L(yb, 4))
+mod1_l5 <- update(mod1_l4, . ~ . + L(yb, 5))
+mod1_l6 <- update(mod1_l5, . ~ . + L(yb, 6))
 
 BIC(mod1_l0)
 BIC(mod1_l1)
@@ -134,7 +134,7 @@ coeftest(mod1_l1, vcov. = vcovHAC)
 #' ## Estimación del multiplicador de largo plazo
 #'
 
-mod1_lp <- dynlm(u_gap ~ d(ly_gap) + L(ly_gap), data = st, start = "1982-1")
+mod1_lp <- dynlm(uc ~ d(yb) + L(yb), data = st, start = "1982-1")
 coeftest(mod1_lp, vcov. = vcovHAC)
 
 #'
