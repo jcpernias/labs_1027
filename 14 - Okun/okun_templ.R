@@ -84,6 +84,17 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 #' - Resultado del contraste para un nivel de significación del $5\%$.
 ## >>>>>>>>>>>>>>>>>>>>
 
+#' ## Diferencia de la tasa de desempleo
+#'
+#' - Gráfico de series temporales de `diff(st$u)`.
+## >>>>>>>>>>>>>>>>>>>>
+
+#' - Contraste aumentado de Dickey-Fuller.
+## >>>>>>>>>>>>>>>>>>>>
+
+#' - Resultado del contraste para un nivel de significación del $5\%$.
+## >>>>>>>>>>>>>>>>>>>>
+
 #'
 #' ## Logaritmo de la producción agregada
 #'
@@ -160,7 +171,7 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 ## >>>>>>>>>>>>>>>>>>>>
 
 #'
-#' # Estimación de la ecuación en tasas de crecimiento
+#' # Estimación de la ecuación en variaciones
 #'
 #'
 #' Para garantizar que todas las regresiones de esta sección utilizan la misma

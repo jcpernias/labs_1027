@@ -97,6 +97,21 @@ summary(df)
 #' el valor crítico al $5\%$ de significación, por lo que se rechaza
 #' la hipótesis nula de una raíz unitaria en `uc`.
 
+#' ## Diferencia de la tasa de desempleo
+#'
+#' - Gráfico de series temporales de `diff(st$u)`.
+autoplot(diff(st$u))
+
+#' - Contraste aumentado de Dickey-Fuller.
+df <- ur.df(diff(st$u), type = "drift", lags = 6, selectlags = "AIC")
+summary(df)
+
+#' - Resultado del contraste para un nivel de significación del $5\%$.
+#'
+#' El valor del contraste de Dickey-Fuller es $-3.4$ que es menor que $-2.88$,
+#' el valor crítico al $5\%$ de significación, por lo que se rechaza
+#' la hipótesis nula de una raíz unitaria en la diferencia de `u`.
+
 #'
 #' ## Logaritmo de la producción agregada
 #'
@@ -197,7 +212,7 @@ mod1_lp <- dynlm(uc ~ d(yb) + L(yb), data = st, start = "1982-1")
 coeftest(mod1_lp, vcov. = vcovHAC)
 
 #'
-#' # Estimación de la ecuación en tasas de crecimiento
+#' # Estimación de la ecuación en variaciones
 #'
 #'
 #' Para garantizar que todas las regresiones de esta sección utilizan la misma
