@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 En este laboratorio se estima una curva de Phillips con expectativas y tasa natural de desempleo variable en el tiempo. También se exploran relaciones dinámicas entre la inflación y el desempleo.
 
-## Curva de Phillips 
+## La curva de Phillips 
 
 En en esta sesión modificamos la curva de Phillips con expectativas para incorporar, por un lado, una tasa de desempleo natural variable en el tiempo, y, por otro lado, una especificación dinámica que permita que cambios en la tasa de desempleo afecten a la inflación en más de un periodo:
 $$
@@ -28,7 +28,7 @@ donde $\pi_t$ es la tasa de inflación, $u_t$ es la tasa de paro, $u^n_t$ es la 
 
 
 
-## La tasa de desmpleo natural
+## La tasa de desempleo natural
 
 Para poder estimar el modelo anterior necesitamos obtener de algún modo la tasa natural de desempleo en los años que cubre nuestra muestra. Una alternativa que se utiliza con frecuencia es utilizar el [filtro de Hodrick y Prescott](https://es.wikipedia.org/wiki/Filtro_de_Hodrick-Prescott). Este filtro es un método diseñado para descomponer una serie en un componente de tendencia, que capture los movimientos a largo plazo, y un componente cíclico, que recoge las desviaciones con respecto de la tendencia de largo plazo. Aunque su uso ha sido criticado en numerosas ocasiones, el filtro de Hodrick y Prescott se sigue utilizando con frecuencia. 
 
