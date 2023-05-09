@@ -8,10 +8,6 @@ date: "Curso 2022-2023"
 knitr::opts_chunk$set(echo = TRUE, comment = "")
 ```
 
-```{r , include=FALSE}
-library(tidyverse)
-library(kableExtra)
-```
 
 # Instrucciones {.unnumbered}
 
@@ -30,7 +26,7 @@ library(kableExtra)
 
 4. **No olvide escribir su nombre completo al principio de `okun.R`**.
 
-5. Para llevar a cabo la tarea que se describe en este documento complete el archivo `okun.R` siguiendo las instrucciones que aparecen allí. Reemplace las líneas que contienen los caracteres `## >>>>>>>>>>>>>>>>>>>>>` con sus respuestas.
+5. Para llevar a cabo la tarea que se describe en este documento complete el archivo `okun.R` siguiendo las instrucciones que aparecen allí. Reemplace con sus respuestas las líneas que contienen los caracteres `## >>>>>>>>>>>>>>>>>>>>>`.
 
 6. Obtenga un documento `okun.html` compilando `okun.R` usando el icono correspondiente en el panel de edición o mediante el menú `File | Compile Report...`.
 
@@ -52,43 +48,16 @@ Versión en cambio.
 
 Estimación para España usando datos de la OCDE para el periodo que va desde 1980 hasta 2013. 
 
-En este laboratorio se tratan de replicar los resultados usando los datos de BDREMS y para un periodo que se extiende hasta el cuarto trimestre de 2019.
+# Datos
 
+La tarea debe completarse con los datos contenidos en el fichero `okun.csv`. Las  variables de ese fichero tienen frecuencia trimestral y cubren el periodo que va desde el segundo trimestre de 1980 hasta el último trimestre de 2019. 
 
-## Paquetes R
+La producción agregada real, `y`, es el PIB a precios constantes (base 2015). Tanto esta variable como la tasa de desempleo, `u`, se han obtenido de la base de datos [BDREMS](https://www.sepg.pap.hacienda.gob.es/sitios/sepg/es-ES/Presupuestos/DocumentacionEstadisticas/Documentacion/paginas/basedatosmodelorems.aspx) (actualización de diciembre de 2021) que proporciona series trimestrales para la economía española que han sido corregidas de estacionalidad y efectos calendario.
 
-Es necesario cargar los paquetes `mosaic`, `zoo`, `urca`, `dynlm`, `sandwich` y  `lmtest`.
+Además de la producción agregada y la tasa de desempleo, en el archivo `okun.csv` se proporcionan algunas variables más, las cuales han sido obtenidas a partir de `y` y `u`:
 
-## Datos y transformaciones
+- `ly` y `gy` son, respectivamente, el logaritmo y la tasa de crecimiento de la producción real.
 
-Lectura de datos. 
+- `un` es la tasa de desempleo natural. Se obtiene aplicando el [filtro de Hodrick y Prescott](https://es.wikipedia.org/wiki/Filtro_de_Hodrick-Prescott) a la tasa de desempleo `u` (en el cálculo se utiliza un parámetro de suavizado $\lambda = 1600$).
 
-Base de datos temporales. Los datos son trimestrales y empiezan en el segundo trimestre de 1980.
-
-Desempleo cíclico.
-
-Output gap.
-
-## Contrastes de raíces unitarias
-
-Examine los gráficos de series temporales de las variables para determinar si es necesario incluir en la regresión de Dickey-Fuller una tendencia lineal o no. Especifique un número máximo de 6 retardos y seleccione el número de retardos adecuados mediante el AIC.
-
-- ly
-- gy
-- u
-- du
-- ugap
-- ygap
-
-## Estimación niveles
-
-Estime modelos que expliquen ugap con L = 0 hasta 6 retardos del output gap. Periodo inicial: 1982Q1. Seleccione el número de retardos usando el BIC. 
-
-Presente los resultados con errores típicos robustos a autocorrelación y heteroscedasticidad. Reescriba el modelo para estimar directamente los multiplicadores acumulativos y el multiplicador de largo plazo. Obtenga los errores típicos robustos a heteroscedasticidad y autocorrelación.
-
-## Estimación en diferencias
-
-Lo mismo que en niveles.
-
-
-
+- `lyp`es el logaritmo de la producción potencial. Es el filtro de Hodrick y Prescott aplicado al logaritmo de la producción agregada `ly` ($\lambda = 1600$).
