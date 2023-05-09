@@ -2,6 +2,8 @@
 title: "La ley de Okun en España: 1980--2019"
 author: "EC1027 --- Econometría I"
 date: "Curso 2022-2023"
+bibliography: okun.bib
+link-citations: true
 ---
 
 ```{r setup, include=FALSE}
@@ -37,9 +39,7 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 
 # La ley de Okun
 
-Arthur Okun encontró en 1962 una regularidad empírica entre el desempleo y el nivel de producción agregado. De acuerdo con Mankiw (2012), en la economía de Estados Unidos un aumento de la producción de un punto porcentual con respecto de la producción potencial reduce el desempleo en medio punto porcentual. 
-
-Más recientemente, Ball et al. (2017) estiman diversas especificaciones de la ley de Okun para varios países. 
+Arthur Okun encontró en 1962 una regularidad empírica entre el desempleo y el nivel de producción agregado. Más recientemente, @ballOkunLawFit2017 estiman diversas especificaciones de la ley de Okun para varios países en el periodo 1980--2013. En este laboratorio trataremos de replicar los resultados que obtuvieron para España extendiendo el periodo analizado hasta el cuarto trimestre de 2019.
 
 Versión en niveles.
 
@@ -61,3 +61,6 @@ Además de la producción agregada y la tasa de desempleo, en el archivo `okun.c
 - `un` es la tasa de desempleo natural. Se obtiene aplicando el [filtro de Hodrick y Prescott](https://es.wikipedia.org/wiki/Filtro_de_Hodrick-Prescott) a la tasa de desempleo `u` (en el cálculo se utiliza un parámetro de suavizado $\lambda = 1600$).
 
 - `lyp`es el logaritmo de la producción potencial. Es el filtro de Hodrick y Prescott aplicado al logaritmo de la producción agregada `ly` ($\lambda = 1600$).
+
+
+# Referencias {-}
