@@ -18,8 +18,8 @@ ts <- merge(y = y_ts, ly = log(y_ts), u = u_ts) |>
 
 hp_u <- hpfilter(ts$u, freq = 1600)
 hp_ly <- hpfilter(ts$ly, freq = 1600)
-ts$ly_hp <- zooreg(hp_ly$trend, start = start(ts), frequency = 4)
-ts$u_hp <- zooreg(hp_u$trend, start = start(ts), frequency = 4)
+ts$lyp <- zooreg(hp_ly$trend, start = start(ts), frequency = 4)
+ts$un <- zooreg(hp_u$trend, start = start(ts), frequency = 4)
 ts$gy <- 100 * diff(ts$ly)
 ts_year <- time(ts) |> format("%Y") |> as.integer() |>
   zooreg(start = start(ts), frequency = 4)
