@@ -22,7 +22,7 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 
     - `okun-instr.html`: este documento.
 
-2. Haga una copia de `okun_tmpl.R` y guárdela con el nombre `okun.R` dentro de la carpeta `okun`. Utilice el documento `okun.R` para completar la tarea y no modifique `okun_tmpl.R` que servirá como copia de seguridad.
+2. Haga una copia de `okun_templ.R` y guárdela con el nombre `okun.R` dentro de la carpeta `okun`. Utilice el documento `okun.R` para completar la tarea y no modifique `okun_templ.R` que servirá como copia de seguridad.
 
 3. Para trabajar en el proyecto haga doble-click sobre el icono de `okun.Rproj`. Alternativamente, abra el proyecto desde RStudio usando el menú `File | Open Project...` y seleccione el archivo `okun.Rproj`.
 
