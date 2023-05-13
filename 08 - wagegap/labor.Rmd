@@ -31,7 +31,7 @@ En esta sección se crean nuevas variables variables apartir de las originales d
 
 - Cree la variable `lsalario`.
     ```{r}
-esp$lsalario <- log(esp$EARN)
+esp$lsalario <- log(esp$EARNHR)
     ```
 
 - Cree la variable `asalariado`.
