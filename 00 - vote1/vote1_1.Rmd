@@ -22,7 +22,7 @@ Tanto R como RStudio se encuentran disponibles gratuitamente para Windows, macOS
 
 ![](screenshots/CRAN.png)
 
-Después de instalar R, se puede descargar RStudio desde su [página web](https://www.rstudio.com).
+Después de instalar R, se puede descargar RStudio desde su [página web](https://posit.co/download/rstudio-desktop/).
 
 ![](screenshots/RStudio.png)
 
@@ -143,10 +143,10 @@ Más adelante discutiremos cómo obtener otros estadísticos descriptivos y cóm
 
 ## Gráficos
 
-Con R se pueden producir gráficos muy sofisticados. En este curso utilizaremos las funciones proporcionadas por el paquete `mosaic`. Este paquete no viene instalado por defecto en R y antes de poder usarlo hay que instalarlo manualmente. Una vez instalado, lo cargamos con `library`:
+Con R se pueden producir gráficos muy sofisticados. En este curso utilizaremos las funciones proporcionadas por el paquete `ggformula`. Este paquete no viene instalado por defecto en R y antes de poder usarlo hay que instalarlo manualmente. Una vez instalado, lo cargamos con `library`:
 
 ```{r message=FALSE, warning=FALSE}
-library(mosaic)
+library(ggformula)
 ```
 
 Podemos representar un gráfico de dispersión de los votos obtenidos por el candidato A, $\mathit{voteA}$, con respecto a sus gastos de campaña, $\mathit{expendA}$, utilizando la función `gf_point`. El primer argumento de esta función es una **fórmula** que describe qué variables queremos representar. Indicamos los nombres de la variable del eje vertical y del eje horizontal separadas por el carácter `~` (`AltGr + 4` en un teclado para Windows: `option + ñ` en teclados para Mac).  También indicamos en qué base de datos se encuentran las variables del modelo con el argumento `data`:
