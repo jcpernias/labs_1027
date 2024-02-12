@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE, comment = "")
 En primer lugar cargamos los paquetes que utilizaremos en esta sesión:
 ```{r warning = FALSE, message = FALSE}
 library(wooldridge)
-library(mosaic)
+library(ggformula)
 ```
 
 Anteriormente estimamos un modelo de regresión simple de los resultados electorales del candidato A, `voteA`, y los gastos de campaña de este candidato:
@@ -139,37 +139,24 @@ El primer enfoque se basa en la comparación del ajuste de dos modelos:
         + \beta_4 \, \mathit{prtystrA}
         + u
     $$
-    Definimos una nueva variable que recoja la diferencia entre los gastos de campaña de los dos candidatos:
-    $$ \mathit{diffAB} = \mathit{expendA} - \mathit{expendB} $$
-    Con esta variable expresamos el modelo restringido como: 
-    $$
-      \mathit{voteA} = \beta_0 
-        + \beta_1 \, \mathit{diffAB}
-        + \beta_3 \, \mathit{democA}
-        + \beta_4 \, \mathit{prtystrA}
-        + u
-    $$
-    
 
-Para llevar a cabo el contraste necesitamos, en primer lugar, estimar el modelo restringido. Creamos una nueva variable con la diferencia de los gasos de campaña:   
+Para llevar a cabo el contraste utilizaremos la función `lht` que proporciona el paquete `car`:   
 ```{r}
-diffAB <- vote1$expendA - vote1$expendB
+library(car)
 ```
-Estimamos el modelo restringido  y guardamos los resultados en la variable `mod3r`:
+La hipótesis nula puede expresarse como:
+$$
+  H_0\!: \beta_1 + \beta_2 = 0
+$$
+Para utilizar la función `lht` codificamos la hipótesis nula en una variable:
 ```{r}
-mod3r <- lm(voteA ~ diffAB + democA + prtystrA, data = vote1)
-summary(mod3r)
+h0 <- "expendA + expendB"
 ```
 
-Si la hipótesis nula es correcta, no debería haber grandes diferencias en la bondad del ajuste del modelo no restringido (`mod3` en nuestro caso) y la del modelo restringido (`mod3r`). Formalmente, utilizamos el contraste $F$ para determinar si las diferencias en el ajuste de los dos modelos son significativas:
-$$
-  F = \frac{(\mathit{SCR}_\text{R} - \mathit{SCR}_\text{NR}) / q}{
-  \mathit{SCR}_\text{NR} / (n - k - 1)}
-$$
-La función `anova` compara el ajuste de dos modelos con el contraste $F$:
 ```{r}
-anova(mod3r, mod3)
+lht(mod3, h0)
 ```
+
 La información que imprime esta función incluye todos los elementos que aparecen en la fórmula del contraste $F$. Así pues, la distribución bajo la hipótesis nula es $F_{1, 168}$ y el valor del estadístico de contraste es $F = 0{,}26$. Concluimos que no podemos rechazar la hipótesis nula a un nivel de significación del $5\%$, ya que el valor-*p*, $0{,}61$, es superior al nivel de significación.
 
 ## Reparametrización del modelo
@@ -210,13 +197,19 @@ $$
   + \beta_4 \, \mathit{prtystrA}
   + u
 $$
+donde $\mathit{diffAB}$ es una variable que recoge la diferencia entre los gastos de campaña de los dos candidatos:
+    $$ \mathit{diffAB} = \mathit{expendA} - \mathit{expendB} $$
+En R creamos la variable `diffAB` con la instrucción:
+```{r}
+diffAB <- vote1$expendA - vote1$expendB
+```
 
-La estimación por MCO de este modelo produce los siguientes resultados:
+La estimación por MCO del modelo reparametrizado produce los siguientes resultados:
 ```{r}
 mod3_alt <- lm(voteA ~ diffAB + expendB + democA + prtystrA, data = vote1)
 summary(mod3_alt)
 ```
-Los resultados que se obtienen son idénticos a los obtenidos antes en la estimación de `mod3`, salvo los estadísticos del parámetro de `expendB`. Ahora la pendiente de esta variable es el parámetro $\theta$, la suma de los efectos de los gastos de campaña de los dos candidatos. La estimación de este parámetro es muy cercana a 0 y el contraste $t$ de significación individual de `expendB` toma un valor muy bajo. No podemos rechazar la hipótesis de que $\theta = 0$ (o lo que es lo mismo, $\beta_1 + \beta_2 = 0$) a un nivel de significación del 5% ya que el valor-$p$ es igual a $0{,}61$, valor muy superior a $0{,}05$.
+Los resultados que se obtienen son idénticos a los obtenidos antes en la estimación de `mod3`, salvo los estadísticos del parámetro de `expendB`. Ahora, la pendiente de esta variable es el parámetro $\theta$ que definimos como la suma de los efectos de los gastos de campaña de los dos candidatos. La estimación de este parámetro es muy cercana a 0 y el contraste $t$ de significación individual de `expendB` toma un valor muy bajo. No podemos rechazar la hipótesis de que $\theta = 0$ (o lo que es lo mismo, $\beta_1 + \beta_2 = 0$) a un nivel de significación del 5% ya que el valor-$p$ es igual a $0{,}61$, valor muy superior a $0{,}05$.
 
 ## Modelo final
 
@@ -230,6 +223,7 @@ $$
 $$
 La estimación por MCO los parámetros de este modelo produce los siguientes resultados: 
 ```{r}
+mod3r <- lm(voteA ~ diffAB + democA + prtystrA, data = vote1)
 summary(mod3r)
 ```
 Como consecuencia de imponer la hipótesis nula, las estimaciones de los parámetros son más precisas que las obtenidas con el modelo no restringido. 
