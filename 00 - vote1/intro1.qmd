@@ -1,19 +1,16 @@
 ---
 title: "Introducción a R y RStudio"
 author: "José Pernías"
+toc-title: Contenido
+toc: true
+number-sections: true
+number-depth: 3
 format: 
   html:
     theme: flatly
-    toc-title: Contenido
-    toc: true
-    number-sections: true
-    number-depth: 3
     embed-resources: true
   pdf:
-    toc-title: Contenido
-    toc: true
-    number-sections: true
-    number-depth: 3
+    papersize: a4
 ---
 
 ## Introducción
