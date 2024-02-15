@@ -9,6 +9,11 @@ format:
     number-sections: true
     number-depth: 3
     embed-resources: true
+  pdf:
+    toc-title: Contenido
+    toc: true
+    number-sections: true
+    number-depth: 3
 ---
 
 ## Introducción
