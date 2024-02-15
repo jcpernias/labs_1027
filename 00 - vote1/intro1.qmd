@@ -3,11 +3,12 @@ title: "Introducción a R y RStudio"
 author: "José Pernías"
 format: 
   html:
-      toc-title: Contenido
-      toc: true
-      number-sections: true
-      number-depth: 3
-      embed-resources: true
+    theme: flatly
+    toc-title: Contenido
+    toc: true
+    number-sections: true
+    number-depth: 3
+    embed-resources: true
 ---
 
 ## Introducción
