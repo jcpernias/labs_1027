@@ -12,6 +12,7 @@ format:
     embed-resources: true
   pdf:
     papersize: a4
+format-links: false
 ---
 
 ## Introducción
