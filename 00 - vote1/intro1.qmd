@@ -91,21 +91,13 @@ RStudio facilita la descarga e instalación de paquetes. Para ello se puede usar
 
 Accedemos así a  un cuadro de diálogo donde podemos escribir los nombres de los paquetes que queremos instalar:
 
-```{r}
-#| label: install-fig
-#| out.width: "50%"
-#| out.height: "50%"
-#| fig.align: 'center'
-#| echo: FALSE
 
-
-knitr::include_graphics("screenshots/install.png")
-```
+![](screenshots/install.png){fig-align="center" width=50%}
 
 Una vez instalado un paquete no es necesario volver a hacerlo cada vez que se quiera utilizar. Los paquetes **se instalan una vez pero se usan muchas veces**.
 
 A lo largo del curso utilizaremos con frecuencia el paquete `wooldridge` que contiene las bases de datos que se utilizan en el manual de Wooldridge. Una vez instalado un paquete utilizamos la función `library` para poder usar las funciones o los datos que contiene. En nuestro caso cargamos el paquete `wooldridge`:
-```{r package-wooldridge}
+```{r}
 library(wooldridge)
 ```
 
@@ -123,7 +115,7 @@ En esta sesión utilizaremos la base de datos `vote1` que contiene información 
 - $\mathit{prtystrA}$: el porcentaje de votos que obtuvo el partido de A en las elecciones presidenciales más recientes. Con esta variable se trata de medir la fuerza del partido del candidato A en el distrito electoral.
 
 Después de cargar el paquete `wooldridge` podemos acceder a la base de datos `vote1` con la función `data`:
-```{r data-func}
+```{r}
 data(vote1)
 ```
 
@@ -158,7 +150,9 @@ Más adelante discutiremos cómo obtener otros estadísticos descriptivos y cóm
 
 Con R se pueden producir gráficos muy sofisticados. En este curso utilizaremos las funciones proporcionadas por el paquete `ggformula`. Este paquete no viene instalado por defecto en R y antes de poder usarlo hay que instalarlo manualmente. Una vez instalado, lo cargamos con `library`:
 
-```{r message=FALSE, warning=FALSE}
+```{r}
+#| message: false
+
 library(ggformula)
 ```
 
