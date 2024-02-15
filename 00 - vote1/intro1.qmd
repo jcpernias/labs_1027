@@ -42,9 +42,11 @@ En el panel de la izquierda se encuentra la **consola R** donde podemos escribir
 
 Antes de empezar a trabajar con RStudio es conveniente ajustar algunas opciones que frecuentemente causan errores para los que no se encuentra la causa con facilidad. Con el menú `Tools | Global Options...` accedemos a un cuadro de diálogo desde el cual podemos ajustar la configuración de RStudio:
 
-1. En `General | Basic` desactivamos la opción 'Restore .Rdata into workspace at startup'.
-2. También en `General | Basic` seleccionamos la opción 'Never' en el desplegable 'Save workspace to .RData on exit:'.
-3. En `Code | Saving` nos aseguramos de que `Default text encoding:` se ha fijado al valor `UTF-8`
+1. En `General | Basic` desactivamos la opción `Restore .Rdata into workspace at startup`.
+
+2. También en `General | Basic` seleccionamos la opción `Never` en el desplegable `Save workspace to .RData on exit`.
+
+3. En `Code | Saving` nos aseguramos de que `Default text encoding` se ha fijado al valor `UTF-8`
 
 
 Después de realizar estos cambios el cuadro de diálogo debe quedar como muestra las siguientes figuras:
