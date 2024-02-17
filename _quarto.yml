@@ -1,5 +1,8 @@
 project:
   title: "labs_1027"
+  output-dir: "html"
+  render:
+    - "src/*.qmd"
 
 author: "José Pernías"
 date: last-modified
@@ -8,12 +11,11 @@ toc-title: Contenido
 toc: true
 number-sections: true
 number-depth: 3
-format: 
+format-links: false
+
+format:
   html:
     theme: flatly
     embed-resources: true
-  pdf:
-    papersize: a4
-format-links: false
 
 

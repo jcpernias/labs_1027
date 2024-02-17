@@ -2,8 +2,6 @@
 title: "Introducción a R y RStudio (y II)"
 ---
 
-
-
 # Regresión múltiple
 
 En primer lugar cargamos los paquetes que utilizaremos en esta sesión:
@@ -19,7 +17,6 @@ Anteriormente estimamos un modelo de regresión simple de los resultados elector
 mod1 <- lm(voteA ~ expendA, data = vote1)
 summary(mod1)
 ```
-
 
 Un análisis gráfico informal apuntaba a la posible existencia de problemas de especificación. 
 

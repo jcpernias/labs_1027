@@ -2,9 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-**/*.html
-13 - Phillips/*.csv
-11 - traffic2/*.csv
-14 - Okun/*.csv
 
+/html/
 /.quarto/
