@@ -15,7 +15,9 @@ format-links: false
 
 format:
   html:
-    theme: flatly
+    theme:
+      - flatly
+      - labs_1027.scss
     embed-resources: true
 
 
