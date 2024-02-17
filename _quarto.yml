@@ -1,0 +1,19 @@
+project:
+  title: "labs_1027"
+
+author: "José Pernías"
+date: last-modified
+lang: es
+toc-title: Contenido
+toc: true
+number-sections: true
+number-depth: 3
+format: 
+  html:
+    theme: flatly
+    embed-resources: true
+  pdf:
+    papersize: a4
+format-links: false
+
+
