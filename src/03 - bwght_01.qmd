@@ -1,0 +1,63 @@
+---
+title: "El efecto del tabaco sobre el peso de los recién nacidos (I)"
+---
+
+## Objetivo
+
+Mediante modelos de regresión lineal múltiple se tratará de establecer si existe una relación de causalidad entre la salud de los recién nacidos, aproximada por su peso al nacer, y el consumo de tabaco de sus madres durante el embarazo.
+
+## Preliminares
+
+- Nada más arrancar RStudio conviene comprobar las siguientes opciones, accesibles desde el menú `Tools | Global Options...`:
+
+    - La opción `Restore .RData into workspace at startup` no está marcada.
+    - La opción `Save workspace to .RData on exit` está fijada a `Never`.
+    - En la pestaña `Saving` del panel `Code` la opción `Default text encoding` toma el valor `UTF-8`.
+
+- A continuación, cree un nuevo *script* R seleccionando el menú `File | New File > R script` o pulsando los iconos que aparecen en la barra de herramientas o en la pestaña `Files`. Guarde el fichero conforme vaya añadiendo instrucciones para poder reutilizarlo en sesiones posteriores.
+
+## Datos
+
+Utilizaremos la base de datos `bwght`, que está contenida en el paquete `wooldridge`. Esta base de datos contiene información sobre diversas características de  recién nacidos y sus familias durante el año 1988 en Estados Unidos. 
+
+- Cargue el paquete `wooldridge` (es posible que tenga que instalarlo previamente).
+
+- Utilice la función `str` para examinar el contenido de la base de datos `bwght`. ¿Cuántas variables contiene? ¿Cuántas observaciones?
+
+- Cuando la función `summary` se usa con una base de datos, presenta algunos estadísticos descriptivos de las variables. Utilice los estadísticos descriptivos de la variable ficticia `male` para determinar que porcentaje de los recién nacidos de la muestra eran varones.
+
+- Consulte la ayuda de `bwght`. ¿Qué variable recoge el peso de los recién nacidos? ¿En qué unidades se mide? ¿Qué variable registra cuántos cigarrillos fumó cada madre durante el embarazo?
+
+
+### Estadísticos descriptivos
+
+R proporciona muchas funciones para calcular estadísticos descriptivos. Por ejemplo, la media de una variable se calcula con la función `mean` y la desviación típica con `sd`.  En el caso de variables que sólo toman unos pocos valores es útil la función `table` que muestra cuántas observaciones corresponden a cada valor. Otro estadístico frecuentemente usado es el coeficiente de correlación que se calcula con `cor`.
+
+- Calcule la media y la desviación típica del peso de los recién nacidos. 
+
+- ¿Cuántas madres no fumaron durante el embarazo? 
+
+- ¿Cuál es la correlación entre el peso de los recién nacidos y el número de cigarrillos diario que las madres fumaron durante el embarazo? De acuerdo con este estadístico, ¿cómo se relaciona la salud de los recién nacidos y el consumo de tabaco? ¿Podemos concluir algo sobre la existencia de una relación causal entre estas variables?
+
+### Transformación de variables
+
+A veces es útil crear nuevas variables para expresar la información en unidades de medida más convenientes. En R podemos utilizar los operadores aritméticos habituales (`+`, `-`, `*` y `/`) para realizar cálculos con variables. Para calcular potencias se usa el operador `^` (por ejemplo, el cuadrado de `x` se expresa `x ^ 2`). Otra transformación común es el logaritmo natural que en R se obtiene con la función `log`.  
+
+-  En la base de datos que estamos utilizando, la variable `bwght` contiene el peso de los recién nacidos medido en onzas. Calcule el peso de los recién nacidos expresado en kilogramos (una onza son aproximadamente 29 gramos) y guarde el resultado creando en la base de datos `bwght` una nueva variable, `bwght_kg`. Calcule la media y la desviación típica del peso en kilogramos.
+
+- Cree en la base de datos `bwght` una nueva variable, `lbwght`, y almacene en ella el logaritmo del peso de los recién nacidos. Calcule la media y la desviación típica de esa variable. ¿Tienen interpretaciones útiles estas variables?
+
+### Variables ficticias
+
+Con frecuencia se usan variables ficticias para expresar información cualitativa. Para crear este tipo de variables se usan los operadores lógicos de igualdad (`==`), no igualdad (`!=`), comparación (`<`, `>`, `<=` y `>=`) y negación (`!`). Se pueden crear expresiones lógicas complejas conectado expresiones simples con el operador Y (`&`) y el operador O (`|`). Como resultado se obtienen variables lógicas que toman los valores `TRUE` y `FALSE` dependiendo si la condición se cumple o no en cada observación. Si queremos transformar estos valores lógicos en enteros podemos usar la función `as.integer`, que transforma el valor `TRUE` en 1 y el valor `FALSE` en 0.
+
+- Cree en la base de datos `bwght` una variable ficticia, `smoker`, que tome valor 1 para las madres que fumaron durante su embarazo y 0 para las que no lo hicieron. Use la función `table` para determinar cuantas observaciones hay en cada categoría. ¿Qué información se obtiene con la función `sum(smoker)`? ¿Y con `mean(smoker)`?
+
+## Regresión simple
+
+- Use la función `lm` para estimar una regresión simple entre el logaritmo del peso de los recién nacidos y la variable `smoker` y guarde los resultados en la variable `mod1`.
+
+- Use la función `summary` para obtener la tabla de la regresión estimada en el punto anterior. Interprete los resultados de la regresión. ¿Podemos concluir algo sobre la existencia de una relación causal entre el peso de los recién nacidos y el consumo de tabaco durante el embarazo?
+
+- Calcule intervalos de confianza para los parámetros del modelo de regresión  simple con la función `confint`. ¿Cuál  es el nivel de confianza usado por defecto? Calcule los intervalos para un nivel de confianza del 99% (consulte la ayuda de la función `confint`). 
+
