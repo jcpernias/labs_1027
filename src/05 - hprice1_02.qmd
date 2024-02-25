@@ -1,0 +1,187 @@
+---
+title: "Determinantes del precio de venta de las casas (y II)"
+---
+
+
+## Objetivo 
+
+Se estiman los parámetros de una regresión hedónica que trata de explicar los precios de venta de un conjunto de casas en función de las características de las mismas. En esta sesión se usan diferentes métodos para estimar los parámetros del modelo: mínimos cuadrados ordinarios (MCO), mínimos cuadrados ponderados (MCP) y mínimos cuadrados ponderados factibles (MCPF).
+
+## Preparativos
+Cargamos la base de datos `hprice1` que pertenece al paquete `woldridge`:
+```{r load-data}
+library(wooldridge)
+
+data(hprice1)
+```
+
+Utilizaremos los paquetes `sandwich` y `lmtest` para obtener errores típicos robustos a heteroscedasticidad.
+```{r load-packages, warning=FALSE, message=FALSE}
+library(sandwich)
+library(lmtest)
+```
+
+Para facilitar la lectura de resultados, transformaron las unidades de las variables medidas en pies cuadrados. Dividiendo por $10{,}76$ obtenemos las áreas de las casas y las parcelas en metros cuadrados.
+```{r}
+house_m2 <- hprice1$sqrft / 10.76
+lot_m2 <- hprice1$lotsize / 10.76
+```
+
+## Mínimos cuadrados ordinarios
+
+Estimamos por MCO los parámetros del modelo de regresión: 
+$$
+ \mathit{price} = \beta_0 + \beta_1 \mathit{house\_m2} + \beta_2 \mathit{lot\_m2} + \beta_3 \mathit{bdrms} + u 
+$$
+```{r}
+mod1 <- lm(price ~ house_m2 + lot_m2 + bdrms, data = hprice1)
+```
+
+Utilizamos estimaciones robustas de los errores típicos:
+```{r}
+ct_mco <- coeftest(mod1, vcovHC)
+ct_mco
+```
+De acuerdo con estos resultados, sólo el tamaño de las casas tendría un efecto significativo sobre el precio de venta. Con la siguiente instrucción obtenemos intervalos de confianza que son válidos en presencia de heteroscedasticidad:
+```{r}
+confint(ct_mco)
+```
+Los intervalos obtenidos son muy amplios. En el caso de `house_m2`, la estimación del valor de un metro cuadrado adicional se encontraría en el intervalo que va de $450$ a $2{,}193$ dólares.
+
+## Mínimos cuadrados ponderados
+
+La imprecisión de las estimación de MCO podría deberse a que este estimador es ineficiente en presencia de heteroscedasticidad. Si conociésemos el patrón que sigue la varianza del término de error, Mínimos Cuadrados Ponderados (MCP) seria un estimador más eficiente.
+
+Podemos escribir la varianza del término de error como:
+$$
+  \operatorname{var}(u_i | \boldsymbol{x}_i) = \sigma^2 h(\boldsymbol{x}_i)
+$$
+Por ahora supondremos que la varianza del término de error es proporcional a $\mathit{house\_m2}$:
+$$
+  h(\boldsymbol{x}_i) = \mathit{house\_m2}_i
+$$
+De acuerdo con este supuesto, los pesos a usar en la estimación MCP son la inversa de $\mathit{house\_m2}$:
+```{r}
+wi <- 1 / house_m2
+```
+
+Para estimar por MCP utilizamos el argumento `weights` de la función `lm`:
+```{r}
+mcp <- lm(price ~ house_m2 + lot_m2 + bdrms, data = hprice1, 
+          weights = wi)
+summary(mcp)
+```
+Con el estimador MCP se obtienen errores típicos mucho más reducidos que con MCO y la variable `lot_m2` es ahora significativa al 1%. Sin embargo, los errores típicos de MCP sólo son válidos cuando es correcto el supuesto sobre la varianza del término de error. En la práctica, no podemos estar seguros de que hayamos eliminado por completo toda la  heteroscedasticidad, por lo que, en general, es recomendable usar errores típicos robustos después de estimar por MCP:
+```{r}
+coeftest(mcp, vcov. = vcovHC)
+```
+
+Para facilitar las comparaciones, construimos una tabla y disponemos por columnas las estimaciones de MCP usando distintos formas de calcular los errores típicos:
+```{r}
+#| echo: false 
+#| message: false
+
+library(modelsummary)
+modelsummary(list("MCP" = mcp, "MCP + e.t. robustos" = mcp), 
+             vcov = c("constant", "robust"),
+             stars = c("*" = 0.1, "**" = 0.05, "***" = 0.01), 
+             gof_omit = ".*")
+```
+
+Los errores típicos de MCP son muy diferentes de los errores típicos robustos, lo que indicaría que el supuesto que hemos realizado sobre la varianza del término de error sería insuficiente para recoger toda la heteroscedasticidad. Una vez se usan las variantes robustas, las estimaciones obtenidas por MCP, aunque algo más precisas, no son muy diferentes a las de MCO.
+
+
+## Mínimos cuadrados ponderados factibles
+
+En esta sección usaremos una especificación más flexible de la varianza del término de error. Suponemos que $h_i$ depende de todas las explicativas:
+$$
+  h(\boldsymbol{x}_i) = \exp(\delta_0 
+  + \delta_1\mathit{house\_m2}_i
+  + \delta_2\mathit{lot\_m2}_i
+  + \delta_3\mathit{bdrms}_i)
+$$
+Entonces podemos escribir:
+$$
+  log(u^2_i) = \alpha_0 
+  + \delta_1\mathit{house\_m2}_i
+  + \delta_2\mathit{lot\_m2}_i
+  + \delta_3\mathit{bdrms}_i
+  + \text{error}
+$$
+Reemplazando en la ecuación anterior la perturbación aleatoria por los residuos de MCO, obtenemos un modelo de regresión con el que estimaremos el logaritmo de $h_i$:
+$$
+  log(\hat{u}^2_i) = \alpha_0 
+  + \delta_1\mathit{house\_m2}_i
+  + \delta_2\mathit{lot\_m2}_i
+  + \delta_3\mathit{bdrms}_i
+  + \text{error}
+$$
+Para estimar la ecuación anterior, guardamos los residuos de MCO en la variable `uhat1`. Posteriormente elevamos al cuadrado y tomamos logaritmos. El resultado final se guarda en la variable `log_usq`:
+```{r}
+uhat1 <- resid(mod1)
+uhat1_sq <- uhat1^2
+log_usq <- log(uhat1_sq)
+```
+
+Estimamos por MCO una regresión de `log_usq` sobre las variables explicativas:
+```{r}
+h_reg <- lm(log_usq ~ house_m2 + lot_m2 + bdrms, data = hprice1)
+```
+
+La regresión anterior sólo nos interesa para obtener las predicciones, las cuales guardamos en la variable `log_hhat`:
+```{r}
+log_hhat <- fitted(h_reg)
+```
+
+Tomando la exponencial de estas predicciones obtenemos la estimación de $h_i$. Guardamos $\hat{h}_i$ en la variable `hhat`:  
+```{r}
+hhat <- exp(log_hhat)
+```
+
+Finalmente, el estimador de Mínimos Cuadrados Ponderados Factibles (MCPF) se obtiene utilizando las ponderaciones $1 / \hat{h}_i$:
+```{r}
+mcpf <- update(mod1, weights = 1 / hhat)
+summary(mcpf)
+```
+
+En general, es recomendable usar una matriz de covarianzas de los estimadores robusta a heteroscedasticidad después de estimar por MCPF:
+```{r}
+ct_mcpf <- coeftest(mcpf, vcov. = vcovHC)
+ct_mcpf
+```
+
+Igual que antes, utilizamos una tabla para comparar las estimaciones de
+MCPF utilizando diferentes estimadores de los errores típicos.
+```{r}
+#| echo: false 
+#| message: false
+
+modelsummary(list("MCPF" = mcpf, "MCPF + e.t. robustos" = mcpf), 
+             vcov = c("constant", "robust"),
+             stars = c("*" = 0.1, "**" = 0.05, "***" = 0.01), 
+             gof_omit = ".*")
+```
+En este caso las diferencias entre los errores típicos de MCPF y los robustos no son tan grandes. El supuesto sobre la varianza del término de error parece haber capturado gran parte de la heteroscedasticidad. Con las estimaciones de MCPF concluimos que las variables `house_m2` y `lot_m2` tienen efectos significativos sobre el precio de venta de las casas.
+
+## Comparación de estimaciones
+
+En la siguiente tabla se presentan las estimaciones obtenidas por MCO, MCP y MCPF. En los tres casos se usan errores típicos robustos a heteroscedasticidad.
+
+
+```{r}
+#| echo: false 
+#| message: false
+
+msummary(list(MCO = mod1, MCP = mcp, MCPF = mcpf), 
+         stars = c("*" = 0.1, "**" = 0.05, "***" = 0.01), 
+         vcov = "robust",
+         gof_omit = "[AB]IC|Log.Lik.")
+```
+
+A pesar de que hay algunas diferencias, las estimaciones de los parámetros que se obtienen con los diferentes métodos son similares. Los errores típicos de MCO son muy grandes, especialmente en comparación con los de MCPF. Las medidas de bondad del ajuste, $R^2$ y $R^2$ ajustado, no son comparables: sólo en el caso de MCO se pueden interpretar como la fracción de la varianza de la variable `price` que es explicada por los regresores.  
+
+Finalmente, obtenemos intervalos de confianza para los parámetros del modelo que son válidos en presencia de heteroscedasticidad:
+```{r}
+confint(ct_mcpf)
+```
+El intervalo de confianza para `house_m2` es mucho menos amplio que el que se obtuvo con MCO: el valor de un metro cuadrado adicional se encontraría en el intervalo que va, aproximadamente, desde $700$ hasta $1{,}300$ dólares.
