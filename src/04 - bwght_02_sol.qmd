@@ -45,7 +45,7 @@ mod1 <- lm(lbwght ~ smoker, data = bwght)
 summary(mod1)
 ```
 
-*Respuesta:* La estimación de la pendiente de la variable `smoker` muestra los hijos de las madres que fumaron durante el embarazo pesaban al nacer un 7,7% menos que los hijos de madres no fumadoras. Este efecto es significativo para $\alpha = 5\%$.
+*Respuesta:* La estimación de la pendiente de la variable `smoker` muestra los hijos de las madres que fumaron durante el embarazo pesaban al nacer un 7.7% menos que los hijos de madres no fumadoras. Este efecto es significativo para $\alpha = 5\%$.
 
 # Regresión múltiple
 
