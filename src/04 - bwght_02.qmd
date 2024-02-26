@@ -16,7 +16,7 @@ library(wooldridge)
 data(bwght)
 ```
 
-# Modelo inicial
+# Modelo de regresión simple
 
 ::: {.callout-note appearance="simple"}
 Cree la variable `lbwght` y almacene en ella el logaritmo del peso de los recién nacidos.
@@ -72,7 +72,7 @@ Cree un conjunto de variables ficticias que permitan distinguir los efectos de s
 bwght$cigs_1_5 <- as.integer(bwght$cigs >= 1 & bwght$cigs <= 5)
 ```
 
-Cree de forma análoga las ficticias, `cigs_6_10`, `cigs_11_15`, `cigs_16_20`, donde los número indican el número de cigarrillos mínimo y máximo que recoge cada una de las ficticias. Por último cree la ficticia `cigs_over_20` que tomen el valor 1 para aquellas madres que fumaron más de 20 cigarrillos.
+Cree la variable `cigs_1_5` y, de forma análoga, cree las ficticias `cigs_6_10`, `cigs_11_15` y `cigs_16_20`, donde los número indican el número de cigarrillos mínimo y máximo. Por último cree la ficticia `cigs_over_20` que tomen el valor 1 para aquellas madres que fumaron más de 20 cigarrillos.
 :::
 
 ```{r}
@@ -94,7 +94,7 @@ Estime por MCO los parámetros del modelo de regresión: $$\begin{align*}
          + \alpha_{10} \, \mathit{lfaminc} 
          + v
     \end{align*}
-      $$ Guarde los resultados de la estimación en la variable `mod2` e interprete los resultados.
+      $$Guarde los resultados de la estimación en la variable `mod2` e interprete los resultados.
 :::
 
 ```{r}
@@ -106,7 +106,7 @@ Estime por MCO los parámetros del modelo de regresión: $$\begin{align*}
 # Contrastes de hipótesis generales
 
 ::: {.callout-note appearance="simple"}
-Cargue el paquete `car`. En esta sección usaremos la función `lht` para contrastar restricciones lineales sobre los parámetros del modelo estimado en la sección anterior.
+Cargue el paquete `car`. En esta sección usaremos la función `lht` para contrastar restricciones lineales sobre los parámetros del modelo de regresión múltiple.
 :::
 
 ```{r}
@@ -114,10 +114,15 @@ Cargue el paquete `car`. En esta sección usaremos la función `lht` para contra
 ```
 
 ::: {.callout-note appearance="simple"}
-Podemos contrastar la hipótesis de que varias pendientes son 0. Por ejemplo, podemos contrastar la significación conjunta de `lfaminc` y `second` ($H_0\!: \alpha_7 = \alpha_{10} = 0$) con las siguientes instrucciones:
+Podemos contrastar la hipótesis de que varias pendientes son 0. La significación conjunta de `lfaminc` y `second:`
 
-```{r}
-#| eval: false
+$$
+H_0\!: \alpha_7 = \alpha_{10} = 0
+$$
+
+se contrasta con las siguientes instrucciones:
+
+``` r
 h0_names <- c("lfaminc", "second") 
 lht(mod2, h0_names)
 ```
@@ -132,12 +137,14 @@ lht(mod2, h0_names)
 *Respuesta:*
 
 ::: {.callout-note appearance="simple"}
-Si queremos contrastar la hipótesis de que las pendientes de `first` y de `second` son iguales ($H_0\!: \alpha_6 = \alpha_{7}$), reescribimos la hipótesis de forma que el lado derecho de las igualdades sea igual a $0$: $$
+Si queremos contrastar la hipótesis de que las pendientes de `first` y de `second` son iguales:\
+$$H_0\!: \alpha_6 = \alpha_{7},$$
+
+reescribimos la hipótesis de forma que el lado derecho de las igualdad sea igual a $0$: $$
 H_0\!: \alpha_6 - \alpha_{7} = 0.
 $$ Las siguientes instrucciones realizan el contraste:
 
-```{r}
-#| eval: false
+``` r
 h0_names <- c("first - second") 
 lht(mod2, h0_names)
 ```
@@ -152,7 +159,11 @@ lht(mod2, h0_names)
 *Respuesta:*
 
 ::: {.callout-note appearance="simple"}
-Contraste la hipótesis nula de que el efecto del tabaco sobre el peso de los recién nacidos es independiente de cuantos cigarrillos se fumaron durante el embarazo (los parámetros $\alpha_1$ a $\alpha_5$ son iguales: $H_0\!: \alpha_1 = \alpha_{2} = \alpha_{3} = \alpha_{4} = \alpha_{5}$).
+Contraste la hipótesis nula de que el efecto del tabaco sobre el peso de los recién nacidos es independiente de cuantos cigarrillos se fumaron durante el embarazo. En este caso los parámetros $\alpha_1$ a $\alpha_5$ son iguales entre sí:
+
+$$
+H_0\!: \alpha_1 = \alpha_{2} = \alpha_{3} = \alpha_{4} = \alpha_{5}.
+$$
 :::
 
 ```{r}
@@ -172,7 +183,7 @@ Contraste la hipótesis anterior conjuntamente con las hipótesis de no signific
 *Respuesta:*
 
 ::: {.callout-note appearance="simple"}
-Estime el modelo restringido que se obtiene al imponer todas las restricciones del apartado anterior. Compare las estimaciones obtenidas del efecto del tabaco sobre el peso de los recién nacidos en este modelo y en el modelo de regresión simple estimado en la sección 2.
+Estime el modelo restringido que se obtiene al imponer todas las restricciones del punto anterior. Compare las estimaciones obtenidas del efecto del tabaco sobre el peso de los recién nacidos en este modelo y en el modelo de regresión simple estimado en la sección 2. ¿Es posible afirmar que existe una relación causal entre el consumo de tabaco durante el embarazo y la salud de los recién nacidos?
 :::
 
 ```{r}
