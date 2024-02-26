@@ -188,31 +188,16 @@ lht(mod2, h0)
 *Respuesta:* El *p*-valor del contraste es mucho mayor que el nivel de significación $\alpha = 0.05$, por lo que no se puede rechazar la hipótesis nula. No se encuentran diferencias significativas entre los diferentes niveles de consumo de tabaco.
 
 ::: {.callout-note appearance="simple"}
-Contraste la hipótesis anterior conjuntamente con las hipótesis de no significación de `second` y `lfaminc`.
-:::
-
-```{r}
-h0 <- c("cigs_1_5 = cigs_6_10",
-        "cigs_1_5 = cigs_11_15",
-        "cigs_1_5 = cigs_16_20", 
-        "cigs_1_5 = cigs_over_20",
-        "second",
-        "lfaminc")
-lht(mod2, h0)
-```
-
-*Respuesta:* El *p*-valor del contraste es mucho mayor que el nivel de significación $\alpha = 0.05$, por lo que no se puede rechazar la hipótesis nula. No hay evidencia en contra de las hipótesis contrastadas.
-
-::: {.callout-note appearance="simple"}
 Estime el modelo restringido que se obtiene al imponer todas las restricciones del punto anterior. Compare las estimaciones obtenidas del efecto del tabaco sobre el peso de los recién nacidos en este modelo y en el modelo de regresión simple estimado en la sección 2. ¿Es posible afirmar que existe una relación causal entre el consumo de tabaco durante el embarazo y la salud de los recién nacidos?
 :::
 
 ```{r}
-mod2r <- lm(lbwght ~ smoker + first + white + male, 
+mod2r <- lm(lbwght ~ smoker + first + second + 
+              white + male + lfaminc, 
             data = bwght)
 summary(mod2r)
 ```
 
-*Respuesta:* Las estimaciones de la pendiente de la variable `smoker` son muy similares en los dos modelos: los hijos de las madres que fumaron durante el embarazo pesaban al nacer un 7,7% menos que los hijos de madres no fumadoras.
+*Respuesta:* Las estimaciones de la pendiente de la variable `smoker` son muy similares en los dos modelos: los hijos de las madres que fumaron durante el embarazo pesaban al nacer alrededor de un 7.5% menos que los hijos de madres no fumadoras.
 
 En el modelo de regresión múltiple se tienen en cuenta más factores que pueden afectar al peso de los recién nacidos (orden de nacimiento, etnia, sexo, renta familiar), por lo que es más creíble en este caso la interpretación causal del efecto de `smoker` sobre la salud de los recién nacidos.

@@ -173,16 +173,6 @@ $$
 *Respuesta:*
 
 ::: {.callout-note appearance="simple"}
-Contraste la hipótesis anterior conjuntamente con las hipótesis de no significación de `second` y `lfaminc`.
-:::
-
-```{r}
-
-```
-
-*Respuesta:*
-
-::: {.callout-note appearance="simple"}
 Estime el modelo restringido que se obtiene al imponer todas las restricciones del punto anterior. Compare las estimaciones obtenidas del efecto del tabaco sobre el peso de los recién nacidos en este modelo y en el modelo de regresión simple estimado en la sección 2. ¿Es posible afirmar que existe una relación causal entre el consumo de tabaco durante el embarazo y la salud de los recién nacidos?
 :::
 
