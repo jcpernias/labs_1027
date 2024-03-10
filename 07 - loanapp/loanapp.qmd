@@ -16,7 +16,7 @@ Se utilizarán las siguientes variables:
 
 - `approve`: variable ficticia que toma el valor 1 para aquellos solicitantes a los que se les concede un préstamo hipotecario.
 
-- `black`, `hispan`: variables ficticias con las que se codifica la etnia de los solicitantes. Cada individuo se clasifica en uno de tres grupos: negro (`black` igual a 1), hispano (`hipan` igual a 1) o blanco (categoría por defecto).
+- `black`, `hispan`: variables ficticias con las que se codifica la etnia de los solicitantes. Cada individuo se clasifica en uno de tres grupos: negro (`black` igual a 1), hispano (`hispan` igual a 1) o blanco (categoría por defecto).
 
 - `obrat`: porcentaje de la renta mensual del solicitante que se destina a otras obligaciones financieras. 
 
