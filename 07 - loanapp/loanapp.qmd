@@ -1,0 +1,109 @@
+---
+author: ""
+title: "Discriminación en la concesión de hipotecas"
+---
+
+## Objetivo
+
+Estimaremos un modelo lineal de probabilidad con el objetivo de determinar si existió discriminación racial a la hora de conceder hipotecas en Boston en 1990.
+
+
+## Datos
+
+Se utilizarán los datos del fichero `loanapp.csv`. Estos datos fueron utilizados en el trabajo de W. C. Hunter y M. B. Walker (1996): "The Cultural Affinity Hypothesis and Mortgage Lending Decisions", *Journal of Real Estate Finance and Economics*, 13, 57-70.
+
+Se utilizarán las siguientes variables:
+
+- `approve`: variable ficticia que toma el valor 1 para aquellos solicitantes a los que se les concede un préstamo hipotecario.
+
+- `black`, `hispan`: variables ficticias con las que se codifica la etnia de los solicitantes. Cada individuo se clasifica en uno de tres grupos: negro (`black` igual a 1), hispano (`hipan` igual a 1) o blanco (categoría por defecto).
+
+- `obrat`: porcentaje de la renta mensual del solicitante que se destina a otras obligaciones financieras. 
+
+- `loanprc`: importe del préstamo solicitado como fracción del precio de la casa.
+
+- `unem`: tasa de desempleo en el sector de actividad del solicitante.
+
+- `self`: ficticia que toma el valor 1 si el solicitante trabaja por cuenta propia.
+
+- `male`: ficticia que toma el valor 1 si el solicitante es hombre.
+
+- `married`: ficticia que toma el valor 1 si el solicitante está casado.
+
+- `dep`: número de personas dependientes del solicitante.
+
+- `sch`: ficticia que toma el valor 1 si el solicitante completó la educación secundaria.
+
+- `chist`: historia crediticia. Ficticia que toma el valor 1 si el solicitante nunca se ha retrasado más de 60 días en sus pagos.
+
+- `pubrec`: ficticia que toma el valor 1 si el solicitante se ha declarado en quiebra en el pasado.
+
+::: {.callout-note appearance="simple"}
+Lea los datos contenidos en el fichero `loanapp.csv` usando la función `read.csv2`.
+:::
+
+```{r}
+
+```
+
+
+## Modelo lineal de probabilidad
+
+::: {.callout-note appearance="simple"}
+Estime un modelo lineal de probabilidad donde la variable dependiente es `approve` y las explicativas son `black` e `hispan`. Presente la tabla de la regresión con errores típicos robustos a heteroscedasticidad.
+:::
+
+```{r}
+
+```
+
+
+::: {.callout-note appearance="simple"}
+Interprete los parámetros estimados en el punto anterior. ¿Son significativas individualmente las variables explicativas?
+:::
+
+*Respuesta:* 
+
+::: {.callout-note appearance="simple"}
+Contraste si son iguales los parámetros de las variables `black` e `hispan`. 
+:::
+
+```{r}
+
+```
+
+*Respuesta:* 
+
+## Más controles
+
+::: {.callout-note appearance="simple"}
+Añada al modelo lineal de probabilidad las variables explicativas `obrat`, `loanprc`, `unem`, `male`, `married`, `dep`, `self`, `sch`, `chist` y `pubrec`. Presente las estimaciones de MCO junto con los errores típicos robustos a heteroscedasticidad.
+:::
+
+```{r}
+
+```
+
+::: {.callout-note appearance="simple"}
+Contraste la significación conjunta de las variables explicativas añadidas en el punto anterior.
+:::
+
+```{r}
+
+```
+
+
+*Respuesta:* 
+
+::: {.callout-note appearance="simple"}
+Al añadir las variables explicativas adicionales, ¿qué ha ocurrido con las estimaciones de los parámetros de `black` e `hispan`? 
+:::
+
+*Respuesta:* 
+
+
+::: {.callout-note appearance="simple"}
+Los resultados obtenidos, ¿son evidencia de discriminación en contra de las minorías raciales?
+:::
+
+*Respuesta:* 

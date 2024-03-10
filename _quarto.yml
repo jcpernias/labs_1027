@@ -7,6 +7,7 @@ project:
     - "03 - bwght/*.qmd"
     - "04 - hprice1/*.qmd"
     - "06 - smoke/*.qmd"
+    - "07 - loanapp/*.qmd"
 
 author: "José Pernías"
 date: last-modified
