@@ -1,0 +1,194 @@
+---
+author: "José Pernías"
+title: "El efecto del tabaco sobre el peso de los recién nacidos (y II)"
+---
+
+## Datos
+
+Utilizaremos la base de datos `bwght` que proporciona el paquete `wooldridge`. Esta base de datos contiene información sobre diversas características de recién nacidos y sus familias durante el año 1988 en Estados Unidos. La usaremos para evaluar el efecto que tiene el consumo de tabaco durante el embarazo sobre la salud de los recién nacidos.
+
+::: {.callout-note appearance="simple"}
+Cargue el paquete `wooldridge` y la base de datos `bwght` en una sesión de RStudio.
+:::
+
+```{r}
+library(wooldridge)
+data(bwght)
+```
+
+## Modelo de regresión simple
+
+::: {.callout-note appearance="simple"}
+Cree la variable `lbwght` y almacene en ella el logaritmo del peso de los recién nacidos.
+:::
+
+```{r}
+bwght$lbwght <- log(bwght$bwght)
+```
+
+::: {.callout-note appearance="simple"}
+Cree una variable ficticia `smoker` que tome el valor 1 (o `TRUE`) cuando la madre fumó en el embarazo.
+:::
+
+```{r}
+bwght$smoker <- as.integer(bwght$cigs > 0)
+```
+
+::: {.callout-note appearance="simple"}
+Obtenga las estimaciones MCO de los parámetros del modelo: $$
+      \mathit{lbwght} = \beta_0 + \beta_1 \mathit{smoker} + u.
+$$Guarde los resultados de la estimación del modelo en la variable `mod1`. Interprete las estimaciones obtenidas.
+:::
+
+```{r}
+mod1 <- lm(lbwght ~ smoker, data = bwght)
+summary(mod1)
+```
+
+*Respuesta:* La estimación de la pendiente de la variable `smoker` muestra los hijos de las madres que fumaron durante el embarazo pesaban al nacer un 7.7% menos que los hijos de madres no fumadoras. Este efecto es significativo para $\alpha = 5\%$.
+
+## Regresión múltiple
+
+::: {.callout-note appearance="simple"}
+Cree la variable `lfaminc` que contendrá el logaritmo de la renta familiar.
+:::
+
+```{r}
+bwght$lfaminc <- log(bwght$faminc)
+```
+
+::: {.callout-note appearance="simple"}
+La variable `parity` toma valores enteros que indican si el recién nacido es el primer hijo que tiene la madre (`parity` toma el valor 1) , el segundo (`parity` vale 2), etc. Cree una variable ficticia, `first`, que tome valor 1 en aquellas observaciones en que `parity` es igual a 1. Cree otra ficticia, `second`, que distinga aquellos casos en que `parity` es 2.
+:::
+
+```{r}
+bwght$first <- as.integer(bwght$parity == 1)
+bwght$second <- as.integer(bwght$parity == 2)
+```
+
+::: {.callout-note appearance="simple"}
+Cree un conjunto de variables ficticias que permitan distinguir los efectos de sobre el peso de los recién nacidos de fumar más o menos cigarrillos durante el embarazo. En primer lugar cree la variable `cigs_1_5` que tome el valor 1 si la madre fumó entre 1 y 5 cigarrillos diarios (ambos inclusive) durante el embarazo. Para crear esta variable unimos dos comparaciones lógicas con el operador Y-lógico, `&`:
+
+``` r
+bwght$cigs_1_5 <- as.integer(bwght$cigs >= 1 & bwght$cigs <= 5)
+```
+
+Cree la variable `cigs_1_5` y, de forma análoga, cree las ficticias `cigs_6_10`, `cigs_11_15` y `cigs_16_20`, donde los número indican el número de cigarrillos mínimo y máximo. Por último cree la ficticia `cigs_over_20` que tomen el valor 1 para aquellas madres que fumaron más de 20 cigarrillos.
+:::
+
+```{r}
+bwght$cigs_1_5 <- as.integer(bwght$cigs >= 1 & bwght$cigs <= 5)
+bwght$cigs_6_10 <- as.integer(bwght$cigs >= 6 & bwght$cigs <= 10)
+bwght$cigs_11_15 <- as.integer(bwght$cigs >= 11 & bwght$cigs <= 15)
+bwght$cigs_16_20 <- as.integer(bwght$cigs >= 16 & bwght$cigs <= 20)
+bwght$cigs_over_20 <- as.integer(bwght$cigs > 20)
+```
+
+::: {.callout-note appearance="simple"}
+Estime por MCO los parámetros del modelo de regresión: $$\begin{align*}
+      \mathit{lbwght} = \alpha_0 
+         &+ \alpha_1 \, \mathit{cigs\_1\_5}
+         + \alpha_2 \, \mathit{cigs\_6\_10} \\ 
+         & + \alpha_3 \, \mathit{cigs\_11\_15} 
+         + \alpha_4 \, \mathit{cigs\_16\_20} 
+         + \alpha_5 \, \mathit{cigs\_over\_20} \\
+         & + \alpha_6 \, \mathit{first} 
+         + \alpha_7 \, \mathit{second} 
+         + \alpha_8  \, \mathit{white} 
+         + \alpha_9 \, \mathit{male} 
+         + \alpha_{10} \, \mathit{lfaminc} 
+         + v
+    \end{align*}
+      $$Guarde los resultados de la estimación en la variable `mod2` e interprete los resultados.
+:::
+
+```{r}
+mod2 <- lm(lbwght ~ cigs_1_5 + cigs_6_10 + cigs_11_15 +
+             cigs_16_20 + cigs_over_20 + first + second +
+             white + male + lfaminc, 
+           data = bwght)
+summary(mod2)
+```
+
+*Respuesta:* A excepción de `cigs_1_5`, todas las variables que miden el consumo de tabaco tienen signo negativo y su efecto es significativo al 5%. De acuerdo con la pendiente de `first`, el peso de los primeros hijos es casi un 4% inferior al de sucesivos hijos. Este efecto es significativo al 5%. También son significativos al 5% las pendiente de `white` , los recién nacidos blancos pesan casi un 6% más que los de otras etnias, y `male`, los varones pesan al nacer un 2.5% más que las mujeres. No tienen efectos significativos las variables `second` y `lfaminc`.
+
+## Contrastes de hipótesis generales
+
+::: {.callout-note appearance="simple"}
+Cargue el paquete `car`. En esta sección usaremos la función `lht` para contrastar restricciones lineales sobre los parámetros del modelo de regresión múltiple.
+:::
+
+```{r}
+library(car)
+```
+
+::: {.callout-note appearance="simple"}
+Podemos contrastar la hipótesis de que varias pendientes son 0. La significación conjunta de `lfaminc` y `second:`
+
+$$
+H_0\!: \alpha_7 = \alpha_{10} = 0
+$$
+
+se contrasta con las siguientes instrucciones:
+
+``` r
+h0 <- c("lfaminc", "second") 
+lht(mod2, h0)
+```
+
+¿Se rechaza la hipótesis nula a un nivel de significación del 5%?
+:::
+
+```{r}
+h0 <- c("lfaminc", "second") 
+lht(mod2, h0)
+```
+
+*Respuesta:* El *p*-valor del contraste es mucho mayor que el nivel de significación $\alpha = 0.05$, por lo que no se puede rechazar la hipótesis nula.
+
+::: {.callout-note appearance="simple"}
+Si queremos contrastar la hipótesis de que las pendientes de `first` y de `second` son iguales:\
+$$H_0\!: \alpha_6 = \alpha_{7},$$
+
+reescribimos la hipótesis de forma que el lado derecho de las igualdad sea igual a $0$: $$
+H_0\!: \alpha_6 - \alpha_{7} = 0.
+$$ Las siguientes instrucciones realizan el contraste:
+
+``` r
+h0 <- c("first - second") 
+lht(mod2, h0)
+```
+
+¿Se rechaza la hipótesis nula a un nivel de significación del 5%?
+:::
+
+```{r}
+h0 <- c("first - second") 
+lht(mod2, h0)
+```
+
+*Respuesta:* El *p*-valor del contraste es menor que el nivel de significación $\alpha = 0.05$, por lo que se rechaza la hipótesis nula. Hay diferencias significativas entre las pendientes de `first` y de `second`.
+
+::: {.callout-note appearance="simple"}
+Contraste la hipótesis nula de que el efecto del tabaco sobre el peso de los recién nacidos es independiente de cuantos cigarrillos se fumaron durante el embarazo. En este caso los parámetros $\alpha_1$ a $\alpha_5$ son iguales entre sí:
+
+$$
+H_0\!: \alpha_1 = \alpha_{2} = \alpha_{3} = \alpha_{4} = \alpha_{5}.
+$$
+:::
+
+```{r}
+
+```
+
+*Respuesta:* El *p*-valor del contraste es mucho mayor que el nivel de significación $\alpha = 0.05$, por lo que no se puede rechazar la hipótesis nula. No se encuentran diferencias significativas entre los diferentes niveles de consumo de tabaco.
+
+::: {.callout-note appearance="simple"}
+Estime el modelo restringido que se obtiene al imponer todas las restricciones del punto anterior. Compare las estimaciones obtenidas del efecto del tabaco sobre el peso de los recién nacidos en este modelo y en el modelo de regresión simple estimado en la sección 2. ¿Es posible afirmar que existe una relación causal entre el consumo de tabaco durante el embarazo y la salud de los recién nacidos?
+:::
+
+```{r}
+
+```
+
+*Respuesta:* 
