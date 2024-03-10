@@ -1,0 +1,151 @@
+---
+author: "José Pernías"
+title: "Calificaciones en una asignatura universitaria"
+---
+
+## Objetivo
+
+Se trata de determinar la existencia de diferencias significativas en las calificaciones que hombres y mujeres obtienen después de cursar una asignatura universitaria.
+
+## Datos
+
+Utilizaremos los datos del fichero `econmath.csv` que contiene información acerca de las calificaciones obtenidas por los alumnos matriculados en un curso introductorio a la economía en una universidad pública de Estados Unidos. Las variables son:
+
+-   `score`: calificación en la asignatura (porcentaje 0-100).
+
+-   `colgpa`: nota media en el semestre anterior al que se cursó la asignatura.
+
+-   `act`: nota de acceso a la universidad.
+
+-   `male`: variable ficticia que toma el valor 1 para los hombres y 0 para las mujeres.
+
+::: {.callout-note appearance="simple"}
+Lea los datos del fichero `econmath.csv` utilizando la función `read.csv2`.
+:::
+
+```{r}
+econmath <- read.csv2("econmath.csv")
+```
+
+## Modelo de regresión {#sec-reg}
+
+::: {.callout-note appearance="simple"}
+Estime por mínimos cuadrados ordinarios los parámetros del modelo de regresión: $$
+\mathit{score} = \beta_0 + \beta_1 \mathit{colgpa} + \beta_2 \mathit{act} + u 
+$$ {#eq-reg} Presente la tabla de la regresión.
+:::
+
+```{r}
+mod1 <- lm(score ~ colgpa + act, data = econmath)
+summary(mod1)
+```
+
+## Contraste de heteroscedasticidad
+
+Los errores típicos y contrastes obtenidos en el punto anterior sólo son validos bajo el supuesto de homoscedasticidad. En este punto contrastaremos esta hipótesis usando el contraste de Breusch-Pagan.
+
+::: {.callout-note appearance="simple"}
+Obtenga los residuos del modelo estimado por MCO usando la función `resid`.
+:::
+
+```{r}
+uhat <- resid(mod1)
+```
+
+::: {.callout-note appearance="simple"}
+Guarde en una nueva variable los residuos al cuadrado.
+:::
+
+```{r}
+uhat_sq <- uhat^2
+```
+
+::: {.callout-note appearance="simple"}
+Estime una regresión auxiliar utilizando los residuos al cuadrado como la variable dependiente y las mismas explicativas que aparecen en el modelo de regresión de la @eq-reg. Presente los resultados de la regresión auxiliar en una tabla.
+:::
+
+```{r}
+bp_aux <- update(mod1, uhat_sq ~ .)
+summary(bp_aux)
+```
+
+::: {.callout-note appearance="simple"}
+Utilizando un nivel de significación $\alpha = 5\%$, ¿se puede rechazar la hipótesis de homoscedasticidad?
+:::
+
+*Respuesta:*
+
+## Inferencia robusta a heteroscedasticidad
+
+::: {.callout-note appearance="simple"}
+Para poder realizar contrastes robustos a heteroscedasticidad son necesarios algunos paquetes. Cargue los paquetes `sandwich`, `lmtest` y `car` (quizá sea necesario instalarlos previamente).
+:::
+
+```{r}
+library(sandwich)
+library(lmtest)
+library(car)
+```
+
+::: {.callout-note appearance="simple"}
+Presente la tabla de la regresión de la @eq-reg usando errores típicos robustos a heteroscedasticidad.
+:::
+
+```{r}
+coeftest(mod1, vcov. = vcovHC)
+```
+
+::: {.callout-note appearance="simple"}
+¿Hay grandes diferencias entre los resultado obtenidos ahora y los obtenidos en la @sec-reg?
+:::
+
+*Respuesta:*
+
+## Diferencias entre las calificaciones de hombres y mujeres
+
+Las fórmulas de R permiten especificar interacciones entre variables usando el operador `*`. Por ejemplo, para especificar el siguiente modelo: $$
+y_i = \beta_0 + \beta_1 x_{1i} + \beta_2 x_{2i} + \beta_3 d_i + \beta_4 x_{1i} \cdot d_i + \beta_5 x_{2i} \cdot d_i + u_i,
+$$ que presenta interacciones de las variables $x_1$ y $x_2$ con la variable ficticia $d$, escribiríamos una instrucción similar a:
+
+``` r
+mod_int <- lm(y ~ (x1 + x2) * d)
+```
+
+::: {.callout-note appearance="simple"}
+Estime los parámetros del modelo de regresión: $$
+\mathit{score} = \beta_0 + \beta_1 \mathit{colgpa} + \beta_2 \mathit{act} + \beta_3 \mathit{male} + \beta_4 \mathit{colgpa} \cdot \mathit{male} + \beta_5 \mathit{act} \cdot \mathit{male} + u 
+$$ {#eq-int} Presente los resultados de la estimación en una tabla. Utilice errores típicos robustos a heteroscedasticidad.
+:::
+
+```{r}
+mod2 <- lm(score ~ (colgpa + act) * male, data = econmath)
+coeftest(mod2, vcov. = vcovHC)
+```
+
+Utilice contrastes de Wald robustos a heteroscedasticidad en esta sección. Para obtenerlos se añade el argumento `vcov. = vcovHC` a la función `lht`. Por ejemplo:
+
+``` r
+lht(mod, h0_names, vcov. = vcovHC)
+```
+
+::: {.callout-note appearance="simple"}
+A partir de la estimación de la @eq-int, contraste la hipótesis de que no hay diferencias entre los parámetros que determinan las calificaciones de hombres y de mujeres.
+:::
+
+```{r}
+lht(mod2, matchCoefs(mod2, "male"), vcov. = vcovHC)
+```
+
+::: {.callout-note appearance="simple"}
+A partir de la estimación de la @eq-int, contraste la hipótesis de que no hay diferencias entre los efectos de las variables $\mathit{colgpa}$ y $\mathit{act}$ sobre las calificaciones de hombres y de mujeres.
+:::
+
+```{r}
+lht(mod2, matchCoefs(mod2, ":"), vcov. = vcovHC)
+```
+
+::: {.callout-note appearance="simple"}
+Interprete los resultados obtenidos con los contrastes de esta sección. ¿Hay diferencias significativas entre las calificaciones de hombres y mujeres? ¿De qué tipo son?
+:::
+
+*Respuesta:*
