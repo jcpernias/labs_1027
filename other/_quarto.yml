@@ -1,0 +1,23 @@
+project:
+  type: default
+  preview:
+    browser: true
+    watch-inputs: true
+
+date: last-modified
+lang: es
+toc-title: Contenido
+toc: true
+number-sections: true
+number-depth: 3
+format-links: false
+editor: visual
+
+format:
+  html:
+    theme:
+      - flatly
+      - labs_1027.scss
+    embed-resources: true
+
+
