@@ -6,6 +6,7 @@ project:
     - "02 - vote1/*.qmd"
     - "03 - bwght/*.qmd"
     - "04 - hprice1/*.qmd"
+    - "06 - smoke/*.qmd"
 
 author: "José Pernías"
 date: last-modified
