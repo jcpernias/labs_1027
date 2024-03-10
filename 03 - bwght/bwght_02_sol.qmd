@@ -3,7 +3,7 @@ author: "José Pernías"
 title: "El efecto del tabaco sobre el peso de los recién nacidos (y II)"
 ---
 
-# Datos
+## Datos
 
 Utilizaremos la base de datos `bwght` que proporciona el paquete `wooldridge`. Esta base de datos contiene información sobre diversas características de recién nacidos y sus familias durante el año 1988 en Estados Unidos. La usaremos para evaluar el efecto que tiene el consumo de tabaco durante el embarazo sobre la salud de los recién nacidos.
 
@@ -16,7 +16,7 @@ library(wooldridge)
 data(bwght)
 ```
 
-# Modelo de regresión simple
+## Modelo de regresión simple
 
 ::: {.callout-note appearance="simple"}
 Cree la variable `lbwght` y almacene en ella el logaritmo del peso de los recién nacidos.
@@ -47,7 +47,7 @@ summary(mod1)
 
 *Respuesta:* La estimación de la pendiente de la variable `smoker` muestra los hijos de las madres que fumaron durante el embarazo pesaban al nacer un 7.7% menos que los hijos de madres no fumadoras. Este efecto es significativo para $\alpha = 5\%$.
 
-# Regresión múltiple
+## Regresión múltiple
 
 ::: {.callout-note appearance="simple"}
 Cree la variable `lfaminc` que contendrá el logaritmo de la renta familiar.
@@ -69,7 +69,7 @@ bwght$second <- as.integer(bwght$parity == 2)
 ::: {.callout-note appearance="simple"}
 Cree un conjunto de variables ficticias que permitan distinguir los efectos de sobre el peso de los recién nacidos de fumar más o menos cigarrillos durante el embarazo. En primer lugar cree la variable `cigs_1_5` que tome el valor 1 si la madre fumó entre 1 y 5 cigarrillos diarios (ambos inclusive) durante el embarazo. Para crear esta variable unimos dos comparaciones lógicas con el operador Y-lógico, `&`:
 
-```{r}
+``` r
 bwght$cigs_1_5 <- as.integer(bwght$cigs >= 1 & bwght$cigs <= 5)
 ```
 
@@ -112,7 +112,7 @@ summary(mod2)
 
 *Respuesta:* A excepción de `cigs_1_5`, todas las variables que miden el consumo de tabaco tienen signo negativo y su efecto es significativo al 5%. De acuerdo con la pendiente de `first`, el peso de los primeros hijos es casi un 4% inferior al de sucesivos hijos. Este efecto es significativo al 5%. También son significativos al 5% las pendiente de `white` , los recién nacidos blancos pesan casi un 6% más que los de otras etnias, y `male`, los varones pesan al nacer un 2.5% más que las mujeres. No tienen efectos significativos las variables `second` y `lfaminc`.
 
-# Contrastes de hipótesis generales
+## Contrastes de hipótesis generales
 
 ::: {.callout-note appearance="simple"}
 Cargue el paquete `car`. En esta sección usaremos la función `lht` para contrastar restricciones lineales sobre los parámetros del modelo de regresión múltiple.
