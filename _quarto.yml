@@ -1,8 +1,11 @@
 project:
   title: "labs_1027"
-  output-dir: "html"
+  output-dir: html
   render:
-    - "src/*.qmd"
+    - "01 - intro/*.qmd"
+    - "02 - vote1/*.qmd"
+    - "03 - bwght/*.qmd"
+    - "04 - hprice1/*.qmd"
 
 author: "José Pernías"
 date: last-modified
