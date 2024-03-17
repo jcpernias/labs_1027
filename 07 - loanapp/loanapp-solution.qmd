@@ -1,5 +1,5 @@
 ---
-author: ""
+author: "José Pernías"
 title: "Discriminación en la concesión de hipotecas"
 ---
 
@@ -42,15 +42,21 @@ Lea los datos contenidos en el fichero `loanapp.csv` usando la función `read.cs
 :::
 
 ```{r}
-
+db <- read.csv2("loanapp.csv")
 ```
 
 ## Modelo lineal de probabilidad
 
+::: {.callout-note appearance="simple"}
 Cargue los paquetes `sandwich` , `lmtest` y `car`, que serán utilizados para realizar inferencia robusta a heteroscedasticidad
+:::
 
 ```{r}
+#| message: false
 
+library(sandwich)
+library(lmtest)
+library(car)
 ```
 
 ::: {.callout-note appearance="simple"}
@@ -58,7 +64,8 @@ Estime un modelo lineal de probabilidad donde la variable dependiente es `approv
 :::
 
 ```{r}
-
+mod1 <- lm(approve ~ black + hispan, data = db)
+coeftest(mod1, vcov. = vcovHC)
 ```
 
 ::: {.callout-note appearance="simple"}
@@ -72,7 +79,8 @@ Contraste si son iguales los parámetros de las variables `black` e `hispan`.
 :::
 
 ```{r}
-
+h0 <- "black - hispan"
+lht(mod1, h0, vcov. = vcovHC)
 ```
 
 *Respuesta:*
@@ -84,7 +92,11 @@ Añada al modelo lineal de probabilidad las variables explicativas `obrat`, `loa
 :::
 
 ```{r}
-
+mod2 <- lm(approve ~ black + hispan + obrat + loanprc + 
+             unem + male + married + dep + self + sch + 
+             chist + pubrec, 
+           data = db)
+coeftest(mod2, vcov. = vcovHC)
 ```
 
 ::: {.callout-note appearance="simple"}
@@ -92,7 +104,9 @@ Contraste la significación conjunta de las variables explicativas añadidas en 
 :::
 
 ```{r}
-
+h0 <- c("obrat", "loanprc", "unem", "male", "married", 
+        "dep", "self", "sch", "chist", "pubrec")
+lht(mod2, h0, vcov. = vcovHC)
 ```
 
 *Respuesta:*
@@ -102,7 +116,8 @@ Al añadir las variables explicativas adicionales, ¿qué ha ocurrido con las es
 :::
 
 ```{r}
-
+h0 <- "black - hispan"
+lht(mod2, h0, vcov. = vcovHC)
 ```
 
 *Respuesta:*
