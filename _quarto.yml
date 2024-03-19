@@ -9,6 +9,7 @@ project:
     - "05 - econmath/*.qmd"
     - "06 - smoke/*.qmd"
     - "07 - loanapp/*.qmd"
+    - "08 - wagegap/*.qmd"
 
 author: "José Pernías"
 date: last-modified
