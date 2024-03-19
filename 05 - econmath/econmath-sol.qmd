@@ -1,6 +1,8 @@
 ---
 author: "José Pernías"
 title: "Calificaciones en una asignatura universitaria"
+editor_options: 
+  chunk_output_type: console
 ---
 
 ## Objetivo
@@ -65,7 +67,7 @@ Estime una regresión auxiliar utilizando los residuos al cuadrado como la varia
 :::
 
 ```{r}
-bp_aux <- update(mod1, uhat_sq ~ .)
+bp_aux <- lm(uhat_sq ~ colgpa + act, data = econmath)
 summary(bp_aux)
 ```
 
@@ -73,7 +75,7 @@ summary(bp_aux)
 Utilizando un nivel de significación $\alpha = 5\%$, ¿se puede rechazar la hipótesis de homoscedasticidad?
 :::
 
-*Respuesta:*
+*Respuesta:* El contraste *F* de significación conjunta de la regresión auxiliar toma un valor muy elevado, 21.36, y el valor-*p* es prácticamente igual a 0. De acuerdo con esto, se rechaza la hipótesis nula de homoscedasticidad a un nivel de significación del 5%.
 
 ## Inferencia robusta a heteroscedasticidad
 
@@ -99,7 +101,7 @@ coeftest(mod1, vcov. = vcovHC)
 ¿Hay grandes diferencias entre los resultado obtenidos ahora y los obtenidos en la @sec-reg?
 :::
 
-*Respuesta:*
+*Respuesta:* En este caso, utilizar errores típicos robustos no altera considerablemente los resultados. Las variables explicativas tienen efectos significativos sobre la variable dependiente.
 
 ## Diferencias entre las calificaciones de hombres y mujeres
 
@@ -125,7 +127,7 @@ coeftest(mod2, vcov. = vcovHC)
 Utilice contrastes de Wald robustos a heteroscedasticidad en esta sección. Para obtenerlos se añade el argumento `vcov. = vcovHC` a la función `lht`. Por ejemplo:
 
 ``` r
-lht(mod, h0_names, vcov. = vcovHC)
+lht(mod, h0, vcov. = vcovHC)
 ```
 
 ::: {.callout-note appearance="simple"}
@@ -133,7 +135,8 @@ A partir de la estimación de la @eq-int, contraste la hipótesis de que no hay 
 :::
 
 ```{r}
-lht(mod2, matchCoefs(mod2, "male"), vcov. = vcovHC)
+h0 <- c("male", "colgpa:male", "act:male")
+lht(mod2, h0, vcov. = vcovHC)
 ```
 
 ::: {.callout-note appearance="simple"}
@@ -141,11 +144,30 @@ A partir de la estimación de la @eq-int, contraste la hipótesis de que no hay 
 :::
 
 ```{r}
-lht(mod2, matchCoefs(mod2, ":"), vcov. = vcovHC)
+h0 <- c("colgpa:male", "act:male")
+lht(mod2, h0, vcov. = vcovHC)
 ```
 
 ::: {.callout-note appearance="simple"}
 Interprete los resultados obtenidos con los contrastes de esta sección. ¿Hay diferencias significativas entre las calificaciones de hombres y mujeres? ¿De qué tipo son?
 :::
 
-*Respuesta:*
+*Respuesta:* Los contrastes de esta sección muestran, por un lado, que alguno de los términos en los que interviene la variable `male` es significativo y, por otro lado, que los términos de interacción entre `male` y las otras explicativas no son significativos. Concluimos que existen diferencias significativas entre las calificaciones que obtienen los hombres y las mujeres y que esas diferencias sólo afectan al término constante de la regresión. Si eliminamos los términos de interacción obtenemos las siguientes estimaciones:
+
+```{r}
+#| echo: false 
+#| message: false
+
+mod3 <- lm(score ~ colgpa + act + male, data = econmath)
+
+library(modelsummary)
+modelsummary(list("Model 3" = mod3), 
+             vcov = "robust",
+             shape = term ~ model + statistic,
+             statistic = c("{std.error}",  "{statistic}",  
+                           "{p.value}"),
+             stars = c("*" = 0.1, "**" = 0.05, "***" = 0.01), 
+             gof_omit = ".*")
+```
+
+Por término medio las calificaciones de los hombres son superiores en 3 puntos (sobre 100) a las de las mujeres manteniendo constantes los valores de `act` y `colgpa`.
