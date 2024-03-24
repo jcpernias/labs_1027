@@ -10,6 +10,7 @@ project:
     - "06 - smoke/*.qmd"
     - "07 - loanapp/*.qmd"
     - "08 - wagegap/*.qmd"
+    - "09 - engel/*.qmd"
 
 author: "José Pernías"
 date: last-modified
