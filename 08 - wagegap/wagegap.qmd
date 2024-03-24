@@ -5,11 +5,11 @@ title: "La mujer en el mercado laboral español"
 
 ## Objetivos
 
-Estimaremos dos modelos de regresión que nos permitan describir el papel de las mujeres en el mercado laboral de España a principios de la segunda década del siglo XXI. En primer lugar estimaremos la **brecha salarial** que padecen las mujeres. En segundo lugar, examinaremos las diferencias en las **tasas de actividad** de hombres y mujeres.
+Se estimarán dos modelos de regresión que permitan describir el papel de las mujeres en el mercado laboral de España a principios de la segunda década del siglo XXI. En primer lugar se estimará la magnitud de la **brecha salarial** que padecen las mujeres. En segundo lugar, se examinaran las diferencias en las **tasas de actividad** de hombres y mujeres.
 
 ## Datos
 
-Estudiaremos la situación de la mujer en el mercado laboral español utilizando los datos del proyecto PIAAC de la OCDE. Con respecto a otras bases de datos que se usan frecuentemente para estudiar el mercado laboral (Encuesta de población activa, Encuesta de estructura salarial), los datos del PIAAC tienen la ventaja de proporcionar información tanto sobre la situación en el mercado laboral de los participantes en el proyecto como sobre los salarios de los que trabajan por cuenta ajena.
+Para estudiar la situación de la mujer en el mercado laboral español se utilizarán los datos del proyecto PIAAC de la OCDE. En comparación con otras bases de datos (Encuesta de población activa, Encuesta de estructura salarial), los datos del PIAAC tienen la ventaja de proporcionar información tanto sobre la situación en el mercado laboral de los participantes en el proyecto como sobre los salarios de los que trabajan por cuenta ajena.
 
 ### PIAAC
 
@@ -31,9 +31,9 @@ Los datos para España se recogieron entre septiembre de 2011 y mayo de 2012. El
 
     : {tbl-colwidths="\[15,85\]"}
 
--   `AGE_R`: Person age - Years.
+-   `AGE_R`: Person age in years.
 
--   `EARNHR`: Hourly earnings excluding bonuses for wage and salary earners - Euros.
+-   `EARNHR`: Hourly earnings excluding bonuses for wage and salary earners in euros.
 
 -   `YRSQUAL`: Highest level of education obtained imputed into years of education.
 
@@ -51,15 +51,15 @@ Los datos para España se recogieron entre septiembre de 2011 y mayo de 2012. El
 
 -   `D_Q03`: Current work: economic sector.
 
-    | Value | Label                                                                                                |
-    |:-----:|:-----------------------------------------------------------------------------------------------------|
-    |   1   | The private sector (for example a company)                                                           |
-    |   2   | The public sector (for example the local government or a state school)                               |
-    |   3   | A non-profit organisation (for example a charity, professional association or religious organisation |
+    | Value | Label                                                                                              |
+    |:-----------------:|:----------------------------------------------------|
+    |   1   | The private sector (for example a company)                                                         |
+    |   2   | The public sector (for example the local government or a state school)                             |
+    |   3   | A non-profit organisation (for example a charity, professional association or regious organisation |
 
     : {tbl-colwidths="\[15,85\]"}
 
--   `D_Q05a2`: Current work: start of work for employer - Year.
+-   `D_Q05a2`: Current work: start of work for employer (year).
 
 -   `D_Q09`: Current work: type of contract.
 
@@ -96,15 +96,13 @@ Los datos para España se recogieron entre septiembre de 2011 y mayo de 2012. El
 
 ### Lectura de los datos
 
-La función `read.csv` lee los datos contenidos en ficheros con formato csv. Por defecto, las variables deben estar separadas por comas y se tiene que usar el punto como separador decimal. Consulte la ayuda de la función `read.csv` para leer archivos que usen otras convenciones (por ejemplo: punto y coma para separar columnas y coma para separar los decimales).
-
-Si el archivo `esp.csv` está en el directorio de trabajo, la instrucción:
+La función `read.csv` lee los datos contenidos en ficheros con formato CSV. Las variables deben estar separadas por comas y se usa el punto como separador decimal. La instrucción:
 
 ```{r}
 esp <- read.csv("esp.csv")
 ```
 
-leerá los datos del documento `esp.csv` y guardará los resultados en la base de datos `esp`.
+leerá los datos de `esp.csv` y guardará los resultados en la base de datos `esp`.
 
 ### Valores ausentes
 
@@ -144,87 +142,202 @@ Para detectar la presencia de valores ausentes se utiliza la función `is.na`. L
 esp$asalariado <- !is.na(esp$EARNHR)
 ```
 
-Podemos observar el efecto de la instrucción anterior examinando algunos de los valores que toman las variables `EARNHR` y `asalariado`:
-
-```{r}
-#| echo: false
-
-library(tinytable)
-head(esp[, c("EARNHR", "asalariado")], n = 10)  |> 
-  tt(width = 0.6) |> 
-  style_tt(j = 1, width = 6, align = "r")  |> 
-  style_tt(j = 2, width = 12, align = "c")
-```
-
 ### Transformación de los datos
 
-Además de las variables `lsalario` y `asalariado` que hemos creado en la subsección anterior, necesitaremos crear más variables que posteriormente utilizaremos en los modelos de regresión.
+Además de las variables `lsalario` y `asalariado`, hay que crear otras variables en la base de datos `esp`. Estas variables se incluirán posteriormente en los modelos de regresión.
 
--   `mujer`: variable ficticia que toma el valor 1 para las mujeres y 0 para los hombres. Se construye a partir de la variable `GENDER_R`.
+#### Variables demográficas y situación familiar
 
--   `educ`: años de educación. Coincide con la variable `YRSQUAL`.
+::: {.callout-note appearance="simple"}
+Cree la variable `edad`: edad en años. Coincide con `AGE_R`.
+:::
 
--   `activ`: variable ficticia que toma el valor 1 para las personas que pertenecen a la población activa. Se construye a partir de `C_D05`.
+```{r}
 
--   `exper`: años de experiencia laboral. Coincide con `C_Q09`.
+```
 
--   `antig`: años de antigüedad en la empresa. La variable `D_Q05a2` registra el año en que la persona comenzó a trabajar para su actual empresa. Para obtener la antigüedad en el año de la encuesta, 2012, restamos el valor de `D_Q05a2` a 2012.
+::: {.callout-note appearance="simple"}
+Cree la variable `mujer`: variable ficticia que toma el valor 1 para las mujeres y 0 para los hombres. Se construye a partir de la variable `GENDER_R`.
+:::
 
--   `edad`: edad en años. Coincide con `AGE_R`.
+```{r}
 
--   Tipo de empresa para la que trabaja (categoría de referencia: empresa privada):
+```
 
-    -   `pub`: ficticia que toma el valor 1 para los trabajadores del sector público. Se construye a partir de `D_Q03`.
+::: {.callout-note appearance="simple"}
+Cree la variable `inmigr`: ficticia que toma el valor 1 si el trabajador nació fuera de España. Se construye a partir de `J_Q04a`.
+:::
 
-    -   `ong`: ficticia que toma el valor 1 para los trabajadores de instituciones sin ánimo de lucro. Se construye a partir de `D_Q03`.
+```{r}
 
--   Tipo de contrato laboral (categoría de referencia: contrato indefinido):
+```
 
-    -   `temp`: contrato temporal. Ficticia que toma el valor 1 cuando `D_Q09` es igual a 2 o a 3.
+::: {.callout-note appearance="simple"}
+Cree la variable `hijos`: ficticia que toma el valor 1 si el trabajador tiene hijos dependientes. Se construye a partir de `J_Q03b`.
+:::
 
-    -   `apr`: contrato de aprendizaje. Ficticia que toma el valor 1 cuando `D_Q09` es igual a 4.
+```{r}
 
-    -   `otro`: otra situación contractual. Ficticia que toma el valor 1 cuando `D_Q09` es igual a 5 o 6.
+```
 
--   `hijos`: ficticia que toma el valor 1 si el trabajador tiene hijos dependientes. Se construye a partir de `J_Q03b`.
+::: {.callout-note appearance="simple"}
+Cree la variable `pareja`: ficticia que toma el valor 1 si el trabajador convive con su pareja. Se construye a partir de `J_Q02a`.
+:::
 
--   `inmigr`: ficticia que toma el valor 1 si el trabajador nació fuera de España. Se construye a partir de `J_Q04a`.
+```{r}
 
--   `pareja`: ficticia que toma el valor 1 si el trabajador convive con su pareja. Se construye a partir de `J_Q02a`.
+```
+
+#### Nivel educativo
+
+::: {.callout-note appearance="simple"}
+Cree la variable `educ`: años de educación. Coincide con la variable `YRSQUAL`.
+:::
+
+```{r}
+
+```
+
+#### Situación laboral
+
+::: {.callout-note appearance="simple"}
+Cree la variable `activ`: variable ficticia que toma el valor 1 para las personas que pertenecen a la población activa. Se construye a partir de `C_D05`.
+:::
+
+```{r}
+
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `exper`: años de experiencia laboral. Coincide con `C_Q09`.
+:::
+
+```{r}
+
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `antig`: años de antigüedad en la empresa. La variable `D_Q05a2` registra el año en que la persona comenzó a trabajar para su actual empresa. Para obtener la antigüedad en el año de la encuesta, 2012, restamos el valor de `D_Q05a2` a 2012.
+:::
+
+```{r}
+
+```
+
+#### Tipo de empresa
+
+Tipo de empresa para la que trabaja (categoría de referencia: empresa privada):
+
+::: {.callout-note appearance="simple"}
+Cree la variable `pub`: ficticia que toma el valor 1 para los trabajadores del sector público. Se construye a partir de `D_Q03`.
+:::
+
+```{r}
+
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `ong`: ficticia que toma el valor 1 para los trabajadores de instituciones sin ánimo de lucro. Se construye a partir de `D_Q03`.
+:::
+
+```{r}
+
+```
+
+#### Tipo de contrato laboral
+
+Tipo de contrato laboral (categoría de referencia: contrato indefinido):
+
+::: {.callout-note appearance="simple"}
+Cree la variable `temp`: contrato temporal. Ficticia que toma el valor 1 cuando `D_Q09` es igual a 2 o a 3.
+:::
+
+```{r}
+
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `apr`: contrato de aprendizaje. Ficticia que toma el valor 1 cuando `D_Q09` es igual a 4.
+:::
+
+```{r}
+
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `otro`: otra situación contractual. Ficticia que toma el valor 1 cuando `D_Q09` es igual a 5 o 6.
+:::
+
+```{r}
+
+```
 
 ## Ecuaciones de salarios
 
 En esta sección plantemos la estimación de **ecuaciones de salarios**: modelos econométricos que explican los salarios (usualmente en logaritmos) a partir de características de los trabajadores (cualificación académica, experiencia laboral, etc.) y de su puesto de trabajo (tipo de empresa, tipo de contrato, etc.)
 
+Para la estimación y la inferencia robusta a heteroscedasticidad se necesitan los paquetes `sandwich`, `lmtest` y `car`:
+
+```{r}
+#| message: false
+#| warning: false
+
+library(sandwich)
+library(lmtest)
+library(car)
+```
+
 Los modelos de esta sección sólo se aplican a las personas que trabajan por cuenta ajena. Construiremos una base de datos que sólo incluya las observaciones correspondientes a asalariados. La función `subset` conserva las observaciones que cumplen una determinada condición y elimina aquellas para las que no se cumple. En nuestro caso utilizaremos la variable `asalariado` para construir la base de datos `esp_asal`:
 
 ```{r}
-# No es necesario usar esp$asalariado en la función subset
+# En la función subset se pueden usar los nombres de las variables sin 
+# indicar la base de datos (asalariado en vez de esp$asalariado).
 esp_asal <- subset(esp, asalariado == TRUE)
-
-# Dado que asalariado es una variable lógica podríamos haber
-# escrito la instrucción anterior de una forma más simple:
-# 
-# esp_asal <- subset(esp, asalariado)
 ```
 
--   *En las estimaciones de las ecuaciones de salarios use `esp_asal`.*
+::: {.callout-warning appearance="simple"}
+En las estimaciones de las ecuaciones de salarios use la base de datos `esp_asal`.
+:::
 
--   A la hora de estimar por intervalos o realizar contrastes de hipótesis es conveniente usar *métodos que sean válidos aun en presencia de heteroscedasticidad*.
+::: {.callout-warning appearance="simple"}
+A la hora de estimar por intervalos o realizar contrastes de hipótesis es conveniente usar métodos que sean válidos aun en presencia de heteroscedasticidad.
+:::
 
--   *Utilice un nivel de significación* $\alpha = 5\%$ o, equivalentemente, un nivel de confianza $1 - \alpha = 95\%$.
+::: {.callout-warning appearance="simple"}
+Utilice un nivel de significación $\alpha = 5\%$ o, equivalentemente, un nivel de confianza $1 - \alpha = 95\%$.
+:::
 
 ### Brecha salarial no ajustada
 
-La **brecha salarial no ajustada** mide la diferencia entre los salarios percibidos por las mujeres y los percibidos por los hombres sin tener en cuenta ninguna otra característica de los trabajadores. La estimamos a partir de un modelo de regresión simple que tiene el logaritmo del salario, `lsalario`, como variable dependiente y `mujer` como variable explicativa: $$
+La **brecha salarial no ajustada** mide la diferencia entre los salarios percibidos por las mujeres y los percibidos por los hombres sin tener en cuenta ninguna otra característica de los trabajadores. Se estima a partir de un modelo de regresión simple que tiene el logaritmo del salario, `lsalario`, como variable dependiente y `mujer` como variable explicativa: $$
   \mathit{lsalario} = \beta_0 
     + \beta_1 \mathit{mujer} 
     + u 
 $$ {#eq-mod1}
 
--   ¿Cuál es la interpretación del parámetro $\beta_1$?
+::: {.callout-note appearance="simple"}
+¿Cuál es la interpretación del parámetro $\beta_1$?
+:::
 
--   ¿Cómo puede contrastarse la existencia de una brecha salarial en contra de las mujeres?
+*Respuesta*:
+
+::: {.callout-note appearance="simple"}
+Estime los parámetros del modelo de la @eq-mod1 y presente una tabla con los resultados de la estimación.
+:::
+
+```{r}
+
+```
+
+::: {.callout-note appearance="simple"}
+Contraste la existencia de una brecha salarial en contra de las mujeres.
+:::
+
+```{r}
+
+```
+
+*Respuesta*:
 
 ### Brecha salarial ajustada
 
@@ -246,21 +359,61 @@ La **brecha salarial ajustada** tiene en cuenta otras variables que capturan car
     + \beta_{13} \mathit{pareja} 
     + u 
 \end{aligned}
-$$ {#eq-mod2} - ¿Cuál es la interpretación del parámetro $\beta_1$ en el modelo de la @eq-mod2? ¿En qué se diferencia con la interpretación de ese parámetro en la @eq-mod1?
+$$ {#eq-mod2}
 
--   Contraste la significación conjunta de la regresión.
+::: {.callout-note appearance="simple"}
+¿Cuál es la interpretación del parámetro $\beta_1$ en el modelo de la @eq-mod2? ¿En qué se diferencia las interpretación de ese parámetro en la @eq-mod1 y en la @eq-mod2?
+:::
 
--   Discuta brevemente el signo y la magnitud de las estimaciones de los parámetros y la significación de las variables explicativas.
+*Respuesta*:
 
--   ¿Hay diferencias entre la brecha salarial no ajustada y la ajustada?
+::: {.callout-note appearance="simple"}
+Estime los parámetros del modelo de la @eq-mod2 y presente una tabla con los resultados de la estimación.
+:::
 
--   Obtenga un intervalo de confianza para la brecha salarial ajustada.
+```{r}
+
+```
+
+::: {.callout-note appearance="simple"}
+Contraste la significación conjunta de la regresión.
+:::
+
+```{r}
+
+```
+
+*Respuesta*:
+
+::: {.callout-note appearance="simple"}
+Discuta brevemente el signo y la magnitud de las estimaciones de los parámetros y la significación de las variables explicativas.
+:::
+
+*Respuesta*:
+
+::: {.callout-note appearance="simple"}
+¿Hay diferencias entre las estimaciones de la brecha salarial no ajustada y de la ajustada?
+:::
+
+*Respuesta*:
+
+::: {.callout-note appearance="simple"}
+Obtenga un intervalo de confianza para la brecha salarial ajustada.
+:::
+
+```{r}
+
+```
+
+*Respuesta*:
 
 ## Participación en el mercado laboral
 
-En segundo lugar, se estudiará la incorporación de la mujer al mercado de trabajo utilizando modelos lineales de probabilidad donde la variable dependiente es la variable ficticia `activ` que toma el valor 1 para las personas que participan en el mercado de trabajo.
+En esta sección se estudiará la incorporación de la mujer al mercado de trabajo utilizando modelos lineales de probabilidad donde la variable dependiente es la variable ficticia `activ` que toma el valor 1 para las personas que participan en el mercado de trabajo.
 
-*En los modelos de esta sección utilizaremos la base de datos completa*, `esp`, ya que necesitamos información tanto de personas que estén inactivas como de personas que pertenezcan a la población activa.
+::: {.callout-warning appearance="simple"}
+En los modelos de esta sección se utiliza la base de datos completa, `esp`, ya que es necesario usar información tanto de las personas que estén inactivas como de las personas que componen la población activa.
+:::
 
 ### Modelo de probabilidad lineal simple
 
@@ -270,9 +423,29 @@ Podemos medir diferencias en la tasa de actividad de las mujeres estimando el mo
     + v 
 $$ {#eq-mod3}
 
--   ¿Cuál es la interpretación del parámetro $\alpha_1$?
+::: {.callout-note appearance="simple"}
+¿Cuál es la interpretación del parámetro $\alpha_1$?
+:::
 
--   ¿Hay diferencias entre las tasas de actividad de hombres y mujeres? ¿Son significativas esas diferencias?
+*Respuesta*:
+
+::: {.callout-note appearance="simple"}
+Estime los parámetros del modelo de la @eq-mod3 y presente una tabla con los resultados de la estimación.
+:::
+
+```{r}
+
+```
+
+::: {.callout-note appearance="simple"}
+¿Hay diferencias entre las tasas de actividad de hombres y mujeres? ¿Son significativas esas diferencias?
+:::
+
+```{r}
+
+```
+
+*Respuesta*:
 
 ### Modelo de probabilidad lineal múltiple
 
@@ -290,8 +463,39 @@ Añadiremos más variables explicativas a la @eq-mod3: $$
 \end{aligned}
 $$ {#eq-mod4}
 
--   ¿Hay diferencias entre las estimaciones del parámetro $\alpha_1$ de la @eq-mod3 y la @eq-mod4?
+::: {.callout-note appearance="simple"}
+Estime los parámetros del modelo de la @eq-mod4 y presente una tabla con los resultados de la estimación.
+:::
 
--   Contraste la significación conjunta de la regresión.
+```{r}
 
--   Discuta brevemente el signo y la magnitud de las estimaciones de los parámetros y la significación de las variables explicativas.
+```
+
+::: {.callout-note appearance="simple"}
+¿Hay diferencias entre las estimaciones del parámetro $\alpha_1$ de la @eq-mod3 y la @eq-mod4?
+:::
+
+```{r}
+
+```
+
+*Respuesta*:
+
+::: {.callout-note appearance="simple"}
+Contraste la significación conjunta de la regresión.
+:::
+
+```{r}
+
+```
+
+*Respuesta*:
+
+::: {.callout-note appearance="simple"}
+Discuta brevemente el signo y la magnitud de las estimaciones de los parámetros y la significación de las variables explicativas.
+:::
+
+```{r}
+```
+
+*Respuesta*:
