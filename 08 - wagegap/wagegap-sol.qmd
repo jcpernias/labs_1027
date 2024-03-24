@@ -1,170 +1,394 @@
 ---
+author: ""
 title: "La mujer en el mercado laboral español"
-author: "EC1027 -- Econometría I" 
-date: "Curso 2022-2023"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, comment = "")
+## Objetivos
+
+Se estimarán dos modelos de regresión que permitan describir el papel de las mujeres en el mercado laboral de España a principios de la segunda década del siglo XXI. En primer lugar se estimará la magnitud de la **brecha salarial** que padecen las mujeres. En segundo lugar, se examinaran las diferencias en las **tasas de actividad** de hombres y mujeres.
+
+## Datos
+
+Para estudiar la situación de la mujer en el mercado laboral español se utilizarán los datos del proyecto PIAAC de la OCDE. En comparación con otras bases de datos (Encuesta de población activa, Encuesta de estructura salarial), los datos del PIAAC tienen la ventaja de proporcionar información tanto sobre la situación en el mercado laboral de los participantes en el proyecto como sobre los salarios de los que trabajan por cuenta ajena.
+
+### PIAAC
+
+El Programa para la Evaluación Internacional de las Competencias de los Adultos (PIAAC) es una iniciativa de la OCDE para valorar el nivel de conocimientos y el grado y distribución de destrezas de la población adulta a lo largo de su vida laboral, entre los 16 y los 65 años. Esta evaluación se encuadra en un marco comparativo coherente para poder establecer contrastes internacionales.
+
+La [página](https://www.oecd.org/skills/piaac/) de la OCDE del PIAAC contiene mucha información. En concreto, proporciona acceso a:
+
+-   Las [bases de datos públicas](https://www.oecd.org/skills/piaac/data/) en varios formatos.
+-   Informes técnicos y los diferentes [informes nacionales](https://www.oecd.org/skills/piaac/country-specific-material.htm).
+
+Los datos para España se recogieron entre septiembre de 2011 y mayo de 2012. El archivo `esp.csv` recopila una pequeña parte de los datos del PIAAC para España. En concreto, contiene las siguientes variables:
+
+-   `GENDER_R`: Person gender.
+
+    | Value | Label  |
+    |:-----:|:-------|
+    |   1   | Male   |
+    |   2   | Female |
+
+    : {tbl-colwidths="\[15,85\]"}
+
+-   `AGE_R`: Person age in years.
+
+-   `EARNHR`: Hourly earnings excluding bonuses for wage and salary earners in euros.
+
+-   `YRSQUAL`: Highest level of education obtained imputed into years of education.
+
+-   `C_D05`: Employment status.
+
+    | Value | Label                  |
+    |:-----:|:-----------------------|
+    |   1   | Employed               |
+    |   2   | Unemployed             |
+    |   3   | Out of the labor force |
+
+    : {tbl-colwidths="\[15,85\]"}
+
+-   `C_Q09`: Years of paid work during lifetime.
+
+-   `D_Q03`: Current work: economic sector.
+
+    | Value | Label                                                                                              |
+    |:-----------------:|:----------------------------------------------------|
+    |   1   | The private sector (for example a company)                                                         |
+    |   2   | The public sector (for example the local government or a state school)                             |
+    |   3   | A non-profit organisation (for example a charity, professional association or regious organisation |
+
+    : {tbl-colwidths="\[15,85\]"}
+
+-   `D_Q05a2`: Current work: start of work for employer (year).
+
+-   `D_Q09`: Current work: type of contract.
+
+    | Value | Label                                      |
+    |:-----:|:-------------------------------------------|
+    |   1   | An indefinite contract                     |
+    |   2   | A fixed term contract                      |
+    |   3   | A temporary employment agency contract     |
+    |   4   | An apprenticeship or other training scheme |
+    |   5   | No contract                                |
+    |   6   | Other                                      |
+
+    : {tbl-colwidths="\[15,85\]"}
+
+-   `J_Q02a`: Living with spouse or partner.
+
+    | Value | Label |
+    |:-----:|:------|
+    |   1   | Yes   |
+    |   2   | No    |
+
+    : {tbl-colwidths="\[15,85\]"}
+
+-   `J_Q03b`: Number of children.
+
+-   `J_Q04a`: Born in country.
+
+    | Value | Label |
+    |:-----:|:------|
+    |   1   | Yes   |
+    |   2   | No    |
+
+    : {tbl-colwidths="\[15,85\]"}
+
+### Lectura de los datos
+
+La función `read.csv` lee los datos contenidos en ficheros con formato CSV. Las variables deben estar separadas por comas y se usa el punto como separador decimal. La instrucción:
+
+```{r}
+esp <- read.csv("esp.csv")
 ```
 
-# Preliminares
+leerá los datos de `esp.csv` y guardará los resultados en la base de datos `esp`.
 
-- Cargue los paquetes R necesarios para usar matrices de covarianzas robustas a heteroscedasticidad y realizar contrastes de hipótesis lineales sobre los parámetros de los modelos de regresión.
-    ```{r packages, warning=FALSE, message=FALSE}
-library(lmtest)
-library(sandwich)
-library(car)
-    ```
+### Valores ausentes
 
+La variable `EARNHR` contiene el salario por hora de los individuos que forman la muestra. Sólo los individuos que trabajan por cuenta ajena perciben un salario por lo que la variable `EARNHR` tiene valores ausentes (*missing values*) en las observaciones correspondientes a desempleados, a trabajadores por cuenta propia y a inactivos. En R los valores ausentes se codifican con el símbolo `NA` (*not available*). Podemos averiguar cuantas observaciones ausentes tiene una variable con la función `summary`:
 
-# Datos
+```{r}
+summary(esp$EARNHR)
+```
 
-- Lea los datos del fichero "esp.csv" y guárdelos en la variable `esp`.
-    ```{r}
-esp <- read.csv("esp.csv")
-    ```
+En muchas ocasiones, R maneja automáticamente los valores ausentes y no tenemos que hacer nada especial. Por ejemplo, podemos calcular el logaritmo del salario usando la función `log` como hasta ahora:
 
-# Transformación de variables
-
-En esta sección se crean nuevas variables variables apartir de las originales del PIAAC y se guardan en la base de datos `esp`.
-
-- Cree la variable `lsalario`.
-    ```{r}
+```{r}
 esp$lsalario <- log(esp$EARNHR)
-    ```
+```
 
-- Cree la variable `asalariado`.
-    ```{r}
+La función `log` propaga los valores ausentes que aparecen en la variable original y calcula el logaritmo de las restantes observaciones.
+
+```{r}
+summary(esp$lsalario)
+```
+
+Aunque generalmente podemos ignorar la presencia de valores ausentes, en ocasiones tendremos que manejarlos explícitamente. Por ejemplo, si tratamos de obtener el salario medio con la función `mean` obtenemos `NA` como resultado:
+
+```{r}
+mean(esp$EARNHR)
+```
+
+Algunas funciones (`sum`, `mean`, `max`, `var`, etc.) cuentan con el argumento `na.rm` (*NA remove*) con el que es posible ignorar los valores ausentes en los cálculos. Obtenemos el salario medio con la siguiente instrucción:
+
+```{r}
+mean(esp$EARNHR, na.rm = TRUE)
+```
+
+Para detectar la presencia de valores ausentes se utiliza la función `is.na`. La siguiente instrucción crea la variable lógica `asalariado` que toma el valor `TRUE` para aquellas observaciones en que el salario **no** es un valor ausente:
+
+```{r}
 esp$asalariado <- !is.na(esp$EARNHR)
-    ```
+```
 
-- Cree la variable `mujer`.
-    ```{r}
-esp$mujer <- as.integer(esp$GENDER_R == 2)
-    ```
+### Transformación de los datos
 
-- Cree la variable `educ`.
-    ```{r}
-esp$educ <- esp$YRSQUAL
-    ```
+Además de las variables `lsalario` y `asalariado`, hay que crear otras variables en la base de datos `esp`. Estas variables se incluirán posteriormente en los modelos de regresión.
 
-- Cree la variable `activ`.
-    ```{r}
-esp$activ <- as.integer(esp$C_D05 != 3)
-    ```
+#### Variables demográficas y situación familiar
 
-- Cree la variable `exper`.
-    ```{r}
-esp$exper <- esp$C_Q09
-    ```
+::: {.callout-note appearance="simple"}
+Cree la variable `edad`: edad en años. Coincide con `AGE_R`.
+:::
 
-- Cree la variable `antig`.
-    ```{r}
-esp$antig <- 2012 - esp$D_Q05a2
-    ```
-
-- Cree la variable `pub`.
-    ```{r}
-esp$pub <- as.integer(esp$D_Q03 == 2)
-    ```
-
-- Cree la variable `ong`.
-    ```{r}
-esp$ong <- as.integer(esp$D_Q03 == 3)
-    ```
-
-- Cree la variable `temp`.
-    ```{r}
-esp$temp <- as.integer(esp$D_Q09 %in% c(2, 3))
-    ```
-
-- Cree la variable `apr`.
-    ```{r}
-esp$apr <- as.integer(esp$D_Q09 == 4)
-    ```
-
-- Cree la variable `otro`.
-    ```{r}
-esp$otro <- as.integer(esp$D_Q09 %in% c(5, 6))
-    ```
-
-- Cree la variable `edad`.
-    ```{r}
+```{r}
 esp$edad <- esp$AGE_R
-    ```
+```
 
-- Cree la variable `hijos`.
-    ```{r}
-esp$hijos <- as.integer(esp$J_Q03b > 0)
-    ```
+::: {.callout-note appearance="simple"}
+Cree la variable `mujer`: variable ficticia que toma el valor 1 para las mujeres y 0 para los hombres. Se construye a partir de la variable `GENDER_R`.
+:::
 
-- Cree la variable `inmigr`.
-    ```{r}
+```{r}
+esp$mujer <- as.integer(esp$GENDER_R == 2)
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `inmigr`: ficticia que toma el valor 1 si el trabajador nació fuera de España. Se construye a partir de `J_Q04a`.
+:::
+
+```{r}
 esp$inmigr <- as.integer(esp$J_Q04a == 2)
-    ```
+```
 
-- Cree la variable `pareja`.
-    ```{r}
+::: {.callout-note appearance="simple"}
+Cree la variable `hijos`: ficticia que toma el valor 1 si el trabajador tiene hijos dependientes. Se construye a partir de `J_Q03b`.
+:::
+
+```{r}
+esp$hijos <- as.integer(esp$J_Q03b > 0)
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `pareja`: ficticia que toma el valor 1 si el trabajador convive con su pareja. Se construye a partir de `J_Q02a`.
+:::
+
+```{r}
 esp$pareja <- as.integer(esp$J_Q02a == 1)
-    ```
+```
 
-# Ecuaciones de salarios
+#### Nivel educativo
 
-- Cree una nueva base de datos que sólo contenga las observaciones que corresponden a asalariados.
-    ```{r}
-esp_asal <- subset(esp, asalariado)
-    ```
+::: {.callout-note appearance="simple"}
+Cree la variable `educ`: años de educación. Coincide con la variable `YRSQUAL`.
+:::
 
-## Brecha salarial no ajustada
+```{r}
+esp$educ <- esp$YRSQUAL
+```
 
-- Estime el modelo $\mathrm{(Mod1)}$ por MCO y guarde los resultados de la estimación en la variable `mod1`.
-    ```{r}
+#### Situación laboral
+
+::: {.callout-note appearance="simple"}
+Cree la variable `activ`: variable ficticia que toma el valor 1 para las personas que pertenecen a la población activa. Se construye a partir de `C_D05`.
+:::
+
+```{r}
+esp$activ <- as.integer(esp$C_D05 != 3)
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `exper`: años de experiencia laboral. Coincide con `C_Q09`.
+:::
+
+```{r}
+esp$exper <- esp$C_Q09
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `antig`: años de antigüedad en la empresa. La variable `D_Q05a2` registra el año en que la persona comenzó a trabajar para su actual empresa. Para obtener la antigüedad en el año de la encuesta, 2012, restamos el valor de `D_Q05a2` a 2012.
+:::
+
+```{r}
+esp$antig <- 2012 - esp$D_Q05a2
+```
+
+#### Tipo de empresa
+
+Tipo de empresa para la que trabaja (categoría de referencia: empresa privada):
+
+::: {.callout-note appearance="simple"}
+Cree la variable `pub`: ficticia que toma el valor 1 para los trabajadores del sector público. Se construye a partir de `D_Q03`.
+:::
+
+```{r}
+esp$pub <- as.integer(esp$D_Q03 == 2)
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `ong`: ficticia que toma el valor 1 para los trabajadores de instituciones sin ánimo de lucro. Se construye a partir de `D_Q03`.
+:::
+
+```{r}
+esp$ong <- as.integer(esp$D_Q03 == 3)
+```
+
+#### Tipo de contrato laboral
+
+Tipo de contrato laboral (categoría de referencia: contrato indefinido):
+
+::: {.callout-note appearance="simple"}
+Cree la variable `temp`: contrato temporal. Ficticia que toma el valor 1 cuando `D_Q09` es igual a 2 o a 3.
+:::
+
+```{r}
+esp$temp <- as.integer(esp$D_Q09 == 2 | esp$D_Q09 ==  3)
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `apr`: contrato de aprendizaje. Ficticia que toma el valor 1 cuando `D_Q09` es igual a 4.
+:::
+
+```{r}
+esp$apr <- as.integer(esp$D_Q09 == 4)
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `otro`: otra situación contractual. Ficticia que toma el valor 1 cuando `D_Q09` es igual a 5 o 6.
+:::
+
+```{r}
+esp$otro <- as.integer(esp$D_Q09 == 5 | esp$D_Q09 == 6)
+```
+
+## Ecuaciones de salarios
+
+En esta sección plantemos la estimación de **ecuaciones de salarios**: modelos econométricos que explican los salarios (usualmente en logaritmos) a partir de características de los trabajadores (cualificación académica, experiencia laboral, etc.) y de su puesto de trabajo (tipo de empresa, tipo de contrato, etc.)
+
+Para la estimación y la inferencia robusta a heteroscedasticidad se necesitan los paquetes `sandwich`, `lmtest` y `car`:
+
+```{r}
+#| message: false
+#| warning: false
+
+library(sandwich)
+library(lmtest)
+library(car)
+```
+
+Los modelos de esta sección sólo se aplican a las personas que trabajan por cuenta ajena. Construiremos una base de datos que sólo incluya las observaciones correspondientes a asalariados. La función `subset` conserva las observaciones que cumplen una determinada condición y elimina aquellas para las que no se cumple. En nuestro caso utilizaremos la variable `asalariado` para construir la base de datos `esp_asal`:
+
+```{r}
+# En la función subset se pueden usar los nombres de las variables sin 
+# indicar la base de datos (asalariado en vez de esp$asalariado).
+esp_asal <- subset(esp, asalariado == TRUE)
+```
+
+::: {.callout-warning appearance="simple"}
+En las estimaciones de las ecuaciones de salarios use la base de datos `esp_asal`.
+:::
+
+::: {.callout-warning appearance="simple"}
+A la hora de estimar por intervalos o realizar contrastes de hipótesis es conveniente usar métodos que sean válidos aun en presencia de heteroscedasticidad.
+:::
+
+::: {.callout-warning appearance="simple"}
+Utilice un nivel de significación $\alpha = 5\%$ o, equivalentemente, un nivel de confianza $1 - \alpha = 95\%$.
+:::
+
+### Brecha salarial no ajustada
+
+La **brecha salarial no ajustada** mide la diferencia entre los salarios percibidos por las mujeres y los percibidos por los hombres sin tener en cuenta ninguna otra característica de los trabajadores. Se estima a partir de un modelo de regresión simple que tiene el logaritmo del salario, `lsalario`, como variable dependiente y `mujer` como variable explicativa: $$
+  \mathit{lsalario} = \beta_0 
+    + \beta_1 \mathit{mujer} 
+    + u 
+$$ {#eq-mod1}
+
+::: {.callout-note appearance="simple"}
+¿Cuál es la interpretación del parámetro $\beta_1$?
+:::
+
+*Respuesta*: De acuerdo con el Modelo 1, la diferencia entre el salario de las mujeres y de los hombres es igual al $100 \beta_1$% del salario de los hombres. Hay discriminación salarial contra las mujeres si el signo de $\beta_1$ es negativo.
+
+::: {.callout-note appearance="simple"}
+Estime los parámetros del modelo de la @eq-mod1 y presente una tabla con los resultados de la estimación.
+:::
+
+```{r}
 mod1 <- lm(lsalario ~ mujer, data = esp_asal)
-    ```
-
-- Presente los resultados de la estimación. Utilice estadísticos robustos a heteroscedasticidad.
-    ```{r}
 coeftest(mod1, vcov. = vcovHC)
-    ```
+```
 
-- Interprete el parámetro $\beta_1$. Si existe discriminación en contra de las mujeres, ¿qué signo tendrá $\beta_1$?
+::: {.callout-note appearance="simple"}
+Usando los resultados presentados en la tabla de la regresión, contraste la existencia de una brecha salarial en contra de las mujeres.
+:::
 
-  De acuerdo con el Modelo 1, la diferencia entre el salario de las mujeres y de los hombres es igual al $100 \beta_1$% del salario de los hombres. Hay discriminación salarial contra las mujeres si el signo de $\beta_1$ es negativo.
+*Respuesta*: Las estimaciones del Modelo 1 muestra que el salario medio de las mujeres era un 13% inferior al salario de los hombres. La hipótesis de que no existe brecha salarial se puede formular como $H_0: \beta_1 = 0$. La hipótesis alternativa de que hay discriminación salarial en contra de las mujeres sería $H_1: \beta_1 < 0$. El estadístico $t$ para contrastar esta hipótesis es  $-6.14$, valor que cae dentro de la zona de rechazo para $\alpha = 5\%$.
 
-- Contraste la existencia de una brecha salarial en contra de la mujer.
+### Brecha salarial ajustada
 
-  Las estimaciones del Modelo 1 muestra que el salario medio de las mujeres era un 13% inferior al salario de los hombres. La hipótesis de que no existe brecha salarial se puede formular como $H_0: \beta_1 = 0$. La hipótesis alternativa de que hay discriminación salarial en contra de las mujeres sería $H_1: \beta_1 < 0$. El estadístico $t$ para contrastar esta hipótesis es  $-6.14$, valor que cae dentro de la zona de rechazo para $\alpha = 5\%$.
+La **brecha salarial ajustada** tiene en cuenta otras variables que capturan características individuales y del puesto de trabajo. La estimaremos a partir del modelo de regresión múltiple: $$
+\begin{aligned}
+  \mathit{lsalario} =\, &\beta_0 
+    + \beta_1 \mathit{mujer} 
+    + \beta_2 \mathit{educ} 
+    + \beta_3 \mathit{exper} 
+    + \beta_4 \mathit{antig} 
+    \, + \\ &\beta_5 \mathit{pub} 
+    + \beta_6 \mathit{ong} 
+    + \beta_7 \mathit{temp} 
+    + \beta_8 \mathit{apr} 
+    + \beta_9 \mathit{otro}
+    \, + \\ &\beta_{10} \mathit{edad} 
+    + \beta_{11} \mathit{hijos} 
+    + \beta_{12} \mathit{inmigr} 
+    + \beta_{13} \mathit{pareja} 
+    + u 
+\end{aligned}
+$$ {#eq-mod2}
 
-## Brecha salarial ajustada
+::: {.callout-note appearance="simple"}
+Estime los parámetros del modelo de la @eq-mod2 y presente una tabla con los resultados de la estimación.
+:::
 
-- Estime el modelo $\mathrm{(Mod2)}$ por MCO y guarde los resultados de la estimación en la variable `mod2`.
-    ```{r}
+```{r}
 mod2 <- update(mod1, . ~ . + educ + exper + antig +
                  pub + ong  + temp + apr + otro +
                  edad + hijos + inmigr + pareja)
-    ```
-
-- Presente los resultados de la estimación. Utilice estadísticos robustos a heteroscedasticidad.
-    ```{r}
 coeftest(mod2, vcov. = vcovHC)
-    ```
+```
 
-- Contraste la significación conjunta de la regresión.
-    ```{r}
+::: {.callout-note appearance="simple"}
+Contraste la significación conjunta de la regresión.
+:::
+
+```{r}
 bhat2 <- coef(mod2)
 joint_h0 <- names(bhat2[-1])
 lht(mod2, joint_h0, vcov. = vcovHC)
-    ```
-   El estadístico $F$ robusto a heteroscedasticidad toma un valor
+```
+
+*Respuesta*: El estadístico $F$ robusto a heteroscedasticidad toma un valor
    muy elevado, $F = 107$, y el valor de probabilidad es prácticamente
    $0$, por lo que rechazamos la hipótesis de que todas las
    pendientes del Modelo 2 son iguales a $0$.
 
+::: {.callout-note appearance="simple"}
+Discuta brevemente el signo y la magnitud de las estimaciones de los parámetros y la significación de las variables explicativas.
+:::
 
-- Discuta brevemente el signo y la magnitud de las estimaciones de los parámetros y la significación de las variables explicativas.
-
-  El principal parámetro de la ecuación de salarios es $\beta_1$,
+*Respuesta*: El principal parámetro de la ecuación de salarios es $\beta_1$,
   la pendiente de la variable `mujer`. La estimación negativa y
   significativa muestra que, a igualdad de condiciones, el salario
   de las mujeres es un $16\%$ inferior al de los hombres.
@@ -208,91 +432,131 @@ lht(mod2, joint_h0, vcov. = vcovHC)
   significativo.
 
 
-- ¿Hay diferencias entre la brecha salarial no ajustada y la ajustada?
+::: {.callout-note appearance="simple"}
+¿Hay diferencias entre las estimaciones de la brecha salarial no ajustada y de la ajustada?
+:::
 
-  No hay grandes diferencias. La estimación de la  brecha
+*Respuesta*: No hay grandes diferencias. La estimación de la  brecha
   salarial del Modelo 2 es un poco mayor que la que se obtuvo
   con el Modelo 1 ($3$ puntos porcentuales). En ambos casos,
   los resultados indican la existencia de una importante brecha
   salarial y las estimaciones son significativamente distintas de 0.
 
-- Obtenga un intervalo de confianza para la brecha salarial ajustada.
-    ```{r}
-coefci(mod2, parm = "mujer", vcov. = vcovHC)
-    ```
 
-  A un nivel de confianza del $95\%$, los salarios medios de las mujeres
+::: {.callout-note appearance="simple"}
+Obtenga un intervalo de confianza para la brecha salarial ajustada.
+:::
+
+```{r}
+coefci(mod2, parm = "mujer", vcov. = vcovHC)
+```
+
+*Respuesta*: A un nivel de confianza del $95\%$, los salarios medios de las mujeres
   son entre un $12\%$ y un $20\%$ más bajos que los salarios medios de los
   hombres, a igualdad de las variables incluidas en el Modelo 2.
 
-# Participación en el mercado laboral
+## Participación en el mercado laboral
 
-## Modelo de probabilidad lineal simple
+En esta sección se estudiará la incorporación de la mujer al mercado de trabajo utilizando modelos lineales de probabilidad donde la variable dependiente es la variable ficticia `activ` que toma el valor 1 para las personas que participan en el mercado de trabajo.
 
+::: {.callout-warning appearance="simple"}
+En los modelos de esta sección se utiliza la base de datos completa, `esp`, ya que es necesario usar información tanto de las personas que estén inactivas como de las personas que componen la población activa.
+:::
 
-- Estime el modelo $\mathrm{(Mod3)}$ por MCO y guarde los resultados de la estimación en la variable `mod3`.
-    ```{r}
-mod3 <- lm(activ ~ mujer, data = esp)
-    ```
+### Modelo de probabilidad lineal simple
 
-- Presente los resultados de la estimación. Utilice estadísticos robustos a heteroscedasticidad.
-    ```{r}
-coeftest(mod3, vcov. = vcovHC)
-    ```
+Podemos medir diferencias en la tasa de actividad de las mujeres estimando el modelo de regresión simple: $$
+  \mathit{activ} = \alpha_0 
+    + \alpha_1 \mathit{mujer} 
+    + v 
+$$ {#eq-mod3}
 
-- ¿Cuál es la interpretación del parámetro $\alpha_1$?
+::: {.callout-note appearance="simple"}
+¿Cuál es la interpretación del parámetro $\alpha_1$?
+:::
 
-  El parámetro $\alpha_1$ mide la diferencia de las probabilidades
+*Respuesta*: El parámetro $\alpha_1$ mide la diferencia de las probabilidades
   de estar activo en el mercado laboral de mujeres y hombres.
   Alternativamente, $100 \alpha_1$ es la diferencia en las tasas de
   actividad de mujeres y de hombres.
 
+::: {.callout-note appearance="simple"}
+Estime los parámetros del modelo de la @eq-mod3 y presente una tabla con los resultados de la estimación.
+:::
 
-- ¿Hay diferencias entre las tasas de actividad de hombres y mujeres? ¿Son significativas esas diferencias?
+```{r}
+mod3 <- lm(activ ~ mujer, data = esp)
+coeftest(mod3, vcov. = vcovHC)
+```
 
-  De acuerdo con las estimaciones del Modelo 3, la tasa de actividad
+::: {.callout-note appearance="simple"}
+Usando los resultados de la tabla de la regresión, ¿hay diferencias entre las tasas de actividad de hombres y mujeres? ¿Son significativas esas diferencias?
+:::
+
+*Respuesta*: De acuerdo con las estimaciones del Modelo 3, la tasa de actividad
   de las mujeres es 11 puntos porcentuales menor que la de los hombres.
   y esta diferencia es significativa distinta de 0 a un nivel de
   significación del $5\%$.
 
-## Modelo de probabilidad lineal múltiple
+### Modelo de probabilidad lineal múltiple
 
-- Estime el modelo $\mathrm{(Mod4)}$ por MCO y guarde los resultados de la estimación en la variable `mod4`.
-    ```{r}
+Añadiremos más variables explicativas a la @eq-mod3: $$
+\begin{aligned}
+  \mathit{activ} =\, &\alpha_0 
+    + \alpha_1 \mathit{mujer} 
+    + \alpha_2 \mathit{educ} 
+    + \alpha_3 \mathit{exper} 
+    \,+\\ & \alpha_4 \mathit{edad} 
+    + \alpha_5 \mathit{hijos} 
+    + \alpha_6 \mathit{inmigr} 
+    + \alpha_7 \mathit{pareja} 
+    + v 
+\end{aligned}
+$$ {#eq-mod4}
+
+::: {.callout-note appearance="simple"}
+Estime los parámetros del modelo de la @eq-mod4 y presente una tabla con los resultados de la estimación.
+:::
+
+```{r}
 mod4 <- lm(activ ~ mujer + educ + exper +
 					 	edad + hijos + inmigr + pareja,
 					 data = esp)
-    ```
-
-- Presente los resultados de la estimación. Utilice estadísticos robustos a heteroscedasticidad.
-    ```{r}
 coeftest(mod4, vcov. = vcovHC)
-    ```
+```
 
-- ¿Hay diferencias entre las estimaciones del  parámetro $\alpha_1$ en el modelo $\mathrm{(Mod3)}$ y en el modelo $\mathrm{(Mod4)}$?
+::: {.callout-note appearance="simple"}
+¿Hay diferencias entre las estimaciones del parámetro $\alpha_1$ de la @eq-mod3 y la @eq-mod4?
+:::
 
-  Sí: una vez se toman en cuenta otras características de los
+*Respuesta*: Sí: una vez se toman en cuenta otras características de los
   trabajadores, la diferencia en las probabilidades de hombres y
   mujeres de participar en el mercado de trabajo se reduce a
   6.6 puntos porcentuales. Aún así, la diferencia sigue siendo
   significativa y se corresponde a una menor participación de las
   mujeres en el mercado laboral.
 
-- Contraste la significación conjunta de la regresión.
-    ```{r}
+
+::: {.callout-note appearance="simple"}
+Contraste la significación conjunta de la regresión.
+:::
+
+```{r}
 bhat4 <- coef(mod4)
 joint_h0 <- names(bhat4[-1])
 lht(mod4, joint_h0, vcov. = vcovHC)
-    ```
+```
 
-  El estadístico $F$ robusto a heteroscedasticidad toma un valor
+*Respuesta*: El estadístico $F$ robusto a heteroscedasticidad toma un valor
   muy elevado, $F = 109$, y el valor de probabilidad es prácticamente
   $0$, por lo que rechazamos la hipótesis de que todas las
   pendientes del Modelo 4 son iguales a $0$.
 
-- Discuta brevemente el signo y la magnitud de las estimaciones de los parámetros y la significación de las variables explicativas.
+::: {.callout-note appearance="simple"}
+Discuta brevemente el signo y la magnitud de las estimaciones de los parámetros y la significación de las variables explicativas.
+:::
 
-  Todas las variables del Modelo 4, a excepción de `pareja`, tienen un
+*Respuesta*: Todas las variables del Modelo 4, a excepción de `pareja`, tienen un
   efecto significativo al $5\%$ sobre la probabilidad de participar en
   el mercado de trabajo.
 
@@ -323,3 +587,4 @@ lht(mod4, joint_h0, vcov. = vcovHC)
   Por último, comparada con la de los trabajadores españoles, la tasa de
   actividad de los nacidos fuera de España es $4.1$ puntos porcentuales más
   alta.
+

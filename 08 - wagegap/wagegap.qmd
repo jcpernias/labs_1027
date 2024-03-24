@@ -330,12 +330,8 @@ Estime los parámetros del modelo de la @eq-mod1 y presente una tabla con los re
 ```
 
 ::: {.callout-note appearance="simple"}
-Contraste la existencia de una brecha salarial en contra de las mujeres.
+Usando los resultados presentados en la tabla de la regresión, contraste la existencia de una brecha salarial en contra de las mujeres.
 :::
-
-```{r}
-
-```
 
 *Respuesta*:
 
@@ -360,12 +356,6 @@ La **brecha salarial ajustada** tiene en cuenta otras variables que capturan car
     + u 
 \end{aligned}
 $$ {#eq-mod2}
-
-::: {.callout-note appearance="simple"}
-¿Cuál es la interpretación del parámetro $\beta_1$ en el modelo de la @eq-mod2? ¿En qué se diferencia las interpretación de ese parámetro en la @eq-mod1 y en la @eq-mod2?
-:::
-
-*Respuesta*:
 
 ::: {.callout-note appearance="simple"}
 Estime los parámetros del modelo de la @eq-mod2 y presente una tabla con los resultados de la estimación.
@@ -438,12 +428,8 @@ Estime los parámetros del modelo de la @eq-mod3 y presente una tabla con los re
 ```
 
 ::: {.callout-note appearance="simple"}
-¿Hay diferencias entre las tasas de actividad de hombres y mujeres? ¿Son significativas esas diferencias?
+Usando los resultados de la tabla de la regresión, ¿hay diferencias entre las tasas de actividad de hombres y mujeres? ¿Son significativas esas diferencias?
 :::
-
-```{r}
-
-```
 
 *Respuesta*:
 
@@ -475,10 +461,6 @@ Estime los parámetros del modelo de la @eq-mod4 y presente una tabla con los re
 ¿Hay diferencias entre las estimaciones del parámetro $\alpha_1$ de la @eq-mod3 y la @eq-mod4?
 :::
 
-```{r}
-
-```
-
 *Respuesta*:
 
 ::: {.callout-note appearance="simple"}
@@ -494,8 +476,5 @@ Contraste la significación conjunta de la regresión.
 ::: {.callout-note appearance="simple"}
 Discuta brevemente el signo y la magnitud de las estimaciones de los parámetros y la significación de las variables explicativas.
 :::
-
-```{r}
-```
 
 *Respuesta*:
