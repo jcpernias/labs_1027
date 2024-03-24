@@ -45,7 +45,7 @@ Lea los datos contenidos en el fichero `loanapp.csv` usando la función `read.cs
 db <- read.csv2("loanapp.csv")
 ```
 
-## Modelo lineal de probabilidad
+## Modelo lineal de probabilidad {#sec-simple}
 
 ::: {.callout-note appearance="simple"}
 Cargue los paquetes `sandwich` , `lmtest` y `car`, que serán utilizados para realizar inferencia robusta a heteroscedasticidad
@@ -72,7 +72,32 @@ coeftest(mod1, vcov. = vcovHC)
 Interprete los parámetros estimados en el punto anterior. ¿Son significativas individualmente las variables explicativas?
 :::
 
-*Respuesta:*
+*Respuesta:* Las estimaciones corresponden al modelo poblacional:
+
+$$
+\mathit{approve} = \beta_0 + \beta_1 \mathit{black} + \beta_2 \mathit{hispan} + u.
+$$
+
+El parámetro $\beta_0$ es la probabilidad de que se le conceda una hipoteca a un blanco.
+
+$$
+\beta_0 = \Pr(\mathit{approve} = 1 | \mathit{black} = 0, \mathit{hispan} = 0).
+$$
+
+De acuerdo con las estimaciones por MCO, esta probabilidad sería $0.91$.
+
+Los parámetros $\beta_1$ y $\beta_2$ miden la diferencia entre las probabilidades de concesión de negros e hispanos (respectivamente) con respecto a la probabilidad de concesión a un individuo de la categoría de referencia (blancos):
+
+$$
+\begin{gather*}
+\beta_1 = \Pr(\mathit{approve} = 1 | \mathit{black} = 1, \mathit{hispan} = 0) - \beta_0, \\
+\beta_2 = \Pr(\mathit{approve} = 1 | \mathit{black} = 0, \mathit{hispan} = 1) - \beta_0.
+\end{gather*}
+$$
+
+Las estimaciones de MCO indican que los individuos pertenecientes a las minorías raciales en Estados Unidos tenían una menor probabilidad de acceder una hipoteca que los blancos: 24 puntos porcentuales menos en el caso de negros y 16 puntos porcentuales menos en el caso de hispanos.
+
+Los contrastes $t$ de significación individual de los parámetros $\beta_0$, $\beta_1$ y $\beta_2$ toman valores absolutos muy grandes y los valores-$p$ son inferiores a $\alpha = 5\%$. Por tanto, todos los parámetros son significativamente distintos de $0$ a un nivel de significación de $5%$
 
 ::: {.callout-note appearance="simple"}
 Contraste si son iguales los parámetros de las variables `black` e `hispan`.
@@ -83,9 +108,9 @@ h0 <- "black - hispan"
 lht(mod1, h0, vcov. = vcovHC)
 ```
 
-*Respuesta:*
+*Respuesta:* La hipótesis nula de que los parámetros de `black` e `hispan` son iguales puede escribirse como: $H_0: \beta_1 - \beta_2 = 0$. El contraste de Wald robusto a heteroscedasticidad toma el valor $2.5$ y su valor-$p$ es $0.11$. En estas condiciones no podemos rechazar la hippótesis nula dado que el valor-$p$ es superior al nivel de significación $\alpha = 5\%$.
 
-## Más controles
+## Más controles {#sec-more}
 
 ::: {.callout-note appearance="simple"}
 Añada al modelo lineal de probabilidad las variables explicativas `obrat`, `loanprc`, `unem`, `male`, `married`, `dep`, `self`, `sch`, `chist` y `pubrec`. Presente las estimaciones de MCO junto con los errores típicos robustos a heteroscedasticidad.
@@ -109,7 +134,7 @@ h0 <- c("obrat", "loanprc", "unem", "male", "married",
 lht(mod2, h0, vcov. = vcovHC)
 ```
 
-*Respuesta:*
+*Respuesta:* El resultado del contraste, $13.1$, es un valor muy elevado para ser compatible con la hipótesis nula. El valor-$p$ es prácticamente nulo e inferior a $\alpha = 5\%$. Se rechaza la hipótesis nula de que las variables explicativas que se han añadido no tengan capacidad explicativa.
 
 ::: {.callout-note appearance="simple"}
 Al añadir las variables explicativas adicionales, ¿qué ha ocurrido con las estimaciones de los parámetros de `black` e `hispan`? Contraste si los parámetros de estas dos variables son iguales.
@@ -120,10 +145,12 @@ h0 <- "black - hispan"
 lht(mod2, h0, vcov. = vcovHC)
 ```
 
-*Respuesta:*
+*Respuesta:* Las estimaciones de los parámetros de `black` e `hispan` se han reducido considerablemente con respecto a las obtenidas en la sección @sec-simple, especialmente en el caso de la pendiente de `black` que pasa de $-0.24$ a $-0.16$. A pesar de eso, las dos pendientes tienen signo negativo y son significativamente distintas de $0$ a un nivel de significación de $5\%$.
+
+Por otro lado, los resultados del contraste no muestran diferencias significativas entre los parámetros de `black` e `hispan` para $\alpha = 5\%$. El valor del contraste es $0.7$ y el el valor-$p$, $0.39$, es superior al nivel de significación $\alpha = 5\%$. Se concluye que no hay diferencias en las probabilidades de concesión de hipotecas a individuos de diferentes minorías raciales.
 
 ::: {.callout-note appearance="simple"}
 Los resultados obtenidos, ¿son evidencia de discriminación en contra de las minorías raciales?
 :::
 
-*Respuesta:*
+*Respuesta:* Los resultados obtenidos en la @sec-more muestran que la probabilidad de acceder a una hipoteca es distinta para blancos y para no blancos. Esta diferencia no puede ser atribuida a las variables que se han usado como explicativas en el modelo de regresión: situación financiera del solicitante, situación laboral, situación familiar, sexo, nivel educativo e historial crediticio. En consecuencia, las diferencias observadas en la concesión de hipotecas pueden atribuirse a discriminación en contra de las minorías raciales.
