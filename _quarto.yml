@@ -11,6 +11,7 @@ project:
     - "07 - loanapp/*.qmd"
     - "08 - wagegap/*.qmd"
     - "09 - engel/*.qmd"
+    - "10 - outliers/*.qmd"
 
 author: "José Pernías"
 date: last-modified
