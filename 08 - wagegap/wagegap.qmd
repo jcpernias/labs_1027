@@ -52,7 +52,7 @@ Los datos para España se recogieron entre septiembre de 2011 y mayo de 2012. El
 -   `D_Q03`: Current work: economic sector.
 
     | Value | Label                                                                                              |
-    |:-----------------:|:----------------------------------------------------|
+    |:------------------:|:---------------------------------------------------|
     |   1   | The private sector (for example a company)                                                         |
     |   2   | The public sector (for example the local government or a state school)                             |
     |   3   | A non-profit organisation (for example a charity, professional association or regious organisation |
@@ -226,7 +226,7 @@ Cree la variable `antig`: años de antigüedad en la empresa. La variable `D_Q05
 
 #### Tipo de empresa
 
-Tipo de empresa para la que trabaja (categoría de referencia: empresa privada):
+Las empresas para las que trabajan los asalariados se clasifican en: privadas (categoría de referencia), públicas o sin ánimo de lucro.
 
 ::: {.callout-note appearance="simple"}
 Cree la variable `pub`: ficticia que toma el valor 1 para los trabajadores del sector público. Se construye a partir de `D_Q03`.
@@ -246,7 +246,7 @@ Cree la variable `ong`: ficticia que toma el valor 1 para los trabajadores de in
 
 #### Tipo de contrato laboral
 
-Tipo de contrato laboral (categoría de referencia: contrato indefinido):
+Los contratos laborales de los asalariados se clasifican en: indefinido (categoría de referencia), temporal, aprendizaje y otros contratos.
 
 ::: {.callout-note appearance="simple"}
 Cree la variable `temp`: contrato temporal. Ficticia que toma el valor 1 cuando `D_Q09` es igual a 2 o a 3.
@@ -300,7 +300,7 @@ En las estimaciones de las ecuaciones de salarios use la base de datos `esp_asal
 :::
 
 ::: {.callout-warning appearance="simple"}
-A la hora de estimar por intervalos o realizar contrastes de hipótesis es conveniente usar métodos que sean válidos aun en presencia de heteroscedasticidad.
+A la hora de estimar por intervalos o realizar contrastes de hipótesis use métodos que sean válidos aún en presencia de heteroscedasticidad.
 :::
 
 ::: {.callout-warning appearance="simple"}
@@ -403,6 +403,14 @@ En esta sección se estudiará la incorporación de la mujer al mercado de traba
 
 ::: {.callout-warning appearance="simple"}
 En los modelos de esta sección se utiliza la base de datos completa, `esp`, ya que es necesario usar información tanto de las personas que estén inactivas como de las personas que componen la población activa.
+:::
+
+::: {.callout-warning appearance="simple"}
+En los contrastes de hipótesis use métodos que sean válidos aún en presencia de heteroscedasticidad.
+:::
+
+::: {.callout-warning appearance="simple"}
+Utilice un nivel de significación $\alpha = 5\%$.
 :::
 
 ### Modelo de probabilidad lineal simple
