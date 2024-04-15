@@ -1,0 +1,123 @@
+---
+title: "Cáculo de la tasa de inflación con el IPC"
+author: "José Pernías"
+---
+
+## Obtención de los datos
+
+El Instituto Nacional de Estadística (INE) proporciona series temporales del Índice de Precios de Consumo (IPC).
+
+-   En la página inicial de la [web del INE](http://www.ine.es) hay un enlace para el IPC.
+
+-   En la página dedicada al IPC seleccionamos *Resultados* - *Resultados Nacionales* - *Índices nacionales*.
+
+-   Seleccionando *Índices nacionales: general y de grupos ECOICOP* llegamos a una página donde podemos especificar qué datos queremos descargar:
+
+    -   Grupos: Índice general.
+
+    -   Tipo de dato: Índice.
+
+    -   Periodo: con los iconos seleccionamos todos los periodos disponibles e invertimos el orden.
+
+    -   Presentación tabla: Especificamos los periodos temporales en filas.
+
+    Finalmente obtenemos los datos haciendo click en *Consultar selección*.
+
+-   Para leer los datos en RStudio, los descargamos en un fichero *CSV separado por ;* (las variables se separan con punto y coma y los decimales con coma).
+
+-   Movemos el archivo descargado, `50902.csv`, a la carpeta del proyecto de RStudio. Examinando el archivo, se puede comprobar que hay cuatro columnas:
+
+    -   Tipo de dato.
+
+    -   Grupos ECOICOP.
+
+    -   Periodo: el mes al que corresponde el dato se codifica en 7 caracteres: los cuatro primeros son el año, la letra M, y los dos últimos son el mes.
+
+    -   Total: el valor del IPC en cada mes.
+
+    Solo las dos últimas columnas proporcionan información interesante.
+
+## Tasas de inflación
+
+Con los datos descargados del INE se calcularán las tasas de inflación en España durante los últimos años. Creamos un nuevo archivo de instrucciones R (*R script*) en la carpeta del proyecto y los guardamos con el nombre `ipc.R`.
+
+Para trabajar con datos de series temporales utilizaremos el paquete `zoo` (es posible que sea necesario instalarlo previamente) que proporciona funciones que facilitan el trabajo con series temporales:
+
+```{r}
+library(zoo)
+```
+
+### Lectura de los datos
+
+Para leer los datos usaremos la función `read.csv2.zoo` que añade algunas opciones a la función `read.csv2` que utilizamos en laboratorios anteriores:
+
+```{r}
+ipc <- 
+  read.csv2.zoo("50902.csv",
+                regular = TRUE,
+                colClasses = c("NULL", "NULL", "character", "numeric"),
+                FUN = as.yearmon,
+                format = "%YM%m")
+```
+
+Los datos se guardan en la variable `ipc`. Para leer los datos, además del nombre del archivo a leer, utilizamos un conjunto de argumentos de `read.csv2.zoo` que especifican el formato de los datos:
+
+-   `regular = TRUE`: la serie temporal que vamos a leer es regular (se observa todos los meses).
+-   `colClasses = c("NULL", "NULL","character", "numeric")`: indica el tipo de datos que hay en cada columna del fichero CSV. Con `"NULL"` indicamos que no se lea la columna correspondiente (en nuestro caso las dos primeras). La tercera columna contiene texto (`"character"`) que determina la fecha de cada una de las observaciones. La última columna contiene números (`"numeric"`) con el valor del IPC en cada mes.
+-   Los dos últimos argumentos indican como interpretar las fechas que aparecen en la tercera columna. Los datos son mensuales (`FUN = as.yearmon`) y los meses se codifican con cuatro dígitos para el año, la letra M y dos dígitos para el mes (`format = "%YM%m"`).
+
+Podemos realizar gráficos de series temporales con la función `autoplot.zoo`:
+
+```{r}
+autoplot.zoo(ipc)
+```
+
+### Cálculo de las tasas de inflación
+
+La tasa de inflación mensual mide en qué porcentaje crecen los precios durante un mes. Para calcularla, primero obtenemos la diferencia del IPC con la función `diff`:
+
+```{r}
+incr_ipc <- diff(ipc)
+```
+
+Para calcular las tasas de crecimiento, tenemos que dividir el incremento de los precios en un mes por el valor del IPC en el mes anterior, `lag(ipc, -1)`, y multiplicamos por 100:
+
+```{r}
+infl <- 100 * incr_ipc / lag(ipc, -1)
+```
+
+El siguiente gráfico muestra la evolución de la inflación mensual:
+
+```{r}
+autoplot.zoo(infl)
+```
+
+Es más común usar la tasa de inflación interanual que mide el crecimiento porcentual de los precios en los últimos 12 meses. El incremento de los precios en los últimos 12 meses se calcula con `diff(ipc, 12)` mientras que el valor del IPC hace 12 meses se obtiene con `lag(ipc, -12)`.
+
+```{r}
+yinfl <- 100 * diff(ipc, 12) / lag(ipc, -12)
+```
+
+El siguiente gráfico muestra como varió la inflación interanual en España durante los últimos años.
+
+```{r}
+autoplot.zoo(yinfl)
+```
+
+Es muy común calcular las tasas de crecimiento de las series temporales calculando diferencias de los logaritmos. La tasa de crecimiento anual del IPC se puede aproximar con la siguiente instrucción:
+
+```{r}
+gipc <- 100 * diff(log(ipc), 12)
+```
+
+Podemos unir en una sola variable diferentes series temporales usando la función `merge`:
+
+```{r}
+comp_infl <- merge(yinfl, gipc)
+```
+
+De esta forma es más fácil comparar los resultados obtenidos con los diferentes métodos para calcular el incremento interanual de los precios:
+
+```{r}
+tail(comp_infl)
+```
