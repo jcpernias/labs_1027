@@ -13,6 +13,7 @@ project:
     - "09 - engel/*.qmd"
     - "10 - outliers/*.qmd"
     - "11 - ipc/*.qmd"
+    - "12 - hseinv/*.qmd"
 
 author: "José Pernías"
 date: last-modified

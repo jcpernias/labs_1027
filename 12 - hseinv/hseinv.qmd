@@ -1,0 +1,69 @@
+---
+title: "Inversión en vivienda"
+author: "José Pernías"
+---
+
+## Datos
+
+En el libro de Wooldridge se utiliza la base de datos `hseinv` que contiene datos anuales sobre inversión en vivienda, población y precios de la vivienda en Estados Unidos durante el periodo 1947-1988. Los datos se encuentran en el fichero `hseinv.csv` que puede leerse con las instrucciones:
+
+```{r}
+#| warning: false
+library(zoo)
+db <- read.csv2.zoo("hseinv.csv", regular = TRUE)
+```
+
+En `db` se guardan las variables:
+
+-   `inv`: inversión en vivienda en términos reales, en miles de dólares.
+
+-   `pop`: población, en miles de personas.
+
+-   `price`: índice de precios de la vivienda, 1982 = 1.
+
+## Transformación de variables
+
+Con el objeto de estimar la elasticidad precio de la inversión en viviendas cree las siguientes variables:
+
+-   `invpc`: inversión en vivienda per capita. Se obtiene dividiendo `inv` por `pop`:
+
+    ```{r}
+    invpc <- db$inv / db$pop
+    ```
+
+```{=html}
+<!-- -->
+```
+-   `linvpc`: logaritmo de `invpc`:
+
+    ```{r}
+    linvpc <- log(invpc)
+    ```
+
+```{=html}
+<!-- -->
+```
+-   `lprice`: logaritmo del índice de precios:
+
+    ```{r}
+    lprice <- log(db$price)
+    ```
+
+```{=html}
+<!-- -->
+```
+-   `t`: tendencia lineal que toma el valor 1 para la primera observación, 2 para la segunda, etc. Una forma de obtenerla es con la siguiente instrucción:
+
+    ```{r}
+    t <- zooreg(1:nrow(db), start = start(db))
+    ```
+
+## Regresión
+
+-   Estime los parámetros de una regresión simple de `linvpc` sobre `price`. Interprete los resultados. ¿Es razonable la estimación de la elasticidad precio de la inversión en vivienda?
+
+-   Utilice un gráfico para examinar la existencia de una tendencia en la variable `linvpc`. Estime una regresión de `linvpc` sobre la variable `t`. ¿Qué interpretación tiene la pendiente de esta regresión?
+
+-   Examine la presencia de una tendencia en la variable `lprice` usando un gráfico de series temporales y una regresión con respecto de una tendencia lineal.
+
+-   Amplíe el modelo de regresión inicial añadiendo como regresor adicional la tendencia lineal. ¿Qué ocurre con la estimación de la pendiente de `lprice`?
