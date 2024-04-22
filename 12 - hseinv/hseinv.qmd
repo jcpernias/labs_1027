@@ -31,27 +31,24 @@ Con el objeto de estimar la elasticidad precio de la inversión en viviendas cre
     invpc <- db$inv / db$pop
     ```
 
-```{=html}
 <!-- -->
-```
+
 -   `linvpc`: logaritmo de `invpc`:
 
     ```{r}
     linvpc <- log(invpc)
     ```
 
-```{=html}
 <!-- -->
-```
+
 -   `lprice`: logaritmo del índice de precios:
 
     ```{r}
     lprice <- log(db$price)
     ```
 
-```{=html}
 <!-- -->
-```
+
 -   `t`: tendencia lineal que toma el valor 1 para la primera observación, 2 para la segunda, etc. Una forma de obtenerla es con la siguiente instrucción:
 
     ```{r}
@@ -60,7 +57,7 @@ Con el objeto de estimar la elasticidad precio de la inversión en viviendas cre
 
 ## Regresión
 
--   Estime los parámetros de una regresión simple de `linvpc` sobre `price`. Interprete los resultados. ¿Es razonable la estimación de la elasticidad precio de la inversión en vivienda?
+-   Estime los parámetros de una regresión simple de `linvpc` sobre `lprice`. Interprete los resultados. ¿Es razonable la estimación de la elasticidad precio de la inversión en vivienda?
 
 -   Utilice un gráfico para examinar la existencia de una tendencia en la variable `linvpc`. Estime una regresión de `linvpc` sobre la variable `t`. ¿Qué interpretación tiene la pendiente de esta regresión?
 
