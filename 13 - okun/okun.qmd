@@ -1,0 +1,44 @@
+---
+title: "La ley de Okun en Españan (1980-2019)"
+author: "José Pernías"
+bibliography: okun.bib
+---
+
+## La ley de Okun
+
+Arthur Okun encontró en 1962 una regularidad empírica entre el desempleo y el nivel de producción agregado. Más recientemente, @ballOkunLawFit2017 estiman diversas especificaciones de la ley de Okun para varios países en el periodo 1980--2013. Las estimaciones que obtuvieron estos autores para España mostraban que un incremento de la producción de un $1\%$ reduciría la tasa de desempleo entre $0.7$ y $0.9$ puntos porcentuales. En este laboratorio trataremos de replicar esos resultados extendiendo el periodo analizado hasta el cuarto trimestre de 2019.
+
+La ley de Okun establece que existe una relación inversa entre el desempleo cíclico y la brecha de la producción: $$
+  u_t - u^n_t = \beta (\log y_t - \log y^p_t) + \epsilon_t,
+$$ {#eq-1} donde $u_t$ es la tasa de desempleo, $u^n_t$ es la tasa de desempleo natural, $y_t$ es la producción agregada en términos reales e $y^p_t$ es la producción potencial, $\beta$ es un parámetro negativo y $\epsilon_t$ es un término de error que recogería otros factores que afectarían al desempleo cíclico.
+
+Para estimar la ley de Okun se utilizan dos enfoques. La *versión en niveles* de la ley de Okun se obtiene planteando un modelo de regresión similar a la @eq-1, lo que requiere obtener aproximaciones de la tasa natural de desempleo y de la producción potencial.
+
+Un segundo enfoque consiste en estimar la *versión en variaciones* de la ley de Okun. Se puede deducir de la @eq-1 tomando diferencias si se suponen que tanto la tasa natural de desempleo como la producción potencial son constantes en el tiempo. Definiendo la tasa de crecimiento de la producción real como: $$
+ gy_t = 100 \Delta \log y_t,
+$$ {#eq-2} estimaremos la versión en variaciones con el siguiente modelo de retardos distribuidos: $$
+\Delta u_t = 
+\alpha_0 + 
+\beta_0 gy_t + 
+\beta_1 gy_{t-1} + 
+\dots + 
+\beta_L gy_{t-L} +
+\epsilon_t,
+$$ {#eq-3} Los parámetros $\beta_0, \beta_1, \dots, \beta_L$ son los multiplicadores dinámicos y el multiplicador de largo plazo es: $$
+  \beta_{\text{LP}} = \sum_{j = 0}^L \beta_j.
+$$ {#eq-4}
+
+## Datos
+
+La versión en variaciones de la ley de Okun se estimará con los datos contenidos en el fichero `okun.csv`. Los datos proceden de la base de datos [BDREMS](https://www.sepg.pap.hacienda.gob.es/sitios/sepg/es-ES/Presupuestos/DocumentacionEstadisticas/Documentacion/paginas/basedatosmodelorems.aspx) (actualización de diciembre de 2021) que proporciona series trimestrales para la economía española que han sido corregidas de estacionalidad y efectos calendario.
+
+El fichero `okun.csv` contiene dos variables con frecuencia trimestral que cubren el periodo que va desde el segundo trimestre de 1980 hasta el último trimestre de 2019:
+
+-   `y`: es el PIB a precios constantes (base 2015).
+
+-   `u`: tasa de desempleo (%).
+
+## Referencias {.unnumbered}
+
+::: {#refs}
+:::

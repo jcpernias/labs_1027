@@ -14,6 +14,7 @@ project:
     - "10 - outliers/*.qmd"
     - "11 - ipc/*.qmd"
     - "12 - hseinv/*.qmd"
+    - "13 - okun"
 
 author: "José Pernías"
 date: last-modified

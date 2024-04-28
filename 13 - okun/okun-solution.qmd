@@ -1,0 +1,224 @@
+---
+title: "La ley de Okun en España (1980-2019): instrucciones"
+author: "José Pernías"
+---
+
+## Preliminares
+
+::: {.callout-note appearance="simple"}
+Cargue los paquetes `zoo`, `sandwich`, `lmtest`, `urca` y `dynlm`,
+:::
+
+```{r}
+#| warning: false
+
+library(zoo)
+library(sandwich)
+library(lmtest)
+library(dynlm)
+library(urca)
+```
+
+## Datos
+
+::: {.callout-note appearance="simple"}
+Lea los datos del fichero `okun.csv` y guárdelos en la variable `db`.
+:::
+
+```{r}
+db <- read.csv2.zoo("okun.csv", regular = TRUE, FUN = as.yearqtr)
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `ly` calculando el logaritmo de la variable `y` contenida en `db`.
+:::
+
+```{r}
+ly <- log(db$y)
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `gy` calculando la tasa de crecimiento trimestral del la producción como se muestra en la ecuación (2) del documento `okun.html`.
+:::
+
+```{r}
+gy <- 100 * diff(ly)
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `du` calculando la diferencia de la variable `u` contenida en `db`.
+:::
+
+```{r}
+du <- diff(db$u)
+```
+
+## Contrastes de raíces unitarias
+
+Contraste la existencia de una raíz unitaria en cada una de las variables que se enumeran a continuación. En todos los casos:
+
+1.  Determine mediante la inspección de un gráfico de series temporales si es necesario incluir una tendencia lineal en la regresión de Dickey-Fuller.
+
+2.  Seleccione con el AIC el número de retardos a incluir en la regresión de Dickey-Fuller usando como máximo 6 retardos.
+
+### Tasa de desempleo
+
+::: {.callout-note appearance="simple"}
+Gráfico de series temporales de `db$u`.
+:::
+
+```{r}
+autoplot.zoo(db$u)
+```
+
+::: {.callout-note appearance="simple"}
+Contraste aumentado de Dickey-Fuller.
+:::
+
+```{r}
+adf <- ur.df(db$u, type = "drift", lags = 6, selectlags = "AIC")
+summary(adf)
+```
+
+::: {.callout-note appearance="simple"}
+Resultado del contraste para un nivel de significación del $5\%$.
+:::
+
+*Respuesta*:
+
+### Diferencia de la tasa de desempleo
+
+::: {.callout-note appearance="simple"}
+Gráfico de series temporales de `du`.
+:::
+
+```{r}
+autoplot.zoo(du)
+```
+
+::: {.callout-note appearance="simple"}
+Contraste aumentado de Dickey-Fuller.
+:::
+
+```{r}
+adf <- ur.df(du, type = "drift", lags = 6, selectlags = "AIC")
+summary(adf)
+```
+
+::: {.callout-note appearance="simple"}
+Resultado del contraste para un nivel de significación del $5\%$.
+:::
+
+*Respuesta*:
+
+### Logaritmo de la producción agregada
+
+::: {.callout-note appearance="simple"}
+Gráfico de series temporales de `ly`.
+:::
+
+```{r}
+autoplot.zoo(ly)
+```
+
+::: {.callout-note appearance="simple"}
+Contraste aumentado de Dickey-Fuller.
+:::
+
+```{r}
+adf <- ur.df(ly, type = "trend", lags = 6, selectlags = "AIC")
+summary(adf)
+```
+
+::: {.callout-note appearance="simple"}
+Resultado del contraste para un nivel de significación del $5\%$.
+:::
+
+*Respuesta*:
+
+### Tasa de crecimiento de la producción agregada
+
+::: {.callout-note appearance="simple"}
+Gráfico de series temporales de `gy`.
+:::
+
+```{r}
+autoplot.zoo(gy)
+```
+
+::: {.callout-note appearance="simple"}
+Contraste aumentado de Dickey-Fuller.
+:::
+
+```{r}
+adf <- ur.df(gy, type = "drift", lags = 6, selectlags = "AIC")
+summary(adf)
+```
+
+::: {.callout-note appearance="simple"}
+Resultado del contraste para un nivel de significación del $5\%$.
+:::
+
+*Respuesta*:
+
+## Estimación de la ecuación en variaciones
+
+Para garantizar que todas las regresiones de esta sección utilizan los mismos. datos, **utilice la muestra que comienza en el primer trimestre de 1982.**
+
+### Selección del número de retardos
+
+::: {.callout-note appearance="simple"}
+Estime un modelo estático con la diferencia del desempleo como variable dependiente y la tasa de crecimiento de la producción como explicativa. Guarde los resultados en la variable `dl0`.
+:::
+
+```{r}
+dl0 <- dynlm(du ~ gy, start = "1982 Q1")
+```
+
+::: {.callout-note appearance="simple"}
+Amplíe el modelo estático añadiendo retardos de la tasa de crecimiento de la producción como regresores adicionales. Guarde en las variables `dl1`, `dl2`, ..., `dl6` las estimaciones con 1, 2, ..., 6 retardos de `gy`.
+:::
+
+```{r}
+dl1 <- dynlm(du ~ L(gy, 0:1), start = "1982 Q1")
+dl2 <- dynlm(du ~ L(gy, 0:2), start = "1982 Q1")
+dl3 <- dynlm(du ~ L(gy, 0:3), start = "1982 Q1")
+dl4 <- dynlm(du ~ L(gy, 0:4), start = "1982 Q1")
+dl5 <- dynlm(du ~ L(gy, 0:5), start = "1982 Q1")
+dl6 <- dynlm(du ~ L(gy, 0:6), start = "1982 Q1")
+```
+
+::: {.callout-note appearance="simple"}
+Utilice el BIC de los modelos `dl0`, `dl1`, ..., `dl6` para seleccionar el número de retardos.
+:::
+
+```{r}
+BIC(dl0)
+BIC(dl1)
+BIC(dl2)
+BIC(dl3)
+BIC(dl4)
+BIC(dl5)
+BIC(dl0)
+```
+
+### Modelo de retardos distribuidos
+
+::: {.callout-note appearance="simple"}
+Obtenga los errores típicos robustos a heteroscedasticidad y autocorrelación del modelo seleccionado con el BIC.
+:::
+
+```{r}
+coeftest(dl1, vcov. = vcovHAC)
+```
+
+### Estimación del multiplicador de largo plazo
+
+::: {.callout-note appearance="simple"}
+Reescriba el modelo de forma que se estimen directamente los multiplicadores acumulativos y el multiplicador de largo plazo. Obtenga los errores típicos robustos a heteroscedasticidad y autocorrelación.
+:::
+
+```{r}
+dl1_lr <- dynlm(du ~ d(gy) + L(gy), start = "1982 Q1")
+coeftest(dl1_lr, vcov. = vcovHAC)
+```
