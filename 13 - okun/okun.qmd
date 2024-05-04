@@ -1,5 +1,5 @@
 ---
-title: "La ley de Okun en Españan (1980-2019)"
+title: "La ley de Okun en España (1980-2019)"
 author: "José Pernías"
 bibliography: okun.bib
 ---
