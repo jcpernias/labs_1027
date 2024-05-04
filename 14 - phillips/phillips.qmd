@@ -1,0 +1,123 @@
+---
+title: "La curva de Phillips en España (1967-2022)"
+author: "José Pernías"
+---
+
+## Objetivos
+
+En este laboratorio se investigará la existencia de una relación de intercambio entre inflación y desempleo en España durante el periodo 1967-2022.
+
+En este laboratorio se estima una curva de Phillips con expectativas y tasa natural de desempleo variable en el tiempo. También se exploran relaciones dinámicas entre la inflación y el desempleo.
+
+## La curva de Phillips
+
+### Curva de Phillips estática
+
+En primer lugar se estimarán los parámetros de la curva de Phillips estática: $$
+\pi_t = \alpha + \beta u_t + \epsilon_t,
+$$ {#eq-1} donde $\pi_t$ es la tasa de inflación, $u_t$ es la tasa de paro y $\epsilon_t$ es el término de error.
+
+### La tasa de desempleo natural
+
+Para poder estimar el modelo anterior necesitamos obtener de algún modo la tasa natural de desempleo en los años que cubre nuestra muestra. Una alternativa que se utiliza con frecuencia es utilizar el [filtro de Hodrick y Prescott](https://es.wikipedia.org/wiki/Filtro_de_Hodrick-Prescott). Este filtro es un método diseñado para descomponer una serie en un componente de tendencia, que capture los movimientos a largo plazo, y un componente cíclico, que recoge las desviaciones con respecto de la tendencia de largo plazo. Aunque su uso ha sido criticado en numerosas ocasiones, el filtro de Hodrick y Prescott se sigue utilizando con frecuencia.
+
+En el fichero `phillips.csv` se ha incluido la variable `paro_n` que es el resultado de aplicar el filtro de Hodrick-Prescott ($\lambda = 6.25$) a la tasa de desempleo observada y que utilizaremos como aproximación a la tasa natural de desempleo en este laboratorio. En el siguiente gráfico se muestra la evolución de la tasa natural de desempleo (línea continua) y de la tasa de desempleo observado, (línea discontinua).
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+library(zoo)
+library(ggformula)
+
+st <- read.csv2.zoo("phillips.csv", regular = TRUE)  
+periodo <- zooreg(index(st), start = start(st), frequency = frequency(st))
+smpl <-  window(merge(st, periodo), start = 1964)
+autoplot(st$paro_n) |> 
+  gf_line(paro ~ periodo, data = st, linetype = 5, color = "gray") |> 
+  gf_labs(x = "", 
+          y = "Tasa de desempleo") |>
+  gf_theme(theme_bw())
+```
+
+### Curva de Phillips con expectativas
+
+La curva de Phillips aumentada con expectativas se puede escribir como: $$
+\pi_t = \pi^e_t + \beta (u_t - u^n_t) + \epsilon_t,
+$$ {#eq-2} donde $\pi^e_t$ son las expectativas de los agentes económicos sobre la inflación en el periodo $t$, y $u^n_t$ es la tasa natural de paro. La expresión entre paréntesis de la ecuación anterior es el desempleo cíclico $u^c_t$: $$
+u^c_t = u_t - u^n_t.
+$$ Por otro lado, suponemos que las expectativas son adaptativas por lo que los agentes esperan que la inflación en el periodo $t$ sea igual a la del periodo anterior: $$
+\pi^e_t = \pi_{t-1}
+$$ Utilizando este supuesto se reescribe la @eq-2 como: $$
+\pi_t - \pi_{t-1}= \beta u^c_t + \epsilon_t.
+$$
+
+### Modelo dinámico
+
+En en esta sesión modificamos la curva de Phillips con expectativas para incorporar, por un lado, una tasa de desempleo natural variable en el tiempo, y, por otro lado, una especificación dinámica que permita que cambios en la tasa de desempleo afecten a la inflación en más de un periodo: $$
+\Delta\pi_t = \alpha + 
+\beta_0 u^c_{t} + 
+\beta_1 u^c_{t-1} +
+\dots +
+\beta_L u^c_{t-L} + 
+\epsilon_t
+$$ {#eq-3} donde $\pi_t$ es la tasa de inflación, $u_t$ es la tasa de paro, $u^n_t$ es la tasa natural de desempleo y $\epsilon_t$ es el término de error. La ecuación anterior muestra que cambios en el desempleo cíclico, $u_t - u^n_t$, provocan cambios en la tasa de inflación en el periodo en que se producen y en los $L$ periodos siguientes.
+
+### Efectos a largo plazo
+
+Además de estimar los multiplicadores dinámicos, $\beta_0, \beta_1, \dots, \beta_L$, obtendremos también los multiplicadores acumulativos, $\delta_0, \delta_1, \dots, \delta_{L-1}$, y el multiplicador de largo plazo, $\delta_L$. Estos parámetros pueden estimarse directamente a partir de la siguiente reparametrización del modelo de la @eq-3: $$
+\begin{equation}
+\Delta\pi_t = \alpha + 
+\delta_0 \Delta u^c_{t} + 
+\delta_1 \Delta u^c_{t-1} +
+\dots +
+\delta_{L-1} \Delta u^c_{t-L+1} +
+\delta_L u^c_{t-L} + 
+\epsilon_t 
+\end{equation}
+$$ {#eq-4} En el contexto de la estimación de la curva de Phillips, una hipótesis interesante es que no exista una relación a largo plazo entre inflación y desempleo. En ese caso $\delta_L = 0$ hipótesis que puede contrastarse directamente a partir de la estimación de los parámetros de la @eq-4. En caso de que la hipótesis no sea rechazada, se pueden obtener estimaciones más eficientes estimando el modelo de regresión que impone la restricción $\delta_L = 0$: $$
+\Delta\pi_t = \alpha + 
+\delta_0 \Delta u^c_{t} + 
+\delta_1 \Delta u^c_{t-1} +
+\dots +
+\delta_{L-1} \Delta u^c_{t-L+1} +
+\epsilon_t 
+$$ {#eq-5}
+
+## Datos
+
+El archivo `phillips.csv` contiene series anuales referidas a la economía española. La información sobre precios y la tasa de paro observada proviene de la base de datos [BDMACRO](https://www.sepg.pap.hacienda.gob.es/sitios/sepg/es-ES/Presupuestos/DocumentacionEstadisticas/Documentacion/paginas/bdmacro.aspx) que mantiene la Secretaría de Estado de Presupuestos y Gastos del Ministerio de Hacienda. En este laboratorio se usan las series:
+
+-   `defl`: deflactor del consumo privado, base 2015. Periodo: 1962-2022.
+
+-   `paro`: tasa de paro observada. Periodo: 1964-2022.
+
+-   `paro_n`: tasa natural de desempleo. Es el resultado de aplicar el filtro de Hodrick-Prescott ($\lambda = 6.25$) a la tasa de desempleo observada. Periodo: 1964-2022.
+
+El siguiente gráfico muestra la evolución de las tasas de paro e inflación en España durante los años 1967 a 2022.
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+
+st <- read.csv2.zoo("phillips.csv", regular = TRUE)  
+st$infl <- 100 * diff(log(st$defl))
+periodo <- zooreg(index(st), start = start(st), frequency = frequency(st))
+#smpl <-  window(merge(st, periodo), start = 1964)
+
+smpl2 <- merge(st, periodo,
+               infl_end = stats::lag(st$infl),
+               paro_end = stats::lag(st$paro)) |> 
+  window(start = 1967)
+
+gf_segment(infl +  infl_end ~ paro + paro_end,
+           data = smpl2,
+           color = ~ periodo) |>
+  gf_refine(scale_color_gradientn(colours = hcl.colors(5, "Dark 3"))) |>
+  gf_point(infl ~ paro) |>
+  gf_labs(x = "Tasa de paro", y = "Tasa de inflación", color = "Año") |>
+  gf_theme(theme_bw())
+```
