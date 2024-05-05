@@ -5,23 +5,23 @@ author: "José Pernías"
 
 ## Objetivos
 
-En este laboratorio se investigará la existencia de una relación de intercambio entre inflación y desempleo en España durante el periodo 1967-2022.
-
-En este laboratorio se estima una curva de Phillips con expectativas y tasa natural de desempleo variable en el tiempo. También se exploran relaciones dinámicas entre la inflación y el desempleo.
+Se investigará la existencia de una relación de intercambio entre inflación y desempleo en España durante el periodo 1967-2022. Se estimará una curva de Phillips con expectativas y tasa natural de desempleo variable en el tiempo. También se explorarán las relaciones dinámicas entre la inflación y el desempleo.
 
 ## La curva de Phillips
 
 ### Curva de Phillips estática
 
-En primer lugar se estimarán los parámetros de la curva de Phillips estática: $$
+La curva de Phillips tradicional estipula una relación estática entre desempleo e inflación: $$
 \pi_t = \alpha + \beta u_t + \epsilon_t,
-$$ {#eq-1} donde $\pi_t$ es la tasa de inflación, $u_t$ es la tasa de paro y $\epsilon_t$ es el término de error.
+$$ {#eq-1} donde $\pi_t$ es la tasa de inflación, $u_t$ es la tasa de paro, $\epsilon_t$ es el término de error y $\alpha$ y $\beta$ son parámetros a estimar.
 
-### La tasa de desempleo natural
+Versiones más modernas de la curva de Phillips incorporan las expectativas de inflación de los agentes y tasas naturales del desempleo cambiantes en el tiempo.
 
-Para poder estimar el modelo anterior necesitamos obtener de algún modo la tasa natural de desempleo en los años que cubre nuestra muestra. Una alternativa que se utiliza con frecuencia es utilizar el [filtro de Hodrick y Prescott](https://es.wikipedia.org/wiki/Filtro_de_Hodrick-Prescott). Este filtro es un método diseñado para descomponer una serie en un componente de tendencia, que capture los movimientos a largo plazo, y un componente cíclico, que recoge las desviaciones con respecto de la tendencia de largo plazo. Aunque su uso ha sido criticado en numerosas ocasiones, el filtro de Hodrick y Prescott se sigue utilizando con frecuencia.
+### La tasa natural de paro
 
-En el fichero `phillips.csv` se ha incluido la variable `paro_n` que es el resultado de aplicar el filtro de Hodrick-Prescott ($\lambda = 6.25$) a la tasa de desempleo observada y que utilizaremos como aproximación a la tasa natural de desempleo en este laboratorio. En el siguiente gráfico se muestra la evolución de la tasa natural de desempleo (línea continua) y de la tasa de desempleo observado, (línea discontinua).
+La tasa natural de desempleo es un concepto teórico y no es directamente observable. Para poder incorporar esta tasa en la curva de Phillips es necesario usar alguna aproximación a este concepto a partir de las tasas observadas de paro. Una alternativa que se utiliza con frecuencia es el [filtro de Hodrick y Prescott](https://es.wikipedia.org/wiki/Filtro_de_Hodrick-Prescott). Éste es un método diseñado para descomponer una serie en un componente de tendencia, que captura los movimientos a largo plazo, y un componente cíclico, que recoge las desviaciones con respecto de la tendencia de largo plazo. Aunque ha sido criticado en numerosas ocasiones, el filtro de Hodrick y Prescott se sigue usando con frecuencia.
+
+En el fichero `phillips.csv` se ha incluido la variable `paro_n` que es el resultado de aplicar el filtro de Hodrick-Prescott ($\lambda = 6.25$) a la tasa observada de paro y que se utilizará como aproximación a la tasa natural de paro. En el siguiente gráfico se muestra la evolución de la tasa natural de desempleo (línea continua) y de la tasa de desempleo observado, (línea discontinua).
 
 ```{r}
 #| echo: false
@@ -45,44 +45,42 @@ autoplot(st$paro_n) |>
 
 La curva de Phillips aumentada con expectativas se puede escribir como: $$
 \pi_t = \pi^e_t + \beta (u_t - u^n_t) + \epsilon_t,
-$$ {#eq-2} donde $\pi^e_t$ son las expectativas de los agentes económicos sobre la inflación en el periodo $t$, y $u^n_t$ es la tasa natural de paro. La expresión entre paréntesis de la ecuación anterior es el desempleo cíclico $u^c_t$: $$
+$$ {#eq-2} donde $\pi^e_t$ son las expectativas de los agentes económicos sobre la inflación en el periodo $t$, y $u^n_t$ es la tasa natural de paro. La expresión entre paréntesis de la ecuación anterior es el desempleo cíclico, $u^c_t$: $$
 u^c_t = u_t - u^n_t.
 $$ Por otro lado, suponemos que las expectativas son adaptativas por lo que los agentes esperan que la inflación en el periodo $t$ sea igual a la del periodo anterior: $$
-\pi^e_t = \pi_{t-1}
-$$ Utilizando este supuesto se reescribe la @eq-2 como: $$
+\pi^e_t = \pi_{t-1}.
+$$ Utilizando este supuesto, se reescribe la @eq-2 como: $$
 \pi_t - \pi_{t-1}= \beta u^c_t + \epsilon_t.
 $$
 
 ### Modelo dinámico
 
-En en esta sesión modificamos la curva de Phillips con expectativas para incorporar, por un lado, una tasa de desempleo natural variable en el tiempo, y, por otro lado, una especificación dinámica que permita que cambios en la tasa de desempleo afecten a la inflación en más de un periodo: $$
+Ampliaremos, por último, la curva de Phillips con expectativas para incorporar una especificación dinámica que permita que cambios en la tasa de desempleo afecten a la inflación en más de un periodo: $$
 \Delta\pi_t = \alpha + 
 \beta_0 u^c_{t} + 
 \beta_1 u^c_{t-1} +
 \dots +
 \beta_L u^c_{t-L} + 
-\epsilon_t
-$$ {#eq-3} donde $\pi_t$ es la tasa de inflación, $u_t$ es la tasa de paro, $u^n_t$ es la tasa natural de desempleo y $\epsilon_t$ es el término de error. La ecuación anterior muestra que cambios en el desempleo cíclico, $u_t - u^n_t$, provocan cambios en la tasa de inflación en el periodo en que se producen y en los $L$ periodos siguientes.
+\epsilon_t.
+$$ {#eq-3} La ecuación anterior muestra que cambios en el desempleo cíclico, $u^c_t$, provocan cambios en la tasa de inflación en el periodo en que se producen y en los $L$ periodos siguientes.
 
 ### Efectos a largo plazo
 
-Además de estimar los multiplicadores dinámicos, $\beta_0, \beta_1, \dots, \beta_L$, obtendremos también los multiplicadores acumulativos, $\delta_0, \delta_1, \dots, \delta_{L-1}$, y el multiplicador de largo plazo, $\delta_L$. Estos parámetros pueden estimarse directamente a partir de la siguiente reparametrización del modelo de la @eq-3: $$
-\begin{equation}
+Además de estimar los multiplicadores dinámicos, $\beta_0, \beta_1, \dots, \beta_L$, se pueden estimar directamente los los multiplicadores acumulativos, $\delta_0, \delta_1, \dots, \delta_{L-1}$, y el multiplicador de largo plazo, $\delta_L$. Para ello, se reparametriza el modelo de la @eq-3 como: $$
 \Delta\pi_t = \alpha + 
 \delta_0 \Delta u^c_{t} + 
 \delta_1 \Delta u^c_{t-1} +
 \dots +
 \delta_{L-1} \Delta u^c_{t-L+1} +
 \delta_L u^c_{t-L} + 
-\epsilon_t 
-\end{equation}
-$$ {#eq-4} En el contexto de la estimación de la curva de Phillips, una hipótesis interesante es que no exista una relación a largo plazo entre inflación y desempleo. En ese caso $\delta_L = 0$ hipótesis que puede contrastarse directamente a partir de la estimación de los parámetros de la @eq-4. En caso de que la hipótesis no sea rechazada, se pueden obtener estimaciones más eficientes estimando el modelo de regresión que impone la restricción $\delta_L = 0$: $$
+\epsilon_t.
+$$ {#eq-4} En el contexto de la estimación de la curva de Phillips, una hipótesis interesante es que no exista una relación a largo plazo entre inflación y desempleo. En ese caso $\delta_L = 0$ hipótesis que puede contrastarse directamente a partir de la estimación de los parámetros de la @eq-4. En caso de que la hipótesis no sea rechazada, se pueden obtener estimaciones más eficientes estimando el modelo de regresión que impone $\delta_L = 0$: $$
 \Delta\pi_t = \alpha + 
 \delta_0 \Delta u^c_{t} + 
 \delta_1 \Delta u^c_{t-1} +
 \dots +
 \delta_{L-1} \Delta u^c_{t-L+1} +
-\epsilon_t 
+\epsilon_t. 
 $$ {#eq-5}
 
 ## Datos
