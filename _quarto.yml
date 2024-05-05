@@ -16,6 +16,7 @@ project:
     - "12 - hseinv/*.qmd"
     - "13 - okun/*.qmd"
     - "14 - phillips/*.qmd"
+    - "15 - traffic2/*.qmd"
 
 author: "José Pernías"
 date: last-modified
