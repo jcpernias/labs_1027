@@ -84,7 +84,7 @@ summary(adf)
 Resultado del contraste para un nivel de significación del $5\%$.
 :::
 
-*Respuesta*:
+*Respuesta*: El valor del contraste de Dickey-Fuller, $-2.67$, es mayor que el valor crítico del $5\%$, $-2.88$, por lo que no se puede rechazar la hipótesis nula de que la tasa de desempleo presente una raíz unitaria.
 
 ### Diferencia de la tasa de desempleo
 
@@ -109,7 +109,7 @@ summary(adf)
 Resultado del contraste para un nivel de significación del $5\%$.
 :::
 
-*Respuesta*:
+*Respuesta*: La hipótesis de una raíz unitaria en la diferencia de la tasa de desempleo se rechaza ya que el valor del contraste, $-3.46$, es inferior al valor crítico del $5\%$, $-2.88$.
 
 ### Logaritmo de la producción agregada
 
@@ -134,7 +134,7 @@ summary(adf)
 Resultado del contraste para un nivel de significación del $5\%$.
 :::
 
-*Respuesta*:
+*Respuesta*: El valor del contraste, $-1.93$, es mayor que el valor crítico, $-3.43$, por lo que no se puede rechazar al $5\%$ la existencia de una raíz unitaria en el logaritmo de la producción agregada.
 
 ### Tasa de crecimiento de la producción agregada
 
@@ -159,7 +159,7 @@ summary(adf)
 Resultado del contraste para un nivel de significación del $5\%$.
 :::
 
-*Respuesta*:
+*Respuesta*: Se rechaza al $5\%$ de significación la presencia de una raíz unitaria en la tasa trimestral de crecimiento de la producción agregada dado que el valor del contraste, $-2.93$, es inferior al valor crítico, $-2.88$.
 
 ## Estimación de la ecuación en variaciones
 
