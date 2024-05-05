@@ -1,0 +1,252 @@
+---
+title: "La curva de Phillips en España (1967-2022): instrucciones"
+author: ""
+---
+
+## Preliminares
+
+::: {.callout-note appearance="simple"}
+Cargue los paquetes `zoo`, `sandwich`, `lmtest`, `urca` y `dynlm`,
+:::
+
+```{r}
+library(zoo)
+library(sandwich)
+library(lmtest)
+library(urca)
+library(dynlm)
+```
+
+## Datos
+
+::: {.callout-note appearance="simple"}
+Lea los datos del fichero `okun.csv` y guárdelos en la variable `db_all`.
+:::
+
+```{r}
+db_all <- read.csv2.zoo("phillips.csv", regular = TRUE, 
+                        colClasses = "numeric")
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `infl` que contenga las tasas de inflación (en tantos por 100) calculadas a partir de la diferencia del logaritmo del deflactor del consumo contenido en `db_all`.
+:::
+
+```{r}
+infl <- 100 * diff(log(db_all$defl))
+```
+
+::: {.callout-note appearance="simple"}
+Calcule la diferencia de la inflación y guárdela en la variable `dinfl`.
+:::
+
+```{r}
+dinfl <- diff(infl)
+```
+
+::: {.callout-note appearance="simple"}
+Cree la variable `paro_c` y almacene en ella el paro cíclico obtenido como la diferencia entre las tasas de paro observada y natural contenidas en `db_all`.
+:::
+
+```{r}
+paro_c <- db_all$paro - db_all$paro_n
+```
+
+Cree `db` de forma que contenga las variables `infl`, `dinfl`, `paro` y `paro_c` descartando las observaciones anteriores al año 1964.
+
+```{r}
+db <- window(merge(infl, dinfl, paro = db_all$paro, paro_c), 
+             start = 1964)
+```
+
+Elimine de la memoria del ordenador las variables `infl`, `dinfl`, `paro_c`, y `db_all`.
+
+```{r}
+rm(infl, dinfl, paro_c, db_all)
+```
+
+## Contrastes de raíces unitarias
+
+Contraste la existencia de una raíz unitaria en cada una de las variables que se enumeran a continuación. En todos los casos:
+
+1.  Determine mediante la inspección de un gráfico de series temporales si es necesario incluir una tendencia lineal en la regresión de Dickey-Fuller.
+
+2.  Seleccione con el AIC el número de retardos a incluir en la regresión de Dickey-Fuller usando como máximo 3 retardos.
+
+### Inflación
+
+::: {.callout-note appearance="simple"}
+Gráfico de series temporales de `db$infl`.
+:::
+
+```{r}
+autoplot.zoo(db$infl)
+```
+
+::: {.callout-note appearance="simple"}
+Contraste de Dickey-Fuller.
+:::
+
+```{r}
+adf <- ur.df(db$infl, type = "drift", lags = 3, selectlags = "AIC")
+summary(adf)
+```
+
+::: {.callout-note appearance="simple"}
+Resultado del contraste para un nivel de significación del $5\%$.
+:::
+
+*Respuesta*: No se puede rechazar la existencia de una raíz unitaria en la inflación al $5\%$ ya que el valor del contraste de Dickey-Fuller, $-1.75$, es mayor que el valor crítico, $-2.89$.
+
+### Diferencia de la inflación
+
+::: {.callout-note appearance="simple"}
+Gráfico de series temporales de `db$dinfl`.
+:::
+
+```{r}
+autoplot.zoo(db$dinfl)
+```
+
+::: {.callout-note appearance="simple"}
+Contraste aumentado de Dickey-Fuller.
+:::
+
+```{r}
+adf <- ur.df(db$dinfl, type = "drift", lags = 3, selectlags = "AIC")
+summary(adf)
+```
+
+::: {.callout-note appearance="simple"}
+Resultado del contraste para un nivel de significación del $5\%$.
+:::
+
+*Respuesta*: Se rechaza la existencia de una raíz unitaria en la diferencia de la inflación al $5\%$ ya que el valor del contraste de Dickey-Fuller, $-3.14$, es menor que el valor crítico, $-2.89$.
+
+### Tasa de paro
+
+::: {.callout-note appearance="simple"}
+Gráfico de series temporales de `db$paro`.
+:::
+
+```{r}
+autoplot.zoo(db$paro)
+```
+
+::: {.callout-note appearance="simple"}
+Contraste aumentado de Dickey-Fuller.
+:::
+
+```{r}
+adf <- ur.df(db$paro, type = "drift", lags = 3, selectlags = "AIC")
+summary(adf)
+```
+
+::: {.callout-note appearance="simple"}
+Resultado del contraste para un nivel de significación del $5\%$.
+:::
+
+*Respuesta*: No se puede rechazar la existencia de una raíz unitaria en la inflación al $5\%$ ya que el valor del contraste de Dickey-Fuller, $-2.60$, es mayor que el valor crítico, $-2.89$.
+
+### Tasa de paro cíclica
+
+::: {.callout-note appearance="simple"}
+Gráfico de series temporales de `db$paro_c`.
+:::
+
+```{r}
+autoplot.zoo(db$paro_c)
+```
+
+::: {.callout-note appearance="simple"}
+Contraste aumentado de Dickey-Fuller.
+:::
+
+```{r}
+adf <- ur.df(db$paro_c, type = "drift", lags = 3, selectlags = "AIC")
+summary(adf)
+```
+
+::: {.callout-note appearance="simple"}
+Resultado del contraste para un nivel de significación del $5\%$.
+:::
+
+*Respuesta*: Se rechaza la existencia de una raíz unitaria en el paro cíclico al $5\%$ ya que el valor del contraste de Dickey-Fuller, $-5.15$, es menor que el valor crítico, $-2.89$.
+
+## Curva de Phillips estática
+
+::: {.callout-note appearance="simple"}
+Utilizando las variables `infl` y `paro` contenidas en `db`, estime una curva de Phillips estática. Obtenga los resultados de la regresión robustos a heteroscedasticidad y autocorrelación.
+:::
+
+```{r}
+mod1 <- dynlm(infl ~ paro, data = db)
+coeftest(mod1, vcov. = vcovHAC)
+```
+
+::: {.callout-note appearance="simple"}
+En referencia a la curva de Phillips estática estimada y atendiendo a los resultados obtenidos con los contrastes de raíces unitarias, ¿se cumplen los supuestos que garantizan buenas propiedades asintóticas de MCO con series temporales? ¿Puede ser una regresión espuria?
+:::
+
+*Respuesta*: No se puede rechazar que tanto la variable dependiente como la explicativa contengan raíces unitarias, lo que violaría el supuesto de que las series temporales usadas en la regresión sean débilmente dependientes. En estas condiciones los resultados obtenidos son poco fiables y es posible que la regresión sea espuria.
+
+## Curva de Phillips con expectativas
+
+Para garantizar que todas las regresiones de esta sección utilizan los mismos. datos, **utilice la muestra que comienza en 1967.**
+
+### Selección del número de retardos
+
+::: {.callout-note appearance="simple"}
+Estime modelos de regresión con `dinfl` como variable dependiente y retardos de `paro_c` como variables explicativas. Guarde los resultados de las estimaciones con 0, 1, 2, y 3 retardos distribuidos en las variables `dl0`, `dl1`, `dl2` y `dl3`, respectivamente.
+:::
+
+```{r}
+dl0 <- dynlm(dinfl ~ L(paro_c, 0:0) , data = db, start = 1967)
+dl1 <- dynlm(dinfl ~ L(paro_c, 0:1) , data = db, start = 1967)
+dl2 <- dynlm(dinfl ~ L(paro_c, 0:2) , data = db, start = 1967)
+dl3 <- dynlm(dinfl ~ L(paro_c, 0:3) , data = db, start = 1967)
+```
+
+::: {.callout-note appearance="simple"}
+Calcule el BIC de los modelos `dl0`, `dl1`, `dl2`, y `dl3`.
+:::
+
+```{r}
+BIC(dl0)
+BIC(dl1)
+BIC(dl2)
+BIC(dl3)
+```
+
+::: {.callout-note appearance="simple"}
+¿Cuál es el número óptimo de retardos de acuerdo al BIC?
+:::
+
+*Respuesta*: El número de retardos óptimo sería 1 ya que `dl1` es el modelo de regresión con menor BIC.
+
+### Modelo de retardos distribuidos
+
+::: {.callout-note appearance="simple"}
+Obtenga los errores típicos robustos a heteroscedasticidad y autocorrelación del modelo seleccionado con el BIC.
+:::
+
+```{r}
+coeftest(dl1, vcov. = vcovHAC)
+```
+
+### Estimación del multiplicador de largo plazo
+
+::: {.callout-note appearance="simple"}
+Reescriba el modelo de forma que se estimen directamente los multiplicadores acumulativos y el multiplicador de largo plazo. Obtenga los errores típicos robustos a heteroscedasticidad y autocorrelación.
+:::
+
+```{r}
+dl1b <- dynlm(dinfl ~ d(paro_c) + L(paro_c), data = db, start = 1967)
+coeftest(dl1b, vcov. = vcovHAC)
+```
+
+::: {.callout-note appearance="simple"}
+Usando los resultados de la regresión anterior, contraste al $5\%$ la hipótesis de que el multiplicador de largo plazo es 0.
+:::
+
+*Respuesta*: El multiplicador de largo plazo toma un valor pequeño, $-0.04$, y no es significativamente distinto de $0$ a un nivel de significación del $5\%$ (cociente *t* robusto $=-0.24$, valor-*p* $=0.81$).
