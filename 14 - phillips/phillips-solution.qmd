@@ -1,6 +1,6 @@
 ---
 title: "La curva de Phillips en España (1967-2022): instrucciones"
-author: ""
+author: "José Pernías"
 ---
 
 ## Preliminares
