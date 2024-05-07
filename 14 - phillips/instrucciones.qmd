@@ -16,7 +16,7 @@ Cargue los paquetes `zoo`, `sandwich`, `lmtest`, `urca` y `dynlm`,
 ## Datos
 
 ::: {.callout-note appearance="simple"}
-Lea los datos del fichero `okun.csv` y guárdelos en la variable `db_all`.
+Lea los datos del fichero `phillips.csv` y guárdelos en la variable `db_all`.
 :::
 
 ```{r}
