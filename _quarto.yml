@@ -15,7 +15,9 @@ project:
     - "11 - ipc/*.qmd"
     - "12 - hseinv/*.qmd"
     - "13 - okun/*.qmd"
+    - "!13 - okun/instrucciones.qmd"
     - "14 - phillips/*.qmd"
+    - "!14 - phillips/instrucciones.qmd"
     - "15 - traffic2/*.qmd"
 
 author: "José Pernías"
