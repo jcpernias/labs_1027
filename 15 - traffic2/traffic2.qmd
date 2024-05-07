@@ -1,0 +1,177 @@
+---
+title: "Accidentes de tráfico y leyes de circulación"
+author: "José Pernías"
+---
+
+## Objetivos
+
+Evaluar el impacto que tuvo sobre los accidentes de circulación en California la introducción de leyes que hacían obligatorio el uso del cinturón de seguridad y que modificaban los límites de velocidad.
+
+## Preliminares
+
+```{r}
+library(zoo)
+library(dynlm)
+library(urca)
+library(sandwich)
+library(lmtest)
+library(car)
+```
+
+## Datos
+
+```{r}
+db <- read.csv2.zoo("traffic2.csv", regular = TRUE, 
+                    FUN = as.yearmon)
+```
+
+```{r}
+db$ltotal <- log(db$total)
+```
+
+## Contrastes de raíces unitarias
+
+### Logaritmo del número de accidentes
+
+```{r}
+autoplot.zoo(db$ltotal)
+```
+
+```{r}
+df <- ur.df(db$ltotal, type = "trend", lags = 6, selectlags = "AIC")
+summary(df)
+```
+
+### Tasa de paro
+
+```{r}
+autoplot.zoo(db$unem)
+```
+
+```{r}
+df <- ur.df(db$unem, type = "trend", lags = 6, selectlags = "AIC")
+summary(df)
+```
+
+## Regresión
+
+```{r}
+mod1 <- dynlm(ltotal ~ beltlaw + speedlaw +
+                weekends + unem + t + 
+                Feb + Mar + Apr + May + Jun + Jul +
+                Aug + Sep + Oct + Nov + Dec, 
+              data = db)
+coeftest(mod1, vcov. = vcovHAC)
+```
+
+```{r}
+h0 <- c("Feb", "Mar", "Apr", "May", "Jun", "Jul", 
+        "Aug", "Sep", "Oct", "Nov", "Dec")
+lht(mod1, h0, vcov. = vcovHAC)
+```
+
+## Contrastes de autocorrelación
+
+```{r}
+uhat <- resid(mod1)
+```
+
+```{r}
+bgaux <- dynlm(uhat ~ beltlaw + speedlaw +
+                weekends + unem + t + 
+                Feb + Mar + Apr + May + Jun + Jul +
+                Aug + Sep + Oct + Nov + Dec + L(uhat), 
+              data = db)
+summary(bgaux)
+```
+
+```{r}
+coeftest(bgaux, vcov. = vcovHC)
+```
+
+```{r}
+bgaux <- dynlm(uhat ~ beltlaw + speedlaw +
+                weekends + unem + t + 
+                Feb + Mar + Apr + May + Jun + Jul +
+                Aug + Sep + Oct + Nov + Dec + L(uhat, 1:2), 
+              data = db)
+coeftest(bgaux, vcov. = vcovHC)
+```
+
+```{r}
+h0 <- matchCoefs(bgaux, "uhat")
+lht(bgaux, h0, vcov. = vcovHC)
+```
+
+## Estimación eficiente
+
+```{r}
+ar1 <- dynlm(uhat ~ L(uhat))
+rho <- coef(ar1)[2]
+rho
+```
+
+```{r}
+cdiff <- function(x, rho) {
+  x - rho * lag(x, -1)
+}
+```
+
+```{r}
+db_cd <- local({
+  `(Intercept)` <- zooreg(rep(1 - rho, NROW(db)), start = start(db),
+                     frequency = frequency(db))
+  ltotal <- cdiff(db$ltotal, rho)
+  t <- cdiff(db$t, rho)
+  Feb <- cdiff(db$Feb, rho)
+  Mar <- cdiff(db$Mar, rho)
+  Apr <- cdiff(db$Apr, rho)
+  May <- cdiff(db$May, rho)
+  Jun <- cdiff(db$Jun, rho)
+  Jul <- cdiff(db$Jul, rho)
+  Aug <- cdiff(db$Aug, rho)
+  Sep <- cdiff(db$Sep, rho)
+  Oct <- cdiff(db$Oct, rho)
+  Nov <- cdiff(db$Nov, rho)
+  Dec <- cdiff(db$Dec, rho)
+  weekends <- cdiff(db$weekends, rho)
+  unem <- cdiff(db$unem, rho)
+  beltlaw <- cdiff(db$beltlaw, rho)
+  speedlaw <- cdiff(db$speedlaw, rho)
+  merge(`(Intercept)`, ltotal, t, Feb, Mar, Apr, May,
+        Jun, Jul, Aug, Sep, Oct, Nov, Dec, 
+        weekends, unem, beltlaw, speedlaw)
+})
+```
+
+```{r}
+mcgf <- dynlm(ltotal ~ 0 + `(Intercept)`  + 
+                beltlaw + speedlaw +
+                weekends + unem + t + 
+                Feb + Mar + Apr + May + Jun + Jul +
+                Aug + Sep + Oct + Nov + Dec, 
+              start = "Feb 1981", 
+              data = db_cd)
+summary(mcgf)
+```
+
+```{r}
+#| echo: false
+#| message: false
+
+library(modelsummary)
+
+mco <- dynlm(ltotal ~ beltlaw + speedlaw +
+               weekends + unem + t + 
+               Feb + Mar + Apr + May + Jun + Jul +
+               Aug + Sep + Oct + Nov + Dec, 
+             start = "Feb 1981",
+             data = db)
+
+
+modelsummary(list("MCO + HAC" = mco, "MCGF" = mcgf),
+             fmt = 4,
+             stars = c('*' = 0.1, '**' = 0.05, '***' = 0.01),
+             vcov = c("HC3", "iid"),
+             gof_map = c("nobs", "vcov.type"))
+```

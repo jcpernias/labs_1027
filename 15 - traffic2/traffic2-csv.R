@@ -4,7 +4,7 @@ library(zoo)
 
 traffic2 <- read_excel("15 - traffic2/traffic2.xlsx") |>
   select(-fatacc) |>
-  rename(total = totacc, weekends = wkends)
+  rename(total = totacc, weekends = wkends, speedlaw = spdlaw)
 
 st <- zooreg(traffic2, start = c(1981, 1), frequency = 12)
 months <- outer(cycle(st), 1:12, \(x, y) as.integer(x == y))
