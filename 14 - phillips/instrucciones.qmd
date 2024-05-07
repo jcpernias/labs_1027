@@ -41,7 +41,7 @@ Calcule la diferencia de la inflación y guárdela en la variable `dinfl`.
 ```
 
 ::: {.callout-note appearance="simple"}
-Cree la variable `paro_c` y almacene en ella el paro cíclico obtenido como la diferencia entre las tasas de paro observada y natural contenidas en `db_all`.
+Cree la variable `paro_c` y almacene en ella el paro cíclico obtenido restando la tasa de paro natural a la tasa de paro observada (ambas variables están contenidas en `db_all)`.
 :::
 
 ```{r}
