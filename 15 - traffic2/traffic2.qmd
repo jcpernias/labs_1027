@@ -111,7 +111,7 @@ coeftest(mod1, vcov. = vcovHAC)
 ```
 
 ::: {.callout-note appearance="simple"}
-¿Qué interpretación tiene el parámetro de `t`? ¿Es significativamente distinto de 0?
+¿Qué interpretación tiene el parámetro de `t`?
 :::
 
 El coeficiente de `t` indica que el número de accidentes totales crece un $0.11\%$ cada mes, manteniendo constantes los efectos de las restantes variables.
@@ -132,7 +132,7 @@ h0 <- c("Feb", "Mar", "Apr", "May", "Jun", "Jul",
 lht(mod1, h0, vcov. = vcovHAC)
 ```
 
-El valor del contraste $F$ es $7.97$ con un valor $p$ prácticamente igual a 0, por lo que se rechaza la hipótesis nula de que todos los parámetros de las variables estacionales sean iguales a 0 aun nivel de significación del $5\%$.
+El valor del contraste $F$ es $7.97$ con un valor $p$ prácticamente igual a 0, por lo que se rechaza la hipótesis nula de que todos los parámetros de las variables estacionales sean iguales a 0 aun nivel de significación del $5\%$. Por tanto, estas variables ficticias capturan las variaciones estacionales presentes en los accidentes de circulación.
 
 ::: {.callout-note appearance="simple"}
 Interprete y evalúe la significación individual de los parámetros de `weekends` y `unem`.
@@ -158,7 +158,7 @@ De forma similar, el signo negativo de `speedlaw` podría ser la consecuencia de
 ¿Es razonable el supuesto de exogeneidad estricta de las explicativas de esta regresión? ¿Por qué?
 :::
 
-En esta regresión el supuesto de exogeneidad estricta de las variables explicativas sería razonable. No hay retardos de la variable dependiente y, posiblemente, no sean necesarios retardos de las variables explicativas (aunque esta posibilidad podría investigarse con regresiones adicionales). Por otro lado, no hay motivos para pensar que el número de accidentes totales afecte a los valores que toman las explicativas en el futuro. Muchas de los regresores dependen del paso del tiempo y del calendario y no se ven afectadas por los accidentes de tráfico pasados. Tampoco parece que haya motivos para pensar que afecten a las tasas de desempleo futuras. El número de accidentes sí que podría afectar a la futura legislación de tráfico pero no de forma continua: las leyes no se aprueban y se derogan repetidas veces al año de acuerdo con las fluctuaciones al alza o a la baja de la cifra de accidentes.
+El supuesto de exogeneidad estricta de las variables explicativas sería razonable en esta regresión. No hay retardos de la variable dependiente y, posiblemente, no sean necesarios retardos de las variables explicativas (aunque esta posibilidad podría investigarse con regresiones adicionales). Por otro lado, no hay motivos para pensar que el número de accidentes totales afecte a los valores que toman las explicativas en el futuro. Muchos de los regresores dependen del paso del tiempo y del calendario y no se ven afectadas por los accidentes de tráfico pasados. Tampoco parece que haya motivos para pensar que los accidentes afecten a las tasas de desempleo futuras. El número de accidentes sí que podría afectar a la futura legislación de tráfico pero no de forma sistemática: las leyes no se aprueban y se derogan repetidas veces al año de acuerdo con las fluctuaciones al alza o a la baja de la cifra de accidentes.
 
 ## Contrastes de autocorrelación
 
@@ -205,7 +205,7 @@ h0 <- matchCoefs(bgaux, "uhat")
 lht(bgaux, h0, vcov. = vcovHC)
 ```
 
-En ambos casos se obtienen valores del estadístico de contraste muy elevados para ser compatibles con la hipótesis nula y rechazaríamos la hipótesis de no autocorrelación a un nivel de significación del $5\%$.
+En todos los casos se obtienen valores del estadístico de contraste muy elevados para ser compatibles con la hipótesis nula y rechazaríamos la hipótesis de no autocorrelación a un nivel de significación del $5\%$.
 
 ## Estimación eficiente
 
