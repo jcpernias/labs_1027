@@ -20,10 +20,37 @@ library(car)
 
 ## Datos
 
+La base de datos contiene 108 observaciones mensuales que cubren el periodo que va desde enero de 1981 hasta diciembre de 1989:
+
+El archivo `traffic2.csv` contiene observaciones mensuales que cubren el periodo que va desde enero de 1981 hasta diciembre de 1989 y recoge información sobre accidentes automovilísticos en California y algunas otras variables relacionadas:
+
+- `year`, `month`: el año y el mes (1, 2, ..., 12) de cada observación.
+
+- `total`: número total de accidentes de tráfico.
+
+- `fatal`: número de accidentes con víctimas mortales.
+
+- `weekends`: número de días de fin de semana en cada mes.
+
+- `unem`: tasa de desempleo en California.
+
+En este laboratorio trataremos de cuantificar el efecto que sobre los accidentes de tráfico tuvieron dos leyes que se aprobaron en esa época.
+
 ```{r}
 db <- read.csv2.zoo("traffic2.csv", regular = TRUE, 
                     FUN = as.yearmon)
 ```
+
+Cree las siguientes variables y guárdelas en `st`:
+
+- La variable `ltotal` es el logaritmo de `total`.
+
+- La variable `t` es una tendencia lineal y toma los valores consecutivos 1, 2, ...:
+
+- La variable `belt` es una ficticia que indica en qué meses estaba vigente la obligación del cinturón de seguridad. En California es obligatorio desde enero de 1986:
+
+- La variable `speed` es una variable ficticia que toma el valor 1 desde mayo de 1987, cuando se elevó el límite de velocidad en California de 50 a 65 millas por hora.
+
 
 ```{r}
 db$ltotal <- log(db$total)
@@ -31,16 +58,26 @@ db$ltotal <- log(db$total)
 
 ## Contrastes de raíces unitarias
 
+
+Examine con un gráfico la evolución temporal del logaritmo de los accidentes totales en California, `ltotal`. Contraste la presencia de una raíz unitaria. Incluya una tendencia en la regresión de Dickey-Fuller y seleccione el número de retardos a incluir con el AIC, considerando 6 retardos como máximo.
+
+- ¿Hay raíces unitarias en `unem`? ¿Y en `weekends`?
+
 ### Logaritmo del número de accidentes
 
 ```{r}
 autoplot.zoo(db$ltotal)
 ```
 
+  El gráfico anterior muestra una tendencia creciente en el número de accidentes totales durante el periodo analizado. 
+
+
 ```{r}
 df <- ur.df(db$ltotal, type = "trend", lags = 6, selectlags = "AIC")
 summary(df)
 ```
+
+  El valor del contraste $t$ de Dickey-Fuller aumentado es $-3.601$. Este valor es más pequeño que $-3.43$, el valor crítico para un nivel de significación del $5\%$. Por tanto, rechazamos la hipótesis nula de que la variable `ltotal` tenga una raíz unitaria.
 
 ### Tasa de paro
 
@@ -48,12 +85,23 @@ summary(df)
 autoplot.zoo(db$unem)
 ```
 
+ El desempleo presenta una marcada tendencia decreciente.
+ 
 ```{r}
 df <- ur.df(db$unem, type = "trend", lags = 6, selectlags = "AIC")
 summary(df)
 ```
 
+  Se rechaza la hipótesis nula de raíz unitaria a un nivel de significación del $5\%$ ya que el valor del contraste, $-3.610$, es inferior al valor crítico, $-3.43$. 
+
+En conclusión, ninguna de las variables que utilizaremos en los modelos de regresión presenta raíces unitarias. Por otro lado, se han detectado tendencias crecientes en el número de accidentes totales y decrecientes en la proporción de accidentes fatales y en la tasa de desempleo. Por tanto, incluiremos una tendencia lineal en las regresiones para evitar obtener resultados espurios.
+
+
+
 ## Regresión
+
+- Estime con la función `dynlm` los parámetros de un modelo estático que explique el logaritmo de los accidentes totales, `ltotal`, con una tendencia lineal, `t`, variables ficticias estacionales, `season(st)`, y las variables `weekends`, `unem`, `belt` y `speed`. Obtenga los errores típicos robustos a heteroscedasticidad y autocorrelación.
+
 
 ```{r}
 mod1 <- dynlm(ltotal ~ beltlaw + speedlaw +
@@ -64,17 +112,59 @@ mod1 <- dynlm(ltotal ~ beltlaw + speedlaw +
 coeftest(mod1, vcov. = vcovHAC)
 ```
 
+- ¿Qué interpretación tiene el parámetro de `t`? ¿Es significativamente distinto de 0?
+
+El coeficiente de `t` indica que el número de accidentes totales crece un $0.11\%$ cada mes, manteniendo constantes los efectos de las restantes variables.  
+
+
+- ¿Qué interpretación tienen las variables estacionales ficticias? En concreto, ¿cuál es la interpretación del parámetro de febrero? ¿Y el de agosto? Contraste la significación conjunta de las variables estacionales. ¿Qué conclusión se extrae de este contraste?
+
+  Los parámetros de las variables ficticias muestran la diferencia media entre el número de accidentes en cada mes y los accidentes ocurridos en enero del mismo año. De acuerdo con nuestras estimaciones, el número de accidentes en febrero suele ser un $3.4\%$ inferior al número de accidentes de enero. Y en agosto hay un $5.5\%$ más de accidentes que en enero del mismo año, *ceteris paribus*.
+
+
 ```{r}
 h0 <- c("Feb", "Mar", "Apr", "May", "Jun", "Jul", 
         "Aug", "Sep", "Oct", "Nov", "Dec")
 lht(mod1, h0, vcov. = vcovHAC)
 ```
 
+  El valor del contraste $F$ es $7.97$ con un valor $p$ prácticamente igual a 0, por lo que se rechaza la hipótesis nula de que todos los parámetros de las variables estacionales sean iguales a 0 aun nivel de significación del $5\%$.
+
+
+- Interprete y evalúe la significación individual de los parámetros de `weekends` y `unem`.
+
+  El parámetro de `weekends` es positivo, lo que mostraría que el número de accidentes tiende a ser mayor en aquellos meses en que hay más días de fin de semana. Sin embargo, el efecto es pequeño y no significativo al $5\%$ (el valor $p$ es $0.2$).
+
+  Las estimaciones del modelo de regresión muestran que los accidentes disminuyen en los periodos con mayor desempleo. En concreto, los accidentes disminuyen un $2.1\%$ por cada punto porcentual que se incremente la tasa de desempleo, *ceteris paribus*. El efecto es significativamente distinto de $0$ (el valor $p$ es inferior al $1\%$).
+  
+
+
+- De acuerdo con nuestros objetivos, las variable más importantes son `belt` y `speed`. Interprete y determine la significación individual de sus parámetros. ¿Cómo pueden explicarse los signos obtenidos?
+
+  El parámetro de `belt` muestra que, manteniendo constante el efecto del resto de variables, después de que entrara en vigor la ley que obligaba a usar el cinturón de seguridad los accidentes aumentaron un $9.5\%$ en comparación a los meses en que no existía la obligación de usar el cinturón. El valor $p$ es prácticamente $0$ por lo que este parámetro es significativo a los niveles usuales de significación.
+  
+  En el caso de la variable ficticia `speed`, comparados con los meses anteriores a la elevación del límite de velocidad, los accidentes disminuyeron un $5.5\%$ a partir de mayo del 1987. El efecto es significativo para $\alpha = 5\%$ ya que el valor $p = 0.003 < \alpha$.
+  
+  El signo de la variable `belt` puede parecer contrario a la intuición. Sin embargo, es posible explicarlo si pensamos que la obligación de portar el cinturón de seguridad aumenta la seguridad de los conductores y puede mitigar las consecuencias de los accidentes. Si esto es correcto, es posible que los conductores actúen de forma más imprudente cuando se les obliga a usar el cinturón y que esto se refleje en un mayor número de accidentes.
+  
+  De forma similar, el signo negativo de `speed` podría ser la consecuencia de que los conductores conduzcan con mayor cuidado después de que se eleve el límite de velocidad y las consecuencias de tener un accidente se agraven al ser mayor la velocidad a la que se circula en las carreteras de California.
+
+
+- ¿Es razonable el supuesto de exogeneidad estricta de las explicativas de esta regresión? ¿Por qué?
+
+  En esta regresión el supuesto de exogeneidad estricta de las variables explicativas sería razonable. No hay retardos de la variable dependiente y, posiblemente, no sean necesarios retardos de las variables explicativas (aunque esta posibilidad podría investigarse con regresiones adicionales). Por otro lado, no hay motivos para pensar que el número de accidentes totales afecte a los valores que toman las explicativas en el futuro. Muchas de los regresores dependen del paso del tiempo y del calendario y no se ven afectadas por los accidentes de tráfico pasados. Tampoco parece que haya motivos para pensar que afecten a las tasas de desempleo futuras. El número de accidentes sí que podría afectar a la futura legislación de tráfico pero no de forma continua: las leyes no se aprueban y se derogan repetidas veces al año de acuerdo con las fluctuaciones al alza o a la baja de la cifra de accidentes.
+
+
+
 ## Contrastes de autocorrelación
+
+Guardamos los residuos de la regresión anterior para estudiar la presencia de autocorrelación en el término de error.
 
 ```{r}
 uhat <- resid(mod1)
 ```
+
+Breusch y Godfrey propusieron un contraste de autocorrelación basado en el principio de multiplicadores de Lagrange. El contraste es válido aunque no se cumpla el supuesto de exogeneidad estricta y la distribución del término de error no sea normal. Para llevar a cabo un contraste de autocorrelación de orden 1, estimamos una regresión auxiliar utilizando los residuos MCO como variable dependiente, las mismas explicativas que en el modelo original y un retardo de los residuos.
 
 ```{r}
 bgaux <- dynlm(uhat ~ beltlaw + speedlaw +
@@ -85,9 +175,15 @@ bgaux <- dynlm(uhat ~ beltlaw + speedlaw +
 summary(bgaux)
 ```
 
+El retardo de los residuos es significativo a los niveles convencionales de significación, por lo que rechazaríamos la hipótesis nula de no autocorrelación. Si sospechamos que la varianza condicional del término de error no es constante podemos usar un contraste $t$ robusto a heteroscedasticidad:
+
 ```{r}
 coeftest(bgaux, vcov. = vcovHC)
 ```
+
+Volvemos a obtener un valor $p$ inferior a $\alpha = 5\%$ por lo que rechazaríamos la hipótesis de no autocorrelación a un nivel de significación del $5\%$.
+
+Es sencillo extender el contraste Breusch-Godfrey para contrastar autocorrelación de orden superior a 1: simplemente se añaden más retardos de los residuos a la regresión auxiliar. En nuestro ejemplo, podemos contrastar autocorrelación de orden 2 añadiendo 2 retardos de los residuos:
 
 ```{r}
 bgaux <- dynlm(uhat ~ beltlaw + speedlaw +
@@ -98,12 +194,24 @@ bgaux <- dynlm(uhat ~ beltlaw + speedlaw +
 coeftest(bgaux, vcov. = vcovHC)
 ```
 
+El contraste se lleva a cabo examinando la significación conjunta de los retardos de los residuos con un estadístico $F$:
+Alternativamente, podemos usar un contraste $F$ robusto a heteroscedasticidad:
+
 ```{r}
 h0 <- matchCoefs(bgaux, "uhat")
 lht(bgaux, h0, vcov. = vcovHC)
 ```
 
+
+En ambos casos se obtienen valores del estadístico de contraste muy elevados para ser compatibles con la hipótesis nula y rechazaríamos la hipótesis de no autocorrelación a un nivel de significación del $5\%$.
+
+
 ## Estimación eficiente
+
+Si las variables explicativas son estrictamente exógenas, es posible obtener un estimador más eficiente que MCO en presencia de autocorrelación. 
+
+
+Estimamos el parámetro $\rho$ con una autorregresión de los residuos MCO. Si suponemos que el término de error sigue un proceso AR(1) basta con incluir un retardo de los residuos:
 
 ```{r}
 ar1 <- dynlm(uhat ~ L(uhat))
@@ -111,11 +219,17 @@ rho <- coef(ar1)[2]
 rho
 ```
 
+Transformamos todas las variables del modelo original. Crearemos una función que calcule la cuasi diferencia de una variable:
+
 ```{r}
 cdiff <- function(x, rho) {
   x - rho * lag(x, -1)
 }
 ```
+
+
+Usamos la función con todas las variables del modelo de regresión:
+También creamos una variable que siempre toma el valor $1 - \rho$ y que nos servirá para estimar el parámetro $\beta_0$:
 
 ```{r}
 db_cd <- local({
@@ -144,6 +258,7 @@ db_cd <- local({
 })
 ```
 
+El estimador de Cochrane-Orcutt se obtiene estimadando por MCO el modelo con las variables en cuasi diferencias.
 ```{r}
 mcgf <- dynlm(ltotal ~ 0 + `(Intercept)`  + 
                 beltlaw + speedlaw +
@@ -154,6 +269,7 @@ mcgf <- dynlm(ltotal ~ 0 + `(Intercept)`  +
               data = db_cd)
 summary(mcgf)
 ```
+Las estimaciones obtenidas son muy similares las obtenidas por MCO. Por otro, lado si el término de error seguía un proceso AR(1), los errores típicos de MCGF son válidos. Si existe heteroscedasticidad o si la autocorrelación sigue un esquema más complejo que un AR(1) es posible usar la estimación de Cochrane-Orcutt junto con errores típicos robustos:
 
 ```{r}
 #| echo: false
