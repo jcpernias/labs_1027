@@ -188,7 +188,7 @@ coeftest(mod1, vcov. = vcovHAC)
 En referencia a la curva de Phillips estática estimada y atendiendo a los resultados obtenidos con los contrastes de raíces unitarias, ¿se cumplen los supuestos que garantizan buenas propiedades asintóticas de MCO con series temporales? ¿Puede ser una regresión espuria?
 :::
 
-*Respuesta*: No se puede rechazar que tanto la variable dependiente como la explicativa contengan raíces unitarias, lo que violaría el supuesto de que las series temporales usadas en la regresión sean débilmente dependientes. En estas condiciones los resultados obtenidos son poco fiables y es posible que la regresión sea espuria.
+*Respuesta*: No se puede rechazar que tanto la variable dependiente como la explicativa contengan raíces unitarias, lo que violaría el supuesto de que las series temporales usadas en la regresión sean débilmente dependientes (supuesto ST.1'). En estas condiciones, el estimador de MCO es inconsistente y es posible que la regresión sea espuria.
 
 ## Curva de Phillips con expectativas
 
@@ -201,10 +201,10 @@ Estime modelos de regresión con `dinfl` como variable dependiente y retardos de
 :::
 
 ```{r}
-dl0 <- dynlm(dinfl ~ L(paro_c, 0:0) , data = db, start = 1967)
-dl1 <- dynlm(dinfl ~ L(paro_c, 0:1) , data = db, start = 1967)
-dl2 <- dynlm(dinfl ~ L(paro_c, 0:2) , data = db, start = 1967)
-dl3 <- dynlm(dinfl ~ L(paro_c, 0:3) , data = db, start = 1967)
+dl0 <- dynlm(dinfl ~ L(paro_c, 0:0), data = db, start = 1967)
+dl1 <- dynlm(dinfl ~ L(paro_c, 0:1), data = db, start = 1967)
+dl2 <- dynlm(dinfl ~ L(paro_c, 0:2), data = db, start = 1967)
+dl3 <- dynlm(dinfl ~ L(paro_c, 0:3), data = db, start = 1967)
 ```
 
 ::: {.callout-note appearance="simple"}
@@ -249,4 +249,4 @@ coeftest(dl1b, vcov. = vcovHAC)
 Usando los resultados de la regresión anterior, contraste al $5\%$ la hipótesis de que el multiplicador de largo plazo es 0.
 :::
 
-*Respuesta*: El multiplicador de largo plazo toma un valor pequeño, $-0.04$, y no es significativamente distinto de $0$ a un nivel de significación del $5\%$ (cociente *t* robusto $=-0.24$, valor-*p* $=0.81$).
+*Respuesta*: El multiplicador de largo plazo toma un valor pequeño, $-0.04$, y no es significativamente distinto de $0$ a un nivel de significación del $5\%$ (estadístico *t* robusto $=-0.24$, valor-*p* $=0.81 > \alpha = 0.05$ ).
