@@ -98,9 +98,9 @@ Se estima con la función `dynlm` los parámetros de un modelo estático que exp
 
 ```{r}
 mod1 <- dynlm(ltotal ~ beltlaw + speedlaw +
-                weekends + unem + t + 
+                weekends + unem + t +
                 Feb + Mar + Apr + May + Jun + Jul +
-                Aug + Sep + Oct + Nov + Dec, 
+                Aug + Sep + Oct + Nov + Dec,
               data = db)
 ```
 
@@ -127,7 +127,7 @@ Contraste la significación conjunta de las variables estacionales. ¿Qué concl
 :::
 
 ```{r}
-h0 <- c("Feb", "Mar", "Apr", "May", "Jun", "Jul", 
+h0 <- c("Feb", "Mar", "Apr", "May", "Jun", "Jul",
         "Aug", "Sep", "Oct", "Nov", "Dec")
 lht(mod1, h0, vcov. = vcovHAC)
 ```
@@ -172,9 +172,9 @@ Breusch y Godfrey propusieron un contraste de autocorrelación basado en el prin
 
 ```{r}
 bgaux <- dynlm(uhat ~ beltlaw + speedlaw +
-                weekends + unem + t + 
+                weekends + unem + t +
                 Feb + Mar + Apr + May + Jun + Jul +
-                Aug + Sep + Oct + Nov + Dec + L(uhat), 
+                Aug + Sep + Oct + Nov + Dec + L(uhat),
               data = db)
 summary(bgaux)
 ```
@@ -191,9 +191,9 @@ Es sencillo extender el contraste Breusch-Godfrey para contrastar autocorrelaci�
 
 ```{r}
 bgaux <- dynlm(uhat ~ beltlaw + speedlaw +
-                weekends + unem + t + 
+                weekends + unem + t +
                 Feb + Mar + Apr + May + Jun + Jul +
-                Aug + Sep + Oct + Nov + Dec + L(uhat, 1:2), 
+                Aug + Sep + Oct + Nov + Dec + L(uhat, 1:2),
               data = db)
 coeftest(bgaux, vcov. = vcovHC)
 ```
@@ -226,7 +226,7 @@ rho <- round(coef(ar1)[2], 2)
 La anterior regresión produce una estimación del parámetro del proceso AR(1), $\hat{\rho} = `{r} rho`$. Con esa estimación se calculan las cuasi diferencias de todas las variables que se incluyen en la regresión. Por ejemplo, la siguiente expresión muestra como obtener la cuasi-diferencia de la variable `unem`:
 
 $$
-\mathit{unem}_t^* = \mathit{unem}_t - `{r} rho` \mathit{unem}_{t-1} 
+\mathit{unem}_t^* = \mathit{unem}_t - `{r} rho` \mathit{unem}_{t-1}
 $$
 
 ```{r}
@@ -259,7 +259,7 @@ db_cd <- local({
   beltlaw <- cdiff(db$beltlaw, rho)
   speedlaw <- cdiff(db$speedlaw, rho)
   merge(`(Intercept)`, ltotal, t, Feb, Mar, Apr, May,
-        Jun, Jul, Aug, Sep, Oct, Nov, Dec, 
+        Jun, Jul, Aug, Sep, Oct, Nov, Dec,
         weekends, unem, beltlaw, speedlaw)
 })
 ```
@@ -267,12 +267,12 @@ db_cd <- local({
 ```{r}
 #| echo: false
 
-mcgf <- dynlm(ltotal ~ 0 + `(Intercept)`  + 
+mcgf <- dynlm(ltotal ~ 0 + `(Intercept)`  +
                 beltlaw + speedlaw +
-                weekends + unem + t + 
+                weekends + unem + t +
                 Feb + Mar + Apr + May + Jun + Jul +
-                Aug + Sep + Oct + Nov + Dec, 
-              start = "Feb 1981", 
+                Aug + Sep + Oct + Nov + Dec,
+              start = "Feb 1981",
               data = db_cd)
 ```
 
@@ -285,9 +285,9 @@ El estimador de Cochrane-Orcutt se obtiene estimando por MCO el modelo con todas
 library(modelsummary)
 
 mco <- dynlm(ltotal ~ beltlaw + speedlaw +
-               weekends + unem + t + 
+               weekends + unem + t +
                Feb + Mar + Apr + May + Jun + Jul +
-               Aug + Sep + Oct + Nov + Dec, 
+               Aug + Sep + Oct + Nov + Dec,
              start = "Feb 1981",
              data = db)
 
@@ -300,3 +300,9 @@ modelsummary(list("MCO + HAC" = mco, "MCGF" = mcgf),
 ```
 
 Las estimaciones obtenidas son muy similares las obtenidas por MCO. Por otro, lado si el término de error seguía un proceso AR(1), los errores típicos de MCGF son válidos. Si existe heteroscedasticidad o si la autocorrelación sigue un esquema más complejo que un AR(1) es posible usar la estimación de Cochrane-Orcutt junto con errores típicos robustos.
+
+<!--
+    Local Variables:
+    ispell-dictionary: "castellano";
+    End:
+-->
