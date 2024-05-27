@@ -301,8 +301,10 @@ modelsummary(list("MCO + HAC" = mco, "MCGF" = mcgf),
 
 Las estimaciones obtenidas son muy similares las obtenidas por MCO. Por otro, lado si el término de error seguía un proceso AR(1), los errores típicos de MCGF son válidos. Si existe heteroscedasticidad o si la autocorrelación sigue un esquema más complejo que un AR(1) es posible usar la estimación de Cochrane-Orcutt junto con errores típicos robustos.
 
+```{=html}
 <!--
     Local Variables:
     ispell-dictionary: "castellano";
     End:
 -->
+```
