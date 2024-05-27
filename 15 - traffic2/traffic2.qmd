@@ -25,7 +25,7 @@ library(car)
 El archivo `traffic2.csv` contiene 108 observaciones mensuales que cubren el periodo que va desde enero de 1981 hasta diciembre de 1989.
 
 ```{r}
-db <- read.csv2.zoo("traffic2.csv", regular = TRUE, FUN = as.yearmon)
+db <- read.csv2.zoo("traffic2.csv", regular = TRUE, FUN = as.yearmon, format = "%YM%m")
 ```
 
 Las variables de `db` recogen información sobre accidentes automovilísticos en California y algunas otras variables relacionadas:
@@ -99,8 +99,8 @@ Se estima con la función `dynlm` los parámetros de un modelo estático que exp
 ```{r}
 mod1 <- dynlm(ltotal ~ beltlaw + speedlaw +
                 weekends + unem + t +
-                Feb + Mar + Apr + May + Jun + Jul +
-                Aug + Sep + Oct + Nov + Dec,
+                M02 + M03 + M04 + M05 + M06 + M07 +
+                M08 + M09 + M10 + M11 + M12,
               data = db)
 ```
 
@@ -117,7 +117,7 @@ coeftest(mod1, vcov. = vcovHAC)
 El coeficiente de `t` indica que el número de accidentes totales crece un $0.11\%$ cada mes, manteniendo constantes los efectos de las restantes variables.
 
 ::: {.callout-note appearance="simple"}
-¿Qué interpretación tienen las variables estacionales ficticias? En concreto, ¿cuál es la interpretación del parámetro de febrero? ¿Y el de agosto?
+¿Qué interpretación tienen las variables estacionales ficticias? En concreto, ¿cuál es la interpretación del parámetro de `M02`? ¿Y el de `M08`?
 :::
 
 Los parámetros de las variables ficticias muestran la diferencia media entre el número de accidentes en cada mes y los accidentes ocurridos en enero del mismo año. De acuerdo con nuestras estimaciones, el número de accidentes en febrero suele ser un $3.4\%$ inferior al número de accidentes de enero. Y en agosto hay un $5.5\%$ más de accidentes que en enero del mismo año, *ceteris paribus*.
@@ -127,8 +127,8 @@ Contraste la significación conjunta de las variables estacionales. ¿Qué concl
 :::
 
 ```{r}
-h0 <- c("Feb", "Mar", "Apr", "May", "Jun", "Jul",
-        "Aug", "Sep", "Oct", "Nov", "Dec")
+h0 <- c("M02", "M03", "M04", "M05", "M06", "M07",
+        "M08", "M09", "M10", "M11", "M12")
 lht(mod1, h0, vcov. = vcovHAC)
 ```
 
@@ -173,8 +173,8 @@ Breusch y Godfrey propusieron un contraste de autocorrelación basado en el prin
 ```{r}
 bgaux <- dynlm(uhat ~ beltlaw + speedlaw +
                 weekends + unem + t +
-                Feb + Mar + Apr + May + Jun + Jul +
-                Aug + Sep + Oct + Nov + Dec + L(uhat),
+                M02 + M03 + M04 + M05 + M06 + M07 +
+                M08 + M09 + M10 + M11 + M12 + L(uhat),
               data = db)
 summary(bgaux)
 ```
@@ -192,8 +192,8 @@ Es sencillo extender el contraste Breusch-Godfrey para contrastar autocorrelaci�
 ```{r}
 bgaux <- dynlm(uhat ~ beltlaw + speedlaw +
                 weekends + unem + t +
-                Feb + Mar + Apr + May + Jun + Jul +
-                Aug + Sep + Oct + Nov + Dec + L(uhat, 1:2),
+                M02 + M03 + M04 + M05 + M06 + M07 +
+                M08 + M09 + M10 + M11 + M12 + L(uhat, 1:2),
               data = db)
 coeftest(bgaux, vcov. = vcovHC)
 ```
@@ -243,23 +243,23 @@ db_cd <- local({
                      frequency = frequency(db))
   ltotal <- cdiff(db$ltotal, rho)
   t <- cdiff(db$t, rho)
-  Feb <- cdiff(db$Feb, rho)
-  Mar <- cdiff(db$Mar, rho)
-  Apr <- cdiff(db$Apr, rho)
-  May <- cdiff(db$May, rho)
-  Jun <- cdiff(db$Jun, rho)
-  Jul <- cdiff(db$Jul, rho)
-  Aug <- cdiff(db$Aug, rho)
-  Sep <- cdiff(db$Sep, rho)
-  Oct <- cdiff(db$Oct, rho)
-  Nov <- cdiff(db$Nov, rho)
-  Dec <- cdiff(db$Dec, rho)
+  M02 <- cdiff(db$M02, rho)
+  M03 <- cdiff(db$M03, rho)
+  M04 <- cdiff(db$M04, rho)
+  M05 <- cdiff(db$M05, rho)
+  M06 <- cdiff(db$M06, rho)
+  M07 <- cdiff(db$M07, rho)
+  M08 <- cdiff(db$M08, rho)
+  M09 <- cdiff(db$M09, rho)
+  M10 <- cdiff(db$M10, rho)
+  M11 <- cdiff(db$M11, rho)
+  M12 <- cdiff(db$M12, rho)
   weekends <- cdiff(db$weekends, rho)
   unem <- cdiff(db$unem, rho)
   beltlaw <- cdiff(db$beltlaw, rho)
   speedlaw <- cdiff(db$speedlaw, rho)
-  merge(`(Intercept)`, ltotal, t, Feb, Mar, Apr, May,
-        Jun, Jul, Aug, Sep, Oct, Nov, Dec,
+  merge(`(Intercept)`, ltotal, t, M02, M03, M04, M05,
+        M06, M07, M08, M09, M10, M11, M12,
         weekends, unem, beltlaw, speedlaw)
 })
 ```
@@ -270,9 +270,9 @@ db_cd <- local({
 mcgf <- dynlm(ltotal ~ 0 + `(Intercept)`  +
                 beltlaw + speedlaw +
                 weekends + unem + t +
-                Feb + Mar + Apr + May + Jun + Jul +
-                Aug + Sep + Oct + Nov + Dec,
-              start = "Feb 1981",
+                M02 + M03 + M04 + M05 + M06 + M07 +
+                M08 + M09 + M10 + M11 + M12,
+              start = c(1981, 2),
               data = db_cd)
 ```
 
@@ -286,9 +286,9 @@ library(modelsummary)
 
 mco <- dynlm(ltotal ~ beltlaw + speedlaw +
                weekends + unem + t +
-               Feb + Mar + Apr + May + Jun + Jul +
-               Aug + Sep + Oct + Nov + Dec,
-             start = "Feb 1981",
+                M02 + M03 + M04 + M05 + M06 + M07 +
+                M08 + M09 + M10 + M11 + M12,
+             start = c(1981, 2),
              data = db)
 
 
