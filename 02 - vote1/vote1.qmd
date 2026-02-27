@@ -5,7 +5,7 @@ title: "Introducción a R y RStudio (y II)"
 # Regresión múltiple
 
 En primer lugar cargamos los paquetes que utilizaremos en esta sesión:
-```{r warning = FALSE, message = FALSE}
+```{r}
 #| message: false
 
 library(wooldridge)
